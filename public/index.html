@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Cyborg AI - OpenRouter</title>
 
     <style>
@@ -46,7 +46,7 @@
         // --- VERIFICAÇÃO INICIAL ---
         async function iniciarSistema() {
             window.systemLog("--- Iniciando Cyborg AI (OpenRouter Version) ---");
-            if (typeof supabase === 'undefined') window.systemLog("ERRO: Supabase não carregou.", "ERRO");
+            if (typeof supabase === 'undefined') window.systemLog("⚠️ ERRO: Supabase não carregou.", "ERRO");
             else window.systemLog("Biblioteca Supabase carregada.");
         }
         iniciarSistema();
@@ -809,7 +809,9 @@
         top: 0;
         left: 0;
         width: 100vw !important;
-        height: 100vh !important;
+        height: 100dvh !important;
+
+        min-height: -webkit-fill-available;
 
         /* Remove margens e limites */
         margin: 0 !important;
@@ -1681,6 +1683,32 @@
         if(userInput) {
             userInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); window.handleChatSubmit(e); }
+            });
+        }
+    });
+
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', () => {
+            const chatView = document.getElementById('view-chat');
+            if (chatView && chatView.classList.contains('active-view')) {
+                chatView.style.height = `${window.visualViewport.height}px`;
+                
+                const historyDiv = document.getElementById('chat-history');
+                if (historyDiv) {
+                    historyDiv.scrollTop = historyDiv.scrollHeight;
+                }
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const userInput = document.getElementById('user-input');
+        if (userInput) {
+            userInput.addEventListener('focus', () => {
+                setTimeout(() => {
+                    window.scrollTo(0, 0);
+                    document.body.scrollTop = 0;
+                }, 300);
             });
         }
     });
