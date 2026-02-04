@@ -1,0 +1,9 @@
+flask
+flask-cors
+supabase
+langchain-community
+sentence-transformers
+pymupdf
+huggingface_hub
+python-dotenv
+llama-cpp-python
