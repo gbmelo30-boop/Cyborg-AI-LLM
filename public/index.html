@@ -104,11 +104,16 @@
 
 
             entrarComoConvidado: async () => {
+                // Gera um ID falso aqui mesmo, sem chamar o servidor
                 DB.user = {
                     id: crypto.randomUUID(),
                     email: 'anonimo@pesquisa.guest'
                 };
                 DB.isGuest = true;
+                
+                // Salva no navegador para não perder se atualizar a página
+                localStorage.setItem('cyborg_guest_id', DB.user.id);
+                
                 window.systemLog("Entrou como Convidado.");
                 return { success: true };
             },
@@ -774,15 +779,54 @@
         }
     }
 
+    // Função manual para gerar ID (Funciona em HTTP e HTTPS)
+    function gerarIDManual() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
     window.handleGuestLogin = async () => {
         const btn = document.querySelector('.btn-guest');
-        if(btn) btn.innerText = "Acessando...";
+        if(btn) {
+            btn.innerText = "Acessando...";
+            btn.disabled = true;
+        }
 
-        await DB.entrarComoConvidado();
+        try {
+            // 1. Gera o ID manualmente (seguro para HTTP)
+            const guestId = gerarIDManual();
+            
+            // 2. Atualiza o banco de dados local (Objeto DB)
+            if (typeof DB !== 'undefined') {
+                DB.user = {
+                    id: guestId,
+                    email: 'anonimo@pesquisa.guest'
+                };
+                DB.isGuest = true;
+            }
 
-        window.irParaChat();
+            // 3. Salva no navegador
+            localStorage.setItem('user_id', guestId);
+            localStorage.setItem('user_role', 'guest');
 
-        if(btn) btn.innerText = "Entrar como convidado";
+            // 4. Redireciona para o chat
+            if (typeof window.irParaChat === 'function') {
+                window.irParaChat();
+            } else {
+                // Se a função de ir para o chat falhar, recarrega a página para forçar a entrada
+                window.location.reload();
+            }
+
+        } catch (error) {
+            console.error("Erro fatal no convidado:", error);
+            alert("Erro ao entrar. Tente recarregar a página.");
+            if(btn) {
+                btn.innerText = "Entrar como convidado";
+                btn.disabled = false;
+            }
+        }
     }
 
 </script>
