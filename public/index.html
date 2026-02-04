@@ -46,7 +46,7 @@
         // --- VERIFICAÇÃO INICIAL ---
         async function iniciarSistema() {
             window.systemLog("--- Iniciando Cyborg AI (OpenRouter Version) ---");
-            if (typeof supabase === 'undefined') window.systemLog("⚠️ ERRO: Supabase não carregou.", "ERRO");
+            if (typeof supabase === 'undefined') window.systemLog("ERRO: Supabase não carregou.", "ERRO");
             else window.systemLog("Biblioteca Supabase carregada.");
         }
         iniciarSistema();
