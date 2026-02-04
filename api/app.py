@@ -40,6 +40,8 @@ def buscar_contexto(pergunta):
             'match_threshold': 0.5,
             'match_count': 2
         }).execute()
+        
+
         return "\n\n".join([item['conteudo'] for item in res.data]) if res.data else ""
     except Exception as e:
         logger.error(f"Erro RAG: {e}")
@@ -61,4 +63,4 @@ def chat():
     return jsonify({"response": output['choices'][0]['message']['content']})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5001)
