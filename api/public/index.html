@@ -1,0 +1,1690 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyborg AI - OpenRouter</title>
+
+    <style>
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: var(--bg-color, #0d1117);
+            color: var(--primary-text-color, #ffffff);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        #log-container { display: none; }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+</head>
+<body>
+
+    <script type="module">
+
+        // ==============================================================================
+        // CONFIGURAÇÃO DA API
+        // ==============================================================================
+
+        const API_BASE_URL = "http://200.156.26.159:5000";
+
+        // ==============================================================================
+        // BLOCO 1
+        // ==============================================================================
+
+        // --- SISTEMA DE LOGS ---
+        window.systemLog = function(mensagem, tipo = "INFO") {
+            const timestamp = new Date().toLocaleTimeString();
+            const logLine = `[${timestamp}] [${tipo}] ${mensagem}`;
+            console.log(logLine);
+        }
+
+        // --- VERIFICAÇÃO INICIAL ---
+        async function iniciarSistema() {
+            window.systemLog("--- Iniciando Cyborg AI (OpenRouter Version) ---");
+            if (typeof supabase === 'undefined') window.systemLog("⚠️ ERRO: Supabase não carregou.", "ERRO");
+            else window.systemLog("Biblioteca Supabase carregada.");
+        }
+        iniciarSistema();
+
+        // ==============================================================================
+        // BLOCO 2
+        // ==============================================================================
+
+        const DB = {
+            user: null,
+            isGuest: false,
+
+            init: async () => {
+                const _supabase = supabase.createClient(
+                    "https://mrjjbrrypieviykakmby.supabase.co",
+                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yampicnJ5cGlldml5a2FrbWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk3MTU4OTIsImV4cCI6MjA4NTI5MTg5Mn0.mldEk-7-vU0BdwlNf5COG_Dj9sRnFWrpQMkqTAZNw_8"
+                );
+                window.supabaseClient = _supabase;
+
+                const { data } = await _supabase.auth.getSession();
+                if (data.session) {
+                    DB.user = data.session.user;
+                    DB.isGuest = false;
+                    window.systemLog(`Usuário reconectado: ${DB.user.email}`);
+                    return true;
+                }
+                return false;
+            },
+
+            login: async (email, password) => {
+                try {
+                    const { data, error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
+                    if (error) throw error;
+                    DB.user = data.user;
+                    DB.isGuest = false;
+                    window.systemLog(`Login realizado: ${email}`);
+                    return { success: true };
+                } catch (e) {
+                    window.systemLog(`Erro no Login: ${e.message}`, "ERRO");
+                    return { success: false, error: e.message };
+                }
+            },
+
+            signup: async (email, password) => {
+                try {
+                    const { data, error } = await window.supabaseClient.auth.signUp({ email, password });
+                    if (error) throw error;
+                    window.systemLog(`Conta criada: ${email}`);
+                    return { success: true, msg: "Conta criada! Faça login." };
+                } catch (e) {
+                    window.systemLog(`Erro no Cadastro: ${e.message}`, "ERRO");
+                    return { success: false, error: e.message };
+                }
+            },
+
+
+            entrarComoConvidado: async () => {
+                DB.user = {
+                    id: crypto.randomUUID(),
+                    email: 'anonimo@pesquisa.guest'
+                };
+                DB.isGuest = true;
+                window.systemLog("Entrou como Convidado.");
+                return { success: true };
+            },
+
+            logout: async () => { /* Função movida para script global UI */ },
+
+            criarSessao: async (primeiraMensagem) => {
+                if (!DB.user) return null;
+                const titulo = primeiraMensagem.length > 30 ? primeiraMensagem.substring(0, 30) + "..." : primeiraMensagem;
+
+                const { data, error } = await window.supabaseClient
+                    .from('chat_sessions')
+                    .insert([{ user_id: DB.user.id, title: titulo }])
+                    .select()
+                    .single();
+
+                if (error) { window.systemLog("Erro criarSessao: " + error.message, "ERRO"); return null; }
+                return data;
+            },
+
+            salvarMensagem: async (sessionId, role, content) => {
+                const { error } = await window.supabaseClient
+                    .from('chat_messages')
+                    .insert([{ session_id: sessionId, role: role, content: content }]);
+                if (error) window.systemLog(`Erro salvarMensagem: ${error.message}`, "ERRO");
+            },
+
+            carregarHistorico: async (sessionId) => {
+
+                const { data, error } = await window.supabaseClient
+                    .from('chat_messages')
+                    .select('role, content')
+                    .eq('session_id', sessionId)
+                    .order('created_at', { ascending: true });
+                if (error) return [];
+                return data;
+            },
+
+            listarSessoes: async () => {
+
+                if (DB.isGuest) {
+                    return [];
+                }
+
+                if (!DB.user) return [];
+                const { data, error } = await window.supabaseClient
+                    .from('chat_sessions')
+                    .select('*')
+                    .eq('user_id', DB.user.id)
+                    .order('is_pinned', { ascending: false })
+                    .order('created_at', { ascending: false });
+
+                if (error) { window.systemLog("Erro listarSessoes: " + error.message, "ERRO"); return []; }
+                return data;
+            },
+
+            deletarSessao: async (sessionId) => {
+                const { error } = await window.supabaseClient
+                    .from('chat_sessions')
+                    .delete()
+                    .eq('id', sessionId);
+                if (error) window.systemLog("Erro deletarSessao: " + error.message, "ERRO");
+            },
+
+            renomearSessao: async (sessionId, novoTitulo) => {
+                const { error } = await window.supabaseClient
+                    .from('chat_sessions')
+                    .update({ title: novoTitulo })
+                    .eq('id', sessionId);
+                if (error) window.systemLog("Erro renomear: " + error.message, "ERRO");
+            },
+
+            fixarSessao: async (sessionId, statusAtual) => {
+                const { error } = await window.supabaseClient
+                    .from('chat_sessions')
+                    .update({ is_pinned: !statusAtual })
+                    .eq('id', sessionId);
+                if (error) window.systemLog("Erro fixar: " + error.message, "ERRO");
+            }
+        };
+
+        DB.init();
+        window.DB = DB;
+
+        // ==============================================================================
+        // BLOCO 3
+        // ==============================================================================
+
+        const CYBORG = {
+
+            init: () => {
+                window.systemLog("Cyborg AI: Conectado via Fetch.");
+            },
+
+            delay: (ms) => new Promise(resolve => setTimeout(resolve, ms)),
+
+            enviarMensagem: async (textoUsuario, sessionId = null) => {
+
+                if (!DB.user) { window.systemLog("Usuario nao logado", "ERRO"); return null; }
+
+                await CYBORG.delay(500);
+
+                let currentSessionId = sessionId;
+                if (!currentSessionId) {
+                    const sessao = await DB.criarSessao(textoUsuario);
+                    if (sessao) currentSessionId = sessao.id;
+                    else return null;
+                }
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 300000); // 300.000 ms = 5 minutos
+
+                try {
+                    await DB.salvarMensagem(currentSessionId, "user", textoUsuario);
+
+                    const historicoRaw = await DB.carregarHistorico(currentSessionId);
+                    const historyForAI = historicoRaw.map(msg => ({
+                        role: msg.role === 'assistant' ? 'assistant' : 'user',
+                        content: msg.content
+                    }));
+
+                    window.systemLog("Enviando dados para o Python (API)...");
+
+                    if (!API_BASE_URL || API_BASE_URL.includes("COLE_O_LINK")) {
+                        throw new Error("Link da API não configurado. Verifique a constante 'API_BASE_URL' no início do script.");
+                    }
+
+                    const response = await fetch(`${API_BASE_URL}/api/chat`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            messages: historyForAI,
+                            use_rag: window.useRag
+                        }),
+                        signal: controller.signal
+                    });
+
+                    clearTimeout(timeoutId);
+
+                    if (!response.ok) {
+                        const errData = await response.json().catch(() => ({}));
+                        throw new Error(errData.error || `Erro HTTP: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    let text = result.response.replace("<<FIM>>", "").trim();
+
+                    await DB.salvarMensagem(currentSessionId, "assistant", text);
+                    window.systemLog("Resposta salva.");
+
+                    return { response: text, sessionId: currentSessionId };
+
+                } catch (e) {
+                    clearTimeout(timeoutId);
+                    console.error("ERRO GERAL:", e);
+
+                    if (e.name === 'AbortError') {
+                        return { response: "**Erro de Tempo:** O servidor demorou muito para responder (timeout de 5min). Tente novamente.", error: "Timeout" };
+                    }
+
+                    return { response: "**Erro Técnico:** " + e.message, error: e.message };
+                }
+            }
+        };
+
+        CYBORG.init();
+        window.CYBORG = CYBORG;
+
+    </script>
+
+
+<style>
+    /* ============================================================================== */
+    /* BLOCO 4.1: Frontend (Tela de boas vindas)                                     */
+    /* ============================================================================== */
+
+    /* VARIÁVEIS DE TEMA E CORES */
+    :root {
+        --bg-color: #0d1117;
+        --primary-text-color: #ffffff;
+        --secondary-text-color: #e6edf3;
+        --tertiary-text-color: #d0d7de;
+        --led-static-blue: #7DF9FF;
+        --led-glow: rgba(125, 249, 255, 0.7);
+        --loader-bar-bg: #22272e;
+        --border-color: #30363d;
+    }
+
+    body.light-theme {
+        --bg-color: #ffffff;
+        --primary-text-color: #000000;
+        --secondary-text-color: #333333;
+        --tertiary-text-color: #555555;
+        --led-static-blue: #0056b3;
+        --led-glow: rgba(0, 86, 179, 0.8);
+        --loader-bar-bg: #e0e0e0;
+        --border-color: #cccccc;
+    }
+
+    html, body {
+        height: 100vh;
+        width: 100vw;
+        margin: 0;
+        padding: 0;
+        background-color: var(--bg-color);
+        overflow: hidden;
+    }
+
+    body {
+        color: var(--primary-text-color);
+        font-family: 'Share Tech Mono', monospace;
+        transition: background-color 0.3s, color 0.3s;
+        position: relative;
+    }
+
+    footer p {
+        font-size: 1.2em !important;
+        font-weight: bold;
+        letter-spacing: 1px;
+    }
+
+    .view-container {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
+        text-align: center;
+        padding: 20px;
+        box-sizing: border-box;
+        transition: opacity 0.5s ease, visibility 0.5s;
+        z-index: 1;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+
+    .view-container.active-view {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        z-index: 100;
+    }
+
+    .hidden-view {
+        display: none !important;
+    }
+
+    /* Botão de Tema */
+    #theme-switcher {
+        position: absolute;
+        top: 20px; right: 20px;
+        cursor: pointer;
+        display: flex;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        background-color: rgba(0,0,0,0.5);
+        transition: border-color 0.3s;
+        z-index: 20;
+        backdrop-filter: blur(4px);
+    }
+    .theme-box { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; }
+    #theme-switcher svg { width: 20px; height: 20px; fill: #ffffff; transition: fill 0.3s; }
+    body.light-theme #theme-switcher svg { fill: #000000; }
+    #theme-switcher:hover svg { fill: var(--led-static-blue); }
+
+    .dark-icon { display: none; }
+    .light-icon { display: block; }
+    body.light-theme .dark-icon { display: block; }
+    body.light-theme .light-icon { display: none; }
+
+    /* Conteúdo Principal */
+    main { max-width: 600px; width: 100%; display: flex; flex-direction: column; align-items: center; }
+
+    .led-ring {
+        width: 90px; height: 90px;
+        margin-bottom: 30px;
+        border-radius: 50%;
+        border: 8px solid var(--led-static-blue);
+        transition: border-color 0.3s, box-shadow 0.3s;
+        box-shadow: 0 0 25px var(--led-glow);
+        background: rgba(0,0,0,0.2);
+    }
+
+    h1 {
+        font-size: clamp(2rem, 5vw, 3.5em); /* Responsividade */
+        font-weight: bold;
+        letter-spacing: 6px;
+        margin: 0 0 20px 0;
+        text-transform: uppercase;
+        text-shadow: 0 4px 15px rgba(0,0,0,0.9);
+        line-height: 1.2;
+    }
+
+    body.light-theme h1 {
+        color: #000000;
+        text-shadow: none;
+    }
+
+    .p-main {
+        font-size: clamp(1.1rem, 2.5vw, 1.4em);
+        font-weight: 500;
+        color: var(--secondary-text-color);
+        line-height: 1.6;
+        margin-bottom: 25px;
+        transition: color 0.3s;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.9);
+        padding: 0 20px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 90vw;
+    }
+    body.light-theme .p-main { text-shadow: 0 2px 4px rgba(255,255,255,0.9); }
+
+    /* Loader e Botão */
+    .loader-button-container {
+        min-height: 80px;
+        width: 100%;
+        max-width: 400px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin-top: 40px;
+        position: relative;
+    }
+
+    #loading-sequence { width: 100%; transition: opacity 0.4s ease-out, transform 0.4s ease-out; }
+    #loading-sequence.fade-out { opacity: 0; transform: scale(0.95); pointer-events: none; position: absolute; }
+
+    .loading-bar-container { width: 100%; height: 8px; border: 1px solid var(--border-color); background-color: var(--loader-bar-bg); border-radius: 4px; padding: 2px; box-sizing: border-box; }
+    .loading-bar-progress { width: 0%; height: 100%; background-color: var(--led-static-blue); border-radius: 2px; animation: fill-bar 4s ease-out forwards; box-shadow: 0 0 10px var(--led-glow); }
+
+    @keyframes fill-bar { from { width: 0%; } to { width: 100%; } }
+
+    .loading-text { color: var(--primary-text-color); margin-top: 15px; font-size: 1.1em; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+    body.light-theme .loading-text { text-shadow: none; }
+
+    #start-button {
+        text-decoration: none;
+        font-size: 1.5em;
+        font-weight: bold;
+        letter-spacing: 3px;
+        color: var(--secondary-text-color);
+        transition: all 0.3s;
+        opacity: 0;
+        position: absolute;
+        pointer-events: none;
+        border: 1px solid transparent;
+        padding: 15px 30px;
+        border-radius: 4px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        cursor: pointer;
+        background: transparent;
+        font-family: inherit;
+    }
+
+    body.light-theme #start-button { text-shadow: none; font-weight: 800; }
+    #start-button.fade-in { opacity: 1; pointer-events: auto; position: relative; }
+    #start-button:hover {
+        color: var(--primary-text-color);
+        text-shadow: 0 0 15px var(--led-glow);
+        background: rgba(125, 249, 255, 0.1);
+        border-color: var(--led-static-blue);
+    }
+    body.light-theme #start-button:hover { background: rgba(0, 86, 179, 0.1); }
+
+    footer { position: absolute; bottom: 20px; font-size: 0.8em; z-index: 20; padding: 0 20px; }
+    footer p { color: var(--tertiary-text-color); font-style: italic; font-family: sans-serif; text-shadow: 0 1px 2px rgba(0,0,0,0.5); margin: 0; }
+    body.light-theme footer p { text-shadow: none; font-weight: bold; }
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<section id="view-intro" class="view-container active-view">
+    <div id="theme-switcher" title="Alterar Tema">
+        <div class="theme-box">
+            <svg class="light-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.06 1.06c.39.39 1.02.39 1.41 0s.39-1.02 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.06 1.06c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.02 0 1.41s1.02.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.02 0 1.41s1.02.39 1.41 0l1.06-1.06z"/></svg>
+            <svg class="dark-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 2c-1.82 0-3.53.5-5 1.35 2.99 1.73 5 4.95 5 8.65s-2.01 6.92-5 8.65C6.02 21.49 7.74 22 9.5 22c5.52 0 10-4.48 10-10S15.02 2 9.5 2z"/></svg>
+        </div>
+    </div>
+
+    <main>
+        <div class="led-ring"></div>
+        <h1>CYBORG AI</h1>
+        <p class="p-main">Uma jornada pela fronteira entre humano e máquina.</p>
+
+        <div class="loader-button-container">
+            <div id="loading-sequence">
+                <div class="loading-bar-container"><div class="loading-bar-progress"></div></div>
+                <p class="loading-text">INICIALIZANDO SISTEMA...</p>
+            </div>
+            <button type="button" id="start-button" onclick="irParaLogin(event)">INICIAR INTERAÇÃO</button>
+        </div>
+    </main>
+
+    <footer>
+        <p>Explore os conceitos de Design Especulativo e o Manifesto Ciborgue de Donna Haraway</p>
+    </footer>
+</section>
+
+<script>
+    $(document).ready(function() {
+        const themeSwitcher = document.getElementById('theme-switcher');
+        const body = document.body;
+
+        // Função de Tema
+        const applySavedTheme = () => {
+            const savedTheme = localStorage.getItem('cyborgTheme');
+            if (savedTheme === 'light' || (!savedTheme && window.matchMedia('(prefers-color-scheme: light)').matches)) {
+                body.classList.add('light-theme');
+            }
+        };
+
+        const toggleTheme = () => {
+            body.classList.toggle('light-theme');
+            const currentTheme = body.classList.contains('light-theme') ? 'light' : 'dark';
+            localStorage.setItem('cyborgTheme', currentTheme);
+        };
+
+        if (themeSwitcher) themeSwitcher.addEventListener('click', toggleTheme);
+        applySavedTheme();
+
+        const loadingSequence = document.getElementById('loading-sequence');
+        const startButton = document.getElementById('start-button');
+
+        setTimeout(() => {
+            if (loadingSequence) loadingSequence.classList.add('fade-out');
+            setTimeout(() => {
+                if (startButton) startButton.classList.add('fade-in');
+            }, 300);
+        }, 4000);
+    });
+</script>
+
+<style>
+    /* ============================================================================== */
+    /* BLOCO 4.2: Frontend (Tela de login)                                           */
+    /* ============================================================================== */
+
+    /* VARIAVEIS ESPECÍFICAS DO LOGIN */
+    #view-auth {
+        /* Tema Escuro Default */
+        --panel-left-bg-dark: #0d1117;
+        --panel-right-bg-dark: #161b22;
+        --primary-text-dark: #e6edf3;
+        --secondary-text-dark: #7d8590;
+        --input-border-dark: #30363d;
+        --border-color-dark: #30363d;
+        --icon-fill-dark: #7d8590;
+        /* Cores */
+        --button-gradient: linear-gradient(to right, #89CFF0, #0052D4);
+        --button-text-color: #ffffff;
+        --led-blue: #7DF9FF;
+        --led-blue-light: #0084ff;
+    }
+
+    /* Tema Claro */
+    body.light-theme #view-auth {
+        --panel-left-bg-dark: #ffffff;
+        --panel-right-bg-dark: #f6f8fa;
+        --primary-text-dark: #24292f;
+        --secondary-text-dark: #57606a;
+        --input-border-dark: #d0d7de;
+        --border-color-dark: #d0d7de;
+        --icon-fill-dark: #57606a;
+    }
+
+    /* Container Principal */
+    #view-auth {
+        background: var(--panel-left-bg-dark);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0; left: 0;
+        z-index: 100 !important;
+        pointer-events: auto;
+
+        transition: background 0.3s, opacity 0.5s ease;
+    }
+
+    /* Controles Superiores */
+    .top-right-controls { position: absolute; top: 20px; right: 20px; display: flex; align-items: center; gap: 12px; z-index: 30; }
+
+    .control-btn {
+        cursor: pointer; display: flex; align-items: center; justify-content: center;
+        border: 1px solid var(--border-color-dark); border-radius: 6px;
+        background-color: var(--panel-right-bg-dark);
+        transition: border-color 0.3s, background-color 0.3s;
+        text-decoration: none; width: 32px; height: 32px;
+    }
+    .control-btn svg { width: 18px; height: 18px; fill: var(--icon-fill-dark); transition: fill 0.3s; }
+    .control-btn:hover svg { fill: var(--primary-text-dark); }
+
+    /* Estrutura do Card */
+    .login-card { display: flex; width: 850px; height: 550px; border-radius: 15px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.3); z-index: 25; }
+
+    .login-form-panel, .branding-panel { flex-basis: 50%; display: flex; flex-direction: column; justify-content: center; padding: 40px; transition: background-color 0.3s; }
+    .login-form-panel { background-color: var(--panel-left-bg-dark); padding: 60px; }
+    .branding-panel { background-color: var(--panel-right-bg-dark); align-items: center; }
+
+    /* Tipografia e Inputs */
+    #view-auth h2 { color: var(--primary-text-dark); font-size: 2em; font-weight: 600; margin: 0 0 40px 0; font-family: 'Poppins', sans-serif; }
+
+    #view-auth input {
+        color: var(--primary-text-dark); width: 100%; border: none;
+        border-bottom: 2px solid var(--input-border-dark);
+        padding: 10px 0; margin-bottom: 20px; font-size: 1em;
+        font-family: 'Poppins', sans-serif; background: transparent;
+        outline: none; transition: border-color 0.3s;
+    }
+    #view-auth input::placeholder { color: var(--secondary-text-dark); }
+    #view-auth input:focus { border-bottom-color: #2575fc; }
+
+    /* Botões */
+    #view-auth button[type="submit"] {
+        width: 100%; padding: 14px; background: var(--button-gradient);
+        border: none; border-radius: 8px; color: var(--button-text-color);
+        font-size: 1.1em; font-weight: 600; cursor: pointer; margin-top: 20px;
+        transition: filter 0.3s, box-shadow 0.3s; box-shadow: 0 0 15px rgba(137, 207, 240, 0.4);
+    }
+    #view-auth button[type="submit"]:hover { filter: brightness(1.2); box-shadow: 0 0 25px rgba(137, 207, 240, 0.7); }
+
+    .toggle-form { color: var(--secondary-text-dark); text-align: center; margin-top: 30px; font-size: 0.9em; cursor: pointer; transition: color 0.3s; font-family: 'Poppins', sans-serif;}
+    .toggle-form:hover { color: var(--primary-text-dark); }
+
+    /* Branding Lado Direito */
+    .brand-main-content { display: flex; flex-direction: column; align-items: center; gap: 20px; margin-bottom: auto; padding-top: 50px; }
+    .cyborg-title { color: var(--primary-text-dark); font-family: 'Share Tech Mono', monospace; font-size: 2.2em; letter-spacing: 4px; text-align: center; }
+
+    .error-message { color: #d93025; text-align: center; margin-top: 15px; display: none; font-size: 0.9em; font-family: sans-serif; }
+
+    /* Responsividade */
+    @media (max-width: 880px) {
+        .login-card { flex-direction: column; width: 100%; height: 100%; border-radius: 0; box-shadow: none; }
+        .branding-panel { display: none; }
+        .login-form-panel { flex-basis: 100%; justify-content: center; padding: 40px; }
+    }
+
+    /* Guest Button */
+    .guest-section { margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--input-border-dark); text-align: center; width: 100%; }
+    .btn-guest { background: transparent; border: 2px solid var(--led-blue); color: var(--led-blue); margin-top: 10px; padding: 10px 20px; border-radius: 5px; cursor: pointer; transition: all 0.3s ease; font-family: 'Share Tech Mono', monospace; }
+    .btn-guest:hover { background: var(--led-blue); color: #000; box-shadow: 0 0 20px var(--led-blue); }
+    .guest-hint { font-size: 0.85em; color: var(--secondary-text-dark); margin-bottom: 8px; display: block; font-family: sans-serif; }
+
+</style>
+
+<section id="view-auth" class="hidden-view">
+
+        <div class="top-right-controls">
+            <div class="control-btn" id="back-button" title="Voltar" onclick="voltarParaIntro()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0V0z"/><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+            </div>
+
+            <div class="control-btn" id="auth-theme-switcher" title="Alterar Tema" onclick="alternarTemaGlobal()">
+                <div style="width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;">
+                    <svg class="light-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.06 1.06c.39.39 1.02.39 1.41 0s.39-1.02 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.06 1.06c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.02 0 1.41s1.02.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.02 0 1.41s1.02.39 1.41 0l1.06-1.06z"/></svg>
+                    <svg class="dark-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 2c-1.82 0-3.53.5-5 1.35 2.99 1.73 5 4.95 5 8.65s-2.01 6.92-5 8.65C6.02 21.49 7.74 22 9.5 22c5.52 0 10-4.48 10-10S15.02 2 9.5 2z"/></svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="login-card">
+            <div class="login-form-panel">
+
+                <div id="login-container">
+                    <h2>Faça seu login</h2>
+                    <form id="form-login" onsubmit="window.handleLogin(event)">
+                        <input type="email" id="login-email" placeholder="E-mail" required>
+                        <input type="password" id="login-password" placeholder="Senha" required>
+                        <button type="submit">Login</button>
+                    </form>
+                    <p class="toggle-form" onclick="toggleAuthMode()">Ainda não tem uma conta? Crie uma</p>
+                </div>
+
+                <div id="signup-container" style="display: none;">
+                    <h2>Criar Conta</h2>
+                    <form id="form-signup" onsubmit="window.handleSignup(event)">
+                        <input type="email" id="signup-email" placeholder="E-mail" required>
+                        <input type="password" id="signup-password" placeholder="Senha (mínimo 6 caracteres)" minlength="6" required>
+                        <button type="submit">Cadastrar</button>
+                    </form>
+                    <p class="toggle-form" onclick="toggleAuthMode()">Já tem uma conta? Faça login</p>
+                </div>
+
+                <div id="error-message" class="error-message"></div>
+
+                <div class="guest-section">
+                    <span class="guest-hint">Deseja entrar sem um login?</span>
+                    <button type="button" class="btn-guest" onclick="window.handleGuestLogin()">
+                        Entrar como convidado
+                    </button>
+                </div>
+            </div>
+
+            <div class="branding-panel">
+                <div class="brand-main-content">
+                    <div class="led-ring"></div>
+                    <h1 class="cyborg-title">CYBORG AI</h1>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<script>
+    // FUNÇÕES DE FORMULÁRIO (LOGIN/CADASTRO)
+
+    function toggleAuthMode() {
+        const loginCont = document.getElementById('login-container');
+        const signupCont = document.getElementById('signup-container');
+        const errorMsg = document.getElementById('error-message');
+
+        errorMsg.style.display = 'none';
+
+        if (loginCont.style.display === 'none') {
+            loginCont.style.display = 'block';
+            signupCont.style.display = 'none';
+        } else {
+            loginCont.style.display = 'none';
+            signupCont.style.display = 'block';
+        }
+    }
+
+    async function handleLogin(e) {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const pass = document.getElementById('login-password').value;
+        const errorDiv = document.getElementById('error-message');
+
+        window.systemLog(`Tentativa de login: ${email}`);
+
+        const res = await DB.login(email, pass);
+
+        if (res.success) {
+            window.irParaChat();
+        } else {
+            errorDiv.innerText = "Erro: " + res.error;
+            errorDiv.style.display = 'block';
+        }
+    }
+
+    async function handleSignup(e) {
+        e.preventDefault();
+        const email = document.getElementById('signup-email').value;
+        const pass = document.getElementById('signup-password').value;
+        const errorDiv = document.getElementById('error-message');
+
+        const res = await DB.signup(email, pass);
+
+        if (res.success) {
+            alert(res.msg);
+            toggleAuthMode();
+        } else {
+            errorDiv.innerText = "Erro: " + res.error;
+            errorDiv.style.display = 'block';
+        }
+    }
+
+    window.handleGuestLogin = async () => {
+        const btn = document.querySelector('.btn-guest');
+        if(btn) btn.innerText = "Acessando...";
+
+        await DB.entrarComoConvidado();
+
+        window.irParaChat();
+
+        if(btn) btn.innerText = "Entrar como convidado";
+    }
+
+</script>
+
+<style>
+    /* ============================================================================== */
+    /* SESSÃO 4.3: Frontend (Tela de chat)                                            */
+    /* ============================================================================== */
+
+    #view-chat {
+        /* Tema Escuro Default */
+        --chat-bg: #000000;
+        --chat-header-bg: #111111;
+        --bot-message-bg: #1e1e1e;
+        --user-message-bg: #2f2f2f;
+        --component-hover-bg: #444;
+        --border-color: #333333;
+        --icon-fill: #e0e0e0;
+        --primary-text-color: #ffffff;
+        --secondary-text-color: #b0b0b0;
+
+        /* FORÇA TELA CHEIA */
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw !important;
+        height: 100vh !important;
+
+        /* Remove margens e limites */
+        margin: 0 !important;
+        padding: 0 !important;
+        max-width: none !important;
+
+        z-index: 100;
+        background-color: var(--chat-bg);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    /* Tema Claro */
+    body.light-theme #view-chat {
+        --chat-bg: #f5f5f5;
+        --chat-header-bg: #ffffff;
+        --bot-message-bg: #ffffff;
+        --user-message-bg: #e0e0e0;
+        --component-hover-bg: #d0d0d0;
+        --border-color: #cccccc;
+        --icon-fill: #333333;
+        --primary-text-color: #000000;
+        --secondary-text-color: #555555;
+    }
+
+    /* Wrapper Principal */
+    .cyborg-chat-wrapper {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        width: 100%;
+        position: relative;
+    }
+
+    .cyborg-chat-container {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        height: 100%;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* HEADER (Barra Superior) */
+    .chat-header {
+        height: 60px;
+        min-height: 60px;
+        width: 100%;
+        box-sizing: border-box;
+        background-color: var(--chat-header-bg);
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        z-index: 10;
+        justify-content: space-between;
+    }
+
+    .header-left { display: flex; align-items: center; gap: 15px; }
+
+    #sidebar-toggle-button {
+        background: transparent; border: none; color: var(--icon-fill);
+        cursor: pointer; width: 40px; height: 40px;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 50%;
+    }
+    #sidebar-toggle-button:hover { background-color: var(--component-hover-bg); }
+
+    .brand-container { display: flex; align-items: center; gap: 10px; }
+
+    .cyborg-brand {
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 1.2em;
+        letter-spacing: 2px;
+        color: var(--primary-text-color);
+        text-transform: uppercase;
+        font-weight: bold;
+    }
+
+    .header-halo {
+        width: 12px; height: 12px; border-radius: 50%;
+        border: 2px solid var(--led-static-blue);
+        box-shadow: 0 0 8px var(--led-glow);
+    }
+
+    /* HISTÓRICO */
+    .chat-history {
+        flex-grow: 1;
+        width: 100%;
+        box-sizing: border-box;
+        overflow-y: auto;
+        padding: 20px 10%;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        scroll-behavior: smooth;
+    }
+
+    .input-area {
+        width: 100%;
+        box-sizing: border-box;
+        min-height: 80px;
+        background-color: var(--chat-bg);
+        border-top: 1px solid var(--border-color);
+        padding: 15px 20px;
+        display: flex;
+        align-items: flex-end;
+        gap: 10px;
+        z-index: 20;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+    .input-area.expanded {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 50vh;
+        background-color: var(--chat-header-bg);
+        border-top: 2px solid var(--led-static-blue);
+        padding: 20px;
+        align-items: flex-start;
+        flex-direction: row;
+        z-index: 200;
+    }
+
+    .input-wrapper {
+        position: relative;
+        flex-grow: 1;
+        display: flex;
+        align-items: flex-end;
+        height: auto;
+    }
+
+    /* Ajuste do wrapper quando expandido */
+    .input-area.expanded .input-wrapper {
+        height: 100%;
+        align-items: flex-start;
+    }
+
+    #user-input {
+        width: 100%;
+        background-color: var(--bot-message-bg);
+        color: var(--primary-text-color);
+        border: 1px solid var(--border-color);
+        border-radius: 25px;
+        padding: 15px 50px 15px 20px;
+        font-size: 16px;
+        font-family: inherit;
+        resize: none;
+        height: 54px; /* Altura padrão fechado */
+        outline: none;
+        transition: height 0.3s ease;
+    }
+    #user-input:focus { border-color: var(--led-static-blue); }
+
+    /* Força o input a crescer quando a área expande */
+    .input-area.expanded #user-input {
+        height: 100% !important;
+        border-radius: 15px;
+        background-color: var(--chat-bg);
+    }
+
+    #expand-button {
+        position: absolute; right: 15px; bottom: 15px;
+        background: transparent; border: none;
+        color: var(--secondary-text-color);
+        cursor: pointer;
+        z-index: 5;
+    }
+
+    .input-area.expanded #expand-button {
+        top: 15px;
+        bottom: auto;
+    }
+
+    #send-button {
+        width: 54px; height: 54px;
+        border-radius: 50%;
+        background-color: var(--bot-message-bg);
+        border: 1px solid var(--border-color);
+        color: var(--secondary-text-color);
+        cursor: pointer;
+        display: flex; justify-content: center; align-items: center;
+        flex-shrink: 0;
+    }
+    #send-button:hover { background-color: var(--led-static-blue); color: #000; }
+
+    .input-area.expanded #send-button {
+        margin-top: 0;
+    }
+
+    /* Mensagens */
+    .message-container { display: flex; flex-direction: column; max-width: 85%; }
+    .bot-container { align-self: flex-start; }
+    .user-container { align-self: flex-end; align-items: flex-end; }
+
+    .message-meta {
+        font-size: 0.75em; color: var(--secondary-text-color);
+        margin-bottom: 5px; margin-left: 5px;
+        display: flex; align-items: center; gap: 8px;
+    }
+
+    .message-bubble {
+        padding: 15px 20px 25px 20px;
+        border-radius: 15px;
+        font-size: 15px;
+        line-height: 1.5;
+        position: relative;
+        color: var(--primary-text-color);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        word-wrap: break-word;
+    }
+
+    .bot-container .message-bubble {
+        background-color: var(--bot-message-bg);
+        border: 1px solid var(--border-color);
+        border-top-left-radius: 2px;
+    }
+    .user-container .message-bubble {
+        background-color: var(--user-message-bg);
+        border: 1px solid var(--border-color);
+        border-top-right-radius: 2px;
+    }
+
+    .message-time {
+        position: absolute; bottom: 5px; right: 10px;
+        font-size: 0.65em; opacity: 0.6;
+    }
+
+    /* SIDEBAR E MODAIS */
+    .side-panel {
+        position: absolute; top: 0; left: 0;
+        width: 280px; height: 100%;
+        background-color: var(--chat-bg);
+        border-right: 1px solid var(--border-color);
+        z-index: 2000;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+        display: flex; flex-direction: column;
+    }
+    .side-panel.is-open { transform: translateX(0); }
+
+    .side-panel-header {
+        height: 60px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0 20px;
+        color: var(--primary-text-color);
+        font-weight: bold;
+    }
+    .side-panel-body { padding: 20px; overflow-y: auto; }
+
+    .menu-item {
+        width: 100%; background: transparent; border: none;
+        color: var(--primary-text-color); padding: 15px;
+        text-align: left; cursor: pointer;
+        display: flex; align-items: center; gap: 15px;
+        border-radius: 8px; margin-bottom: 5px;
+        font-family: inherit; font-size: 1rem;
+    }
+    .menu-item:hover { background-color: var(--component-hover-bg); }
+    .menu-item svg { width: 24px; height: 24px; fill: currentColor; }
+
+    #sidebar-close-button { background: transparent; border: none; color: var(--icon-fill); cursor: pointer; }
+
+    /* MODAIS */
+    .modal-overlay {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.8); z-index: 3000;
+        display: none; align-items: center; justify-content: center;
+        backdrop-filter: blur(5px);
+    }
+    .modal-overlay.active { display: flex; }
+
+    .modal-box {
+        background-color: var(--chat-header-bg);
+        border: 1px solid var(--border-color);
+        width: 600px; max-width: 90%; padding: 25px;
+        border-radius: 10px; color: var(--primary-text-color);
+        box-shadow: 0 0 30px rgba(0,0,0,0.5);
+    }
+
+    .modal-header {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 20px; border-bottom: 1px solid var(--border-color);
+        padding-bottom: 10px;
+    }
+    .modal-title { color: var(--led-static-blue); font-weight: bold; text-transform: uppercase; }
+    .close-modal { background: none; border: none; color: var(--secondary-text-color); font-size: 1.5em; cursor: pointer; }
+
+    /* Carrossel */
+    .slide { display: none; }
+    .slide.active { display: block; animation: fadeEffect 0.5s; }
+    @keyframes fadeEffect { from {opacity: 0;} to {opacity: 1;} }
+
+    .carousel-controls {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border-color);
+    }
+    .nav-btn {
+        background: transparent; border: 1px solid var(--border-color);
+        color: var(--primary-text-color); padding: 8px 16px; border-radius: 4px; cursor: pointer;
+    }
+    .nav-btn:hover { background-color: var(--component-hover-bg); }
+    .nav-btn:disabled { opacity: 0.3; cursor: default; }
+
+    /* Histórico */
+    .history-list-container {
+        max-height: 400px;
+        overflow-y: auto;
+        margin-top: 15px;
+        padding-right: 5px;
+    }
+
+    .history-item {
+        padding: 12px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: var(--primary-text-color);
+        transition: background 0.2s;
+        border-radius: 6px;
+        margin-bottom: 4px;
+    }
+    .history-item:hover { background-color: var(--component-hover-bg); }
+    .history-item.active-chat { background-color: rgba(125, 249, 255, 0.1); border-left: 3px solid var(--led-static-blue); }
+
+    .history-title {
+        flex-grow: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 0.95em;
+        cursor: pointer;
+        margin-right: 10px;
+    }
+
+    .history-actions {
+        display: flex;
+        gap: 5px;
+        opacity: 0.6;
+        transition: opacity 0.2s;
+    }
+    .history-item:hover .history-actions { opacity: 1; }
+
+    .btn-icon-hist {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 4px;
+        color: var(--secondary-text-color);
+        display: flex; align-items: center; justify-content: center;
+    }
+    .btn-icon-hist:hover { background-color: rgba(255,255,255,0.1); color: var(--primary-text-color); }
+
+    .btn-pin.pinned { color: var(--led-static-blue); }
+    .btn-delete:hover { color: #ff4444; }
+
+    .history-search { width: 100%; padding: 12px; background: var(--bot-message-bg); border: 1px solid var(--border-color); color: var(--primary-text-color); border-radius: 8px; box-sizing: border-box; outline: none; }
+    .history-search:focus { border-color: var(--led-static-blue); }
+
+    /* Thinking & Fade */
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message-bubble.fade-in {
+        animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    /* Loading */
+    .typing-indicator {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 0;
+    }
+
+    .typing-dot {
+        width: 8px;
+        height: 8px;
+        background-color: var(--secondary-text-color);
+        border-radius: 50%;
+        animation: typingBounce 1.4s infinite ease-in-out both;
+    }
+
+    .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes typingBounce {
+        0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+        40% { transform: scale(1); opacity: 1; }
+    }
+
+    body.light-theme .modal-box .slide h3,
+    body.light-theme .modal-box .slide p,
+    body.light-theme .modal-box .slide li,
+    body.light-theme .modal-box .slide strong {
+        color: #000000 !important;
+    }
+
+    .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 34px; border: 1px solid var(--border-color); }
+    .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--led-static-blue); }
+    input:checked + .slider:before { transform: translateX(26px); }
+    .config-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--border-color); }
+
+</style>
+
+<section id="view-chat" class="hidden-view">
+
+    <div class="cyborg-chat-wrapper">
+
+        <div id="side-panel" class="side-panel">
+            <div class="side-panel-header">
+                <span>Menu</span>
+                <button id="sidebar-close-button" title="Fechar Menu" onclick="toggleSidebar()">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </button>
+            </div>
+
+            <div class="side-panel-body">
+                <button class="menu-item" onclick="openModal('modal-instrucoes')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+                    <span>Instruções</span>
+                </button>
+
+                <button class="menu-item" onclick="novaConversa()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                    <span>Nova Conversa</span>
+                </button>
+
+                <button class="menu-item" onclick="abrirHistorico()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.25 2.52.77-1.28-3.52-2.09V8H12z"/></svg>
+                    <span>Histórico</span>
+                </button>
+
+                <button class="menu-item" id="sidebar-theme-switcher" onclick="alternarTemaGlobal()">
+                    <div style="width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;">
+                        <svg class="dark-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 2c-1.82 0-3.53.5-5 1.35 2.99 1.73 5 4.95 5 8.65s-2.01 6.92-5 8.65C6.02 21.49 7.74 22 9.5 22c5.52 0 10-4.48 10-10S15.02 2 9.5 2z"/></svg>
+                        <svg class="light-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.06 1.06c.39.39 1.02.39 1.41 0s.39-1.02 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.06 1.06c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.02 0 1.41s1.02.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.02 0 1.41s1.02.39 1.41 0l1.06-1.06z"/></svg>
+                    </div>
+                    <span>Alternar Tema</span>
+                </button>
+
+                <button class="menu-item" onclick="openModal('modal-config')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.58 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                    <span>Configurações</span>
+                </button>
+
+                <button class="menu-item" id="logout-button" onclick="handleLogout()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
+                    <span>Sair</span>
+                </button>
+            </div>
+        </div>
+
+        <main class="cyborg-chat-container">
+            <header class="chat-header">
+    <div class="header-left">
+        <button type="button" id="sidebar-toggle-button" title="Abrir Menu" onclick="toggleSidebar()">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"></path></svg>
+        </button>
+
+        <div class="brand-container" style="margin-left: 15px;">
+            <div class="header-halo"></div> <span class="cyborg-brand">Cyborg AI</span>
+        </div>
+    </div>
+
+    <div class="header-right" style="width: 40px;"></div>
+</header>
+
+            <div class="chat-history" id="chat-history">
+                </div>
+
+            <form class="input-area" id="chat-form" onsubmit="handleChatSubmit(event)">
+                <div class="input-wrapper">
+                    <textarea id="user-input" placeholder="Converse com o Cyborg AI..." rows="1"></textarea>
+
+                    <button type="button" id="expand-button" title="Expandir/Recolher" onclick="toggleInputSize()">
+                        <svg id="icon-expand" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15 3l2.3 2.3-2.89 2.87 1.42 1.42L18.7 6.7 21 9V3zM3 9l2.3-2.3 2.87 2.89 1.42-1.42L6.7 5.3 9 3H3zM9 21l-2.3-2.3 2.89-2.87-1.42-1.42L5.3 17.3 3 15v6zM21 15l-2.3 2.3-2.87-2.89-1.42 1.42L17.3 18.7 15 21h6z"/></svg>
+                    </button>
+                </div>
+
+                <button type="submit" id="send-button" title="Enviar">
+                    <span id="send-button-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                    </span>
+                </button>
+            </form>
+        </main>
+
+        <div id="modal-instrucoes" class="modal-overlay">
+            <div class="modal-box">
+                <div class="modal-header">
+                    <span class="modal-title">Instruções de Uso</span>
+                    <button class="close-modal" onclick="closeModal('modal-instrucoes')">&times;</button>
+                </div>
+                <div class="modal-content">
+                    <div class="slide active" id="slide-1">
+                        <h3>1. Quem sou eu?</h3>
+                        <p>Olá, eu sou o Cyborg AI.</p>
+                        <p>Sou um agente diferente dos assistentes comuns. Fui treinado com base na filosofia ciborgue de Donna Haraway e no Design Especulativo.</p>
+                    </div>
+                    <div class="slide" id="slide-2">
+                        <h3>2. Quando me usar?</h3>
+                        <p>Você deve interagir comigo durante o preenchimento do Caderno 2, especificamente após desenhar o seu Protótipo da Solução.</p>
+                    </div>
+                    <div class="slide" id="slide-3">
+                        <h3>3. Como falar comigo?</h3>
+                        <p>Para que eu possa te ajudar, preciso de contexto. No chat, envie um texto contendo:</p>
+                        <ul>
+                            <li><strong>O problema:</strong> Qual impacto negativo você está tentando resolver?</li>
+                            <li><strong>Sua solução:</strong> Como funciona o protótipo que você desenhou?</li>
+                        </ul>
+                    </div>
+                    <div class="slide" id="slide-4">
+                        <h3>4. Como eu respondo?</h3>
+                        <p>Prepare-se: minhas respostas podem parecer enigmáticas ou filosóficas. Isso é proposital!</p>
+                    </div>
+                    <div class="slide" id="slide-5">
+                        <h3>5. O que fazer com a resposta?</h3>
+                        <p>Após nossa interação, discuta com seu grupo e volte para o Caderno 2 para preencher os campos de reflexão.</p>
+                    </div>
+
+                    <div class="carousel-controls">
+                        <button class="nav-btn" id="btn-prev" onclick="changeSlide(-1)" disabled>&lt; Anterior</button>
+                        <span id="slide-indicator" style="font-size:0.9em; align-self:center;">1 / 5</span>
+                        <button class="nav-btn" id="btn-next" onclick="changeSlide(1)">Próximo &gt;</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="modal-historico" class="modal-overlay">
+            <div class="modal-box">
+                <div class="modal-header">
+                    <span class="modal-title">Histórico de Conversas</span>
+                    <button class="close-modal" onclick="closeModal('modal-historico')">&times;</button>
+                </div>
+                <div class="modal-content">
+                    <input type="text" id="history-search" class="history-search" placeholder="Buscar conversa..." oninput="filtrarHistorico()">
+                    <div id="history-list" class="history-list-container">
+                        <div style="text-align:center; color: #666; margin-top: 20px;">Carregando...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="modal-config" class="modal-overlay">
+            <div class="modal-box">
+                <div class="modal-header">
+                    <span class="modal-title">Configurações</span>
+                    <button class="close-modal" onclick="closeModal('modal-config')">&times;</button>
+                </div>
+                <div class="modal-content">
+                    <div class="config-row">
+                        <div>
+                            <strong style="display:block; font-size:1.1em;">Contexto (RAG)</strong>
+                            <span style="font-size:0.85em; color:var(--secondary-text-color); opacity:0.8;">
+                                Permitir que a IA leia a biblioteca de PDFs.
+                            </span>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="rag-toggle" onchange="window.toggleRag(this)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <p style="margin-top:20px; font-size:0.8em; color:var(--secondary-text-color); text-align:center;">
+                        Status: <span id="rag-status" style="color: #ff4444; font-weight:bold;">DESATIVADO</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div> </section> ```
+
+<script>
+    // ==============================================================================
+    // SESSÃO 5
+    // ==============================================================================
+
+    const BOT_NAME = 'Cyborg AI';
+    window.useRag = false;
+    let currentSessionId = null;
+    let isProcessing = false;
+
+    window.toggleRag = (checkbox) => {
+        window.useRag = checkbox.checked;
+        const statusLabel = document.getElementById('rag-status');
+        if(window.useRag) {
+            statusLabel.innerText = "ATIVADO";
+            statusLabel.style.color = "#00ff00";
+            window.systemLog("RAG Ativado pelo usuário.");
+        } else {
+            statusLabel.innerText = "DESATIVADO";
+            statusLabel.style.color = "#ff4444";
+            window.systemLog("RAG Desativado pelo usuário.");
+        }
+    };
+
+    // CARROSSEL
+    let slideIndex = 1;
+    window.changeSlide = function(n) { showSlides(slideIndex += n); };
+    window.currentSlide = function(n) { showSlides(slideIndex = n); };
+
+    function showSlides(n) {
+        let i;
+        let slides = document.getElementsByClassName("slide");
+        let indicator = document.getElementById("slide-indicator");
+        let btnPrev = document.getElementById("btn-prev");
+        let btnNext = document.getElementById("btn-next");
+        if(!slides.length) return;
+        if (n > slides.length) {slideIndex = 1}
+        if (n < 1) {slideIndex = slides.length}
+        for (i = 0; i < slides.length; i++) { slides[i].classList.remove("active"); }
+        slides[slideIndex-1].classList.add("active");
+        if(indicator) indicator.innerText = slideIndex + " / " + slides.length;
+        if(btnPrev) btnPrev.disabled = (slideIndex === 1);
+        if(btnNext) {
+            btnNext.innerText = (slideIndex === slides.length) ? "Fechar" : "Próximo >";
+            btnNext.onclick = (slideIndex === slides.length) ? function(){ window.closeModal('modal-instrucoes') } : function(){ window.changeSlide(1) };
+        }
+    }
+
+    // NAVEGAÇÃO
+    window.switchView = function(viewIdToShow) {
+        const views = ['view-intro', 'view-auth', 'view-chat'];
+        views.forEach(id => {
+            const el = document.getElementById(id);
+            if(!el) return;
+            if (id === viewIdToShow) {
+                el.classList.remove('hidden-view');
+                requestAnimationFrame(() => { el.classList.add('active-view'); });
+            } else {
+                el.classList.remove('active-view');
+                el.classList.add('hidden-view');
+            }
+        });
+    };
+    window.voltarParaIntro = function() { window.switchView('view-intro'); };
+    window.irParaLogin = function(event) { if(event) event.preventDefault(); window.switchView('view-auth'); };
+    window.irParaChat = function() {
+        window.switchView('view-chat');
+        const historyDiv = document.getElementById('chat-history');
+        if(historyDiv && historyDiv.innerHTML.trim() === '') {
+            addMessage(BOT_NAME, "Olá! Sou o Cyborg AI. Como posso ajudar?");
+        }
+    };
+
+    // -HISTÓRICO
+    window.abrirHistorico = function() { window.openModal('modal-historico'); };
+    window.handleLogout = async () => {
+        if(typeof DB !== 'undefined' && DB.logout) {
+            if(window.supabaseClient) await window.supabaseClient.auth.signOut();
+            DB.user = null;
+        }
+        document.getElementById('chat-history').innerHTML = '';
+        currentSessionId = null;
+        document.getElementById('side-panel').classList.remove('is-open');
+        window.switchView('view-auth');
+    };
+
+    // --- UI: ADICIONAR MENSAGEM (COM SCROLL INTELIGENTE + ANIMAÇÃO FADE) ---
+    window.addMessage = function(author, content, isHtml = false, timestamp = null) {
+        const historyDiv = document.getElementById('chat-history');
+        if(!historyDiv) return;
+
+        const threshold = 100;
+        const isNearBottom = historyDiv.scrollHeight - historyDiv.scrollTop - historyDiv.clientHeight <= threshold;
+        const isUser = author === "Você";
+        const isBot = author === BOT_NAME;
+        const timeDisplay = timestamp ? new Date(timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+        const container = document.createElement('div');
+        container.className = `message-container ${isBot ? 'bot-container' : 'user-container'}`;
+
+        const metaDiv = document.createElement('div');
+        metaDiv.className = 'message-meta';
+        const iconHtml = isBot ? '<div class="header-halo" style="width:12px;height:12px;margin:0;"></div>' : '<div style="width:12px;height:12px;background:#ccc;border-radius:50%;"></div>';
+        metaDiv.innerHTML = `${iconHtml} <span>${author}</span>`;
+
+        const bubbleDiv = document.createElement('div');
+        bubbleDiv.className = 'message-bubble fade-in';
+
+        if (isHtml) bubbleDiv.innerHTML = content;
+        else bubbleDiv.textContent = content;
+
+        const timeDiv = document.createElement('span');
+        timeDiv.className = 'message-time';
+        timeDiv.innerText = timeDisplay;
+        bubbleDiv.appendChild(timeDiv);
+
+        container.appendChild(metaDiv);
+        container.appendChild(bubbleDiv);
+        historyDiv.appendChild(container);
+
+        if (isUser || isNearBottom) {
+            historyDiv.scrollTop = historyDiv.scrollHeight;
+        }
+    };
+
+    // ENVIO (COM ANIMAÇÃO DE THINKING)
+    window.handleChatSubmit = async (e) => {
+        if(e) e.preventDefault();
+        if (isProcessing) return;
+
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-button');
+        const chatForm = document.getElementById('chat-form');
+        const historyDiv = document.getElementById('chat-history');
+
+        const text = userInput.value.trim();
+        if (!text) return;
+
+        userInput.value = '';
+        if(chatForm.classList.contains('expanded')) window.toggleInputSize();
+
+        addMessage("Você", text, false);
+
+        isProcessing = true;
+        sendBtn.innerHTML = '<span style="font-size:20px; animation:spin 1s infinite">↻</span>';
+
+        const loaderId = 'loader-' + Date.now();
+        const loaderDiv = document.createElement('div');
+        loaderDiv.id = loaderId;
+        loaderDiv.className = 'message-container bot-container';
+
+        loaderDiv.innerHTML = `
+            <div class="message-meta"><span>${BOT_NAME}</span></div>
+            <div class="message-bubble fade-in">
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+        `;
+        historyDiv.appendChild(loaderDiv);
+        historyDiv.scrollTop = historyDiv.scrollHeight;
+
+        // Chamada Gemini
+        if(typeof CYBORG !== 'undefined') {
+            const resultado = await CYBORG.enviarMensagem(text, currentSessionId);
+
+            const loaderEl = document.getElementById(loaderId);
+            if(loaderEl) loaderEl.remove(); // Remove os pontinhos
+
+            isProcessing = false;
+            sendBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>';
+
+            if (resultado && resultado.response) {
+                if (resultado.sessionId) currentSessionId = resultado.sessionId;
+                const htmlContent = typeof marked !== 'undefined' ? marked.parse(resultado.response) : resultado.response;
+                addMessage(BOT_NAME, htmlContent, true); // fade-in
+            } else {
+                addMessage(BOT_NAME, "Erro ao processar mensagem (API Limit).", false);
+            }
+        }
+    };
+
+    // GERENCIAMENTO DE HISTÓRICO
+    window.carregarListaSessoes = async () => {
+        if(typeof DB === 'undefined') return;
+        const listDiv = document.getElementById('history-list');
+        listDiv.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">Carregando...</div>';
+        const sessoes = await DB.listarSessoes();
+        listDiv.innerHTML = '';
+        if (!sessoes || sessoes.length === 0) {
+            listDiv.innerHTML = '<div style="padding:20px; text-align:center; opacity:0.5; font-size:0.8em;">Nenhuma conversa salva.</div>';
+            return;
+        }
+        const termoBusca = document.getElementById('history-search').value.toLowerCase();
+        sessoes.forEach(sess => {
+            if(termoBusca && !sess.title.toLowerCase().includes(termoBusca)) return;
+            const item = document.createElement('div');
+            item.className = `history-item ${sess.id === currentSessionId ? 'active-chat' : ''}`;
+            const pinIcon = sess.is_pinned
+                ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5v6l1 1 1-1v-6h5v-2l-2-2z"/></svg>'
+                : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5v6l1 1 1-1v-6h5v-2l-2-2z"/></svg>';
+            item.innerHTML = `
+                <span class="history-title" onclick="carregarSessao('${sess.id}')" title="${sess.title}">${sess.title}</span>
+                <div class="history-actions">
+                    <button class="btn-icon-hist btn-pin ${sess.is_pinned ? 'pinned' : ''}" onclick="togglePin('${sess.id}', ${sess.is_pinned})" title="Fixar">
+                        ${pinIcon}
+                    </button>
+                    <button class="btn-icon-hist" onclick="renomearConversa('${sess.id}', '${sess.title}')" title="Renomear">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                    <button class="btn-icon-hist btn-delete" onclick="deletarSessao('${sess.id}')" title="Excluir">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
+                </div>
+            `;
+            listDiv.appendChild(item);
+        });
+    };
+
+    window.carregarSessao = async (id) => {
+        currentSessionId = id;
+        document.getElementById('chat-history').innerHTML = '';
+        window.toggleSidebar();
+        window.closeModal('modal-historico');
+        const msgs = await DB.carregarHistorico(id);
+        if (msgs && msgs.length > 0) {
+            msgs.forEach(msg => {
+                const isBot = msg.role === 'assistant';
+                const content = isBot && typeof marked !== 'undefined' ? marked.parse(msg.content) : msg.content;
+                addMessage(isBot ? BOT_NAME : "Você", content, isBot);
+            });
+        }
+    };
+
+    window.novaConversa = () => {
+        currentSessionId = null;
+        document.getElementById('chat-history').innerHTML = '';
+        addMessage(BOT_NAME, "Olá! Sou o Cyborg AI. Como posso ajudar?");
+        window.toggleSidebar();
+    };
+
+    window.filtrarHistorico = () => { carregarListaSessoes(); }
+    window.togglePin = async (id, status) => { await DB.fixarSessao(id, status); carregarListaSessoes(); };
+    window.renomearConversa = async (id, atual) => {
+        const novo = prompt("Novo nome:", atual);
+        if(novo && novo.trim() !== "") { await DB.renomearSessao(id, novo.trim()); carregarListaSessoes(); }
+    };
+    window.deletarSessao = async (id) => {
+        if(confirm("Excluir conversa?")) { await DB.deletarSessao(id); if(currentSessionId === id) novaConversa(); carregarListaSessoes(); }
+    };
+
+    window.toggleSidebar = () => { document.getElementById('side-panel').classList.toggle('is-open'); };
+    window.toggleInputSize = () => {
+        const form = document.getElementById('chat-form');
+        const btn = document.getElementById('expand-button');
+        const isExpanded = form.classList.toggle('expanded');
+        const input = document.getElementById('user-input');
+        if (isExpanded) {
+            btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-14v3h3v2h-5V5h2z"/></svg>';
+            input.style.height = '100%';
+        } else {
+            btn.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M15 3l2.3 2.3-2.89 2.87 1.42 1.42L18.7 6.7 21 9V3zM3 9l2.3-2.3 2.87 2.89 1.42-1.42L6.7 5.3 9 3H3zM9 21l-2.3-2.3 2.89-2.87-1.42-1.42L5.3 17.3 3 15v6zM21 15l-2.3 2.3-2.87-2.89-1.42 1.42L17.3 18.7 15 21h6z"/></svg>';
+            input.style.height = '54px';
+        }
+    };
+    window.openModal = (id) => {
+        const modal = document.getElementById(id);
+        if(modal) { modal.classList.add('active'); if(id === 'modal-historico') carregarListaSessoes(); if(id === 'modal-instrucoes') showSlides(1); }
+    };
+    window.closeModal = (id) => { document.getElementById(id).classList.remove('active'); };
+    window.alternarTemaGlobal = () => {
+        document.body.classList.toggle('light-theme');
+        localStorage.setItem('cyborgTheme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const userInput = document.getElementById('user-input');
+        if(userInput) {
+            userInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); window.handleChatSubmit(e); }
+            });
+        }
+    });
+</script>
+
+</body>
+</html>
