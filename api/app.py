@@ -41,7 +41,7 @@ except Exception as e:
     logger.error(f"Erro Supabase: {e}")
 
 # 3. CARREGAMENTO DO MODELO (LLAMA)
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "models", "Meta-Llama-3.1-8B-Instruct-Q6_K.gguf")
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "models", "Meta-Llama-3.1-8B-Instruct-Q8_0.gguf")
 
 # Ajuste de contexto
 llm = Llama(
