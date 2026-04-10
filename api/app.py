@@ -12,6 +12,8 @@ from langchain_huggingface import HuggingFaceEmbeddings
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger("Cyborg_Backend")
 
+RAG_ATIVO_GLOBAL = False
+
 # Carrega variáveis de ambiente (.env)
 load_dotenv()
 
