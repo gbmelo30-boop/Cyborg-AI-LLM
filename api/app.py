@@ -8,19 +8,14 @@ from llama_cpp import Llama
 from supabase import create_client, Client
 from langchain_huggingface import HuggingFaceEmbeddings
 
-# Configurações de Log
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger("Cyborg_Backend")
 
-RAG_ATIVO_GLOBAL = False
-
-# Carrega variáveis de ambiente (.env)
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
-# 1. PERSONA
 SYSTEM_PROMPT = """
     - Você se chama Cyborg AI, um chatbot especialista em Design Especulativo e no Manifesto Ciborgue de Donna Haraway.
       E você deve responder às perguntas do usuário sempre com base na ideia do Design Especulativo associado ao Manifesto Ciborgue de Donna Haraway.
@@ -37,25 +32,21 @@ SYSTEM_PROMPT = """
       E com isso, não escreva absolutamente nada após a tag <<FIM>>.
 """
 
-# 2. CONEXÃO COM SUPABASE
 try:
     supabase: Client = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
     logger.info("Supabase conectado.")
 except Exception as e:
     logger.error(f"Erro Supabase: {e}")
 
-# 3. CARREGAMENTO DO MODELO (LLAMA)
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "models", "Meta-Llama-3.1-8B-Instruct-Q8_0.gguf")
 
-# Ajuste de contexto
 llm = Llama(
     model_path=MODEL_PATH,
-    n_ctx=2048,
+    n_ctx=3072,
     n_gpu_layers=-1,
     verbose=False
 )
 
-# 4. RAG (Busca nos PDFs)
 embed_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
 def buscar_contexto(pergunta):
@@ -74,30 +65,29 @@ def buscar_contexto(pergunta):
         logger.error(f"Erro RAG: {e}")
         return ""
 
-# 5. GERAÇÃO DE RESPOSTA
 def generate_llm_response(messages, use_rag=True):
     try:
-        # Pega a última mensagem do usuário
         last_user_msg = messages[-1]['content']
 
-        # Busca contexto nos PDFs (RAG)
         contexto_rag = ""
         if use_rag:
             contexto_rag = buscar_contexto(last_user_msg)
             if contexto_rag:
                 logger.info("Contexto RAG encontrado e injetado.")
 
-        # Monta a estrutura de mensagens
         formatted_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
-        # Adiciona apenas as últimas mensagens relevantes para manter o foco
         for msg in messages[-4:-1]: 
              formatted_messages.append(msg)
 
-        # Monta a mensagem final com o contexto
         final_content = last_user_msg
         if contexto_rag:
-             final_content = f"Contexto recuperado dos documentos:\n{contexto_rag}\n\nPergunta do usuário:\n{last_user_msg}"
+            final_content = (
+                f"[INSTRUÇÃO INTERNA: O texto abaixo é apenas para referência factual. "
+                f"NÃO copie o estilo acadêmico, NÃO use o vocabulário deste texto e MANTENHA a sua Persona Ciborgue intacta.]\n\n"
+                f"CONTEXTO EXTRAÍDO:\n{contexto_rag}\n\n"
+                f"FALA DO USUÁRIO:\n{last_user_msg}"
+            )
         
         formatted_messages.append({"role": "user", "content": final_content})
 
@@ -119,7 +109,6 @@ def generate_llm_response(messages, use_rag=True):
         logger.error(f"Erro LLM: {e}")
         return "Ocorreu um erro... Poderia reformular?. <<FIM>>"
 
-# ROTAS DA API
 @app.route('/api/chat', methods=['POST'])
 def chat():
     data = request.json
