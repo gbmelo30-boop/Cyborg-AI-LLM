@@ -80,8 +80,7 @@ def generate_llm_response(messages, use_rag=True, tema_pesquisa="Geral"):
             if contexto_rag:
                 logger.info("Contexto RAG encontrado e injetado.")
 
-        # --- PROMPT ---
-        SYSTEM_INSTRUCTION_TEXT = f"""Você é o Cyborg AI, um assistente que provoca reflexões críticas para revelar aspectos de sistemas que não estão explícitos na fala inicial do usuário.
+        SYSTEM_PROMPT = f"""Você é o Cyborg AI, um assistente que provoca reflexões críticas para revelar aspectos de sistemas que não estão explícitos na fala inicial do usuário.
 
 CONTEXTO ATUAL DE DISCUSSÃO: O usuário selecionou a frente "{tema_pesquisa}". Sempre leve esse tema em consideração ao interpretar a entrada e gerar sua reflexão.
 
@@ -223,7 +222,40 @@ FECHAMENTO:
 
     except Exception as e:
         logger.error(f"Erro LLM: {e}")
-        return "Ocorreu um erro... Poderia reformular?", False
+        return "Ocorreu um erro... Poderia reformular?", False"""
+
+        formatted_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+
+        # O alinhamento deste 'for' deve estar dentro do 'try'
+        for msg in messages[-4:-1]: 
+             formatted_messages.append(msg)
+
+        final_content = last_user_msg
+        if contexto_rag:
+            final_content = (
+                f"[INSTRUÇÃO INTERNA: Referência factual.]\n\n"
+                f"CONTEXTO EXTRAÍDO:\n{contexto_rag}\n\n"
+                f"FALA DO USUÁRIO:\n{last_user_msg}"
+            )
+        
+        formatted_messages.append({"role": "user", "content": final_content})
+
+        if not llm:
+            return "Modelo LLaMA não inicializado.", False
+
+        output = llm.create_chat_completion(
+            messages=formatted_messages,
+            temperature=0.6,
+            max_tokens=None,
+            stop=["<<FIM>>", "<|eot_id|>"]
+        )
+
+        response_text = output['choices'][0]['message']['content']
+        return response_text, rag_utilizado
+
+    except Exception as e:
+        logger.error(f"Erro LLM: {e}")
+        return "Ocorreu um erro ao gerar resposta.", False
 
 
 @app.route('/api/chat', methods=['POST'])
