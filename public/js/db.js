@@ -8,7 +8,7 @@ const DB = {
     init: async () => {
         const _supabase = supabase.createClient(
             "https://tnsgxgxpnraqmefldslw.supabase.co",
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yampicnJ5cGlldml5a2FrbWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk3MTU4OTIsImV4cCI6MjA4NTI5MTg5Mn0.mldEk-7-vU0BdwlNf5COG_Dj9sRnFWrpQMkqTAZNw_8"
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRuc2d4Z3hwbnJhcW1lZmxkc2x3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxMzEyMTksImV4cCI6MjA4NTcwNzIxOX0.MCi4al1nt4-feqW8r8fNymISpOT2sdfx58xPVv0sjTc"
         );
         window.supabaseClient = _supabase;
 
