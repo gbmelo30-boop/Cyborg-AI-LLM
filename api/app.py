@@ -26,7 +26,7 @@ MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "models", "Meta-Llama
 
 llm = Llama(
     model_path=MODEL_PATH,
-    n_ctx=3072,
+    n_ctx=2046,
     n_gpu_layers=-1,
     verbose=False
 )
