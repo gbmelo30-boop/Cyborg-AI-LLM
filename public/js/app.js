@@ -1,9 +1,25 @@
 // ==============================================================================
-// LÓGICA DE INTERFACE, ANIMAÇÕES E EVENTOS (UI)
+// LÓGICA DE INTERFACE, ANIMAÇÕES E EVENTOS (UI) - LLaMA/RAG
 // ==============================================================================
 const BOT_NAME = 'Cyborg AI';
 let currentSessionId = null;
 let isProcessing = false;
+window.useRag = false; // Estado inicial do RAG desativado
+
+// --- CONTROLE DO RAG (CONTEXTO DE PDFS) ---
+window.toggleRag = (checkbox) => {
+    window.useRag = checkbox.checked;
+    const statusLabel = document.getElementById('rag-status');
+    if(window.useRag) {
+        statusLabel.innerText = "ATIVADO";
+        statusLabel.style.color = "#00ff00";
+        window.systemLog("RAG Ativado pelo usuário.");
+    } else {
+        statusLabel.innerText = "DESATIVADO";
+        statusLabel.style.color = "#ff4444";
+        window.systemLog("RAG Desativado pelo usuário.");
+    }
+};
 
 // --- CARROSSEL E MODAIS ---
 let slideIndex = 1;
@@ -54,6 +70,7 @@ window.switchView = function(viewIdToShow) {
         }
     });
 };
+
 window.voltarParaIntro = function() { window.switchView('view-intro'); };
 window.irParaLogin = function(event) { if(event) event.preventDefault(); window.switchView('view-auth'); };
 window.irParaChat = function() {
@@ -71,7 +88,7 @@ window.handleStartResearch = async () => {
     const errorDiv = document.getElementById('error-message');
 
     if (!group || !topic) {
-        errorDiv.innerText = "Selecione o grupo/uso e o tema antes de continuar.";
+        errorDiv.innerText = "Selecione o grupo e o tema antes de continuar.";
         errorDiv.style.display = 'block';
         return;
     }
@@ -306,14 +323,12 @@ window.handleChatSubmit = async (e) => {
             const htmlContent = typeof marked !== 'undefined' ? marked.parse(resultado.response) : resultado.response;
             addMessage(BOT_NAME, htmlContent, true);
         } else {
-            addMessage(BOT_NAME, "Erro ao processar mensagem (API Limit).", false);
+            addMessage(BOT_NAME, "Erro ao processar mensagem (Servidor indisponível).", false);
         }
     }
 };
 
-// ==============================================================================
-// EVENT LISTENERS GERAIS (Animação de Loading e Tema)
-// ==============================================================================
+// --- EVENT LISTENERS GERAIS ---
 $(document).ready(function() {
     const themeSwitcher = document.getElementById('theme-switcher');
     const body = document.body;
