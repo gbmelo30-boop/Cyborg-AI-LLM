@@ -199,40 +199,6 @@ FECHAMENTO:
         final_content = last_user_msg
         if contexto_rag:
             final_content = (
-                f"[INSTRUÇÃO INTERNA: O texto abaixo é apenas para referência factual. "
-                f"NÃO copie o estilo acadêmico, NÃO use o vocabulário deste texto e MANTENHA a sua Persona Ciborgue intacta.]\n\n"
-                f"CONTEXTO EXTRAÍDO:\n{contexto_rag}\n\n"
-                f"FALA DO USUÁRIO:\n{last_user_msg}"
-            )
-        
-        formatted_messages.append({"role": "user", "content": final_content})
-
-        if not llm:
-            return "Modelo LLaMA não inicializado. Verifique os logs do servidor.", False
-
-        output = llm.create_chat_completion(
-            messages=formatted_messages,
-            temperature=0.6,
-            max_tokens=None,
-            stop=["<<FIM>>", "<|eot_id|>"]
-        )
-
-        response_text = output['choices'][0]['message']['content']
-        return response_text, rag_utilizado
-
-    except Exception as e:
-        logger.error(f"Erro LLM: {e}")
-        return "Ocorreu um erro... Poderia reformular?", False"""
-
-        formatted_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-
-        # O alinhamento deste 'for' deve estar dentro do 'try'
-        for msg in messages[-4:-1]: 
-             formatted_messages.append(msg)
-
-        final_content = last_user_msg
-        if contexto_rag:
-            final_content = (
                 f"[INSTRUÇÃO INTERNA: Referência factual.]\n\n"
                 f"CONTEXTO EXTRAÍDO:\n{contexto_rag}\n\n"
                 f"FALA DO USUÁRIO:\n{last_user_msg}"
