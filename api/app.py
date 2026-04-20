@@ -72,7 +72,6 @@ def buscar_contexto(pergunta):
 def generate_llm_response(messages, use_rag=True, tema_pesquisa="Geral"):
     try:
         last_user_msg = messages[-1]['content']
-
         contexto_rag = ""
         rag_utilizado = False
 
@@ -145,7 +144,7 @@ FECHAMENTO:
 - Não escreva nada após isso.
 """
 
-formatted_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+        formatted_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
         for msg in messages[-4:-1]: 
              formatted_messages.append(msg)
@@ -172,7 +171,6 @@ formatted_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
         )
 
         response_text = output['choices'][0]['message']['content']
-
         return response_text, rag_utilizado
 
     except Exception as e:
@@ -186,7 +184,6 @@ def chat():
     messages = data.get('messages', [])
     use_rag = data.get('use_rag', False)
     
-    # Captura tema e grupo tratando possíveis nomes diferentes vindos do frontend
     tema_pesquisa = data.get('tema') or data.get('topic') or 'Sem Tema'
     grupo_pesquisa = data.get('grupo') or data.get('group') or 'Sem Grupo'
     session_id = data.get('session_id')
@@ -199,7 +196,6 @@ def chat():
     # --- LÓGICA DE SALVAMENTO NO BANCO ---
     if supabase:
         try:
-            # 1. Cria a sessão se não existir
             if not session_id:
                 title = last_user_content[:30] + "..." if len(last_user_content) > 30 else last_user_content
                 nova_sessao = supabase.table("chat_sessions").insert({
@@ -212,7 +208,6 @@ def chat():
                     session_id = nova_sessao.data[0]['id']
                     logger.info(f"Sessão criada no banco: {session_id}")
 
-            # 2. Salva a pergunta do usuário no banco
             if session_id:
                 supabase.table("chat_messages").insert({
                     "session_id": session_id,
@@ -224,11 +219,6 @@ def chat():
             logger.error(f"Erro ao salvar dados do usuário no banco: {e}")
 
     # --- PROCESSAMENTO DO MODELO ---
-    if use_rag:
-        logger.info(f"🟢 STATUS: RAG ATIVADO (Tema: {tema_pesquisa})")
-    else:
-        logger.info(f"🔴 STATUS: RAG DESATIVADO (Tema: {tema_pesquisa})")
-
     response_text, rag_foi_usado = generate_llm_response(messages, use_rag, tema_pesquisa)
     response_text = response_text.replace("<<FIM>>", "").strip()
 
@@ -255,5 +245,4 @@ def guest_login():
     return jsonify({"user_id": str(uuid.uuid4()), "role": "guest"})
 
 if __name__ == '__main__':
-
     app.run(host='0.0.0.0', port=5001)
