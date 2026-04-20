@@ -101,7 +101,10 @@ window.handleStartResearch = async () => {
         let sessionData = JSON.parse(localStorage.getItem('cyborg_current_session'));
         
         if (!sessionData || sessionData.group !== group || sessionData.topic !== topic) {
-            const anonymousId = crypto.randomUUID();
+            
+            const anonymousId = ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+                (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+            );
             const anonEmail = `anonimo_${group.replace(/\s+/g, '')}@pesquisa.ic`;
 
             sessionData = {
