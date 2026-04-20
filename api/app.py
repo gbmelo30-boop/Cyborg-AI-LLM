@@ -145,7 +145,7 @@ FECHAMENTO:
 - Não escreva nada após isso.
 """
 
-        formatted_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+formatted_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
         for msg in messages[-4:-1]: 
              formatted_messages.append(msg)
@@ -186,8 +186,9 @@ def chat():
     messages = data.get('messages', [])
     use_rag = data.get('use_rag', False)
     
-    tema_pesquisa = data.get('tema', 'Sem Tema') 
-    grupo_pesquisa = data.get('grupo', 'Sem Grupo')
+    # Captura tema e grupo tratando possíveis nomes diferentes vindos do frontend
+    tema_pesquisa = data.get('tema') or data.get('topic') or 'Sem Tema'
+    grupo_pesquisa = data.get('grupo') or data.get('group') or 'Sem Grupo'
     session_id = data.get('session_id')
     
     if not messages:
@@ -206,17 +207,21 @@ def chat():
                     "group": grupo_pesquisa,
                     "topic": tema_pesquisa
                 }).execute()
-                session_id = nova_sessao.data[0]['id']
+                
+                if nova_sessao.data:
+                    session_id = nova_sessao.data[0]['id']
+                    logger.info(f"Sessão criada no banco: {session_id}")
 
             # 2. Salva a pergunta do usuário no banco
-            supabase.table("chat_messages").insert({
-                "session_id": session_id,
-                "role": "user",
-                "content": last_user_content
-            }).execute()
+            if session_id:
+                supabase.table("chat_messages").insert({
+                    "session_id": session_id,
+                    "role": "user",
+                    "content": last_user_content
+                }).execute()
 
         except Exception as e:
-            logger.error(f"Erro ao salvar mensagem do usuário no banco: {e}")
+            logger.error(f"Erro ao salvar dados do usuário no banco: {e}")
 
     # --- PROCESSAMENTO DO MODELO ---
     if use_rag:
@@ -234,12 +239,12 @@ def chat():
                 "session_id": session_id,
                 "role": "assistant",
                 "content": response_text,
-                "used_rag": rag_foi_usado # Passa para a tabela se o RAG ajudou ou não
+                "used_rag": rag_foi_usado 
             }).execute()
+            logger.info("Resposta da IA salva no banco com sucesso.")
         except Exception as e:
-            logger.error(f"Erro ao salvar mensagem da IA no banco: {e}")
+            logger.error(f"Erro ao salvar resposta da IA no banco: {e}")
 
-    # Retorna o texto e o session_id para o frontend não perder a conversa
     return jsonify({
         "response": response_text,
         "session_id": session_id
@@ -250,4 +255,5 @@ def guest_login():
     return jsonify({"user_id": str(uuid.uuid4()), "role": "guest"})
 
 if __name__ == '__main__':
+
     app.run(host='0.0.0.0', port=5001)
