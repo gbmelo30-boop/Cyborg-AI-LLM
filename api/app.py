@@ -233,6 +233,7 @@ def chat():
     tema_pesquisa = data.get('tema') or data.get('topic') or 'Sem Tema'
     grupo_pesquisa = data.get('grupo') or data.get('group') or 'Sem Grupo'
     session_id = data.get('session_id')
+    user_id = data.get('user_id') or 'id_nao_informado'
     
     if not messages:
         return jsonify({"error": "Nenhuma mensagem enviada"}), 400
@@ -246,8 +247,9 @@ def chat():
                 title = last_user_content[:30] + "..." if len(last_user_content) > 30 else last_user_content
                 nova_sessao = supabase.table("chat_sessions").insert({
                     "title": title,
-                    "group": grupo_pesquisa,
-                    "topic": tema_pesquisa
+                    "grupo": grupo_pesquisa,
+                    "tema": tema_pesquisa,
+                    "user_id": user_id
                 }).execute()
                 
                 if nova_sessao.data:
