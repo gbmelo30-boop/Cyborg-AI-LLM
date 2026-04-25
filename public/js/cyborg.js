@@ -34,7 +34,8 @@ const CYBORG = {
                     tema: contextData.topic,
                     grupo: contextData.group,
                     use_rag: window.useRag,
-                    session_id: sessionId 
+                    session_id: sessionId,
+                    user_id: DB.user.id
                 })
             });
 
