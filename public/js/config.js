@@ -1,7 +1,5 @@
-// ==============================================================================
 // CONFIGURAÇÃO DA API
-// ==============================================================================
-const API_BASE_URL = "https://cyborg-ai.vercel.app";
+const API_BASE_URL = "http://200.156.26.159:5001";
 
 window.systemLog = function(mensagem, tipo = "INFO") {
     const timestamp = new Date().toLocaleTimeString();
