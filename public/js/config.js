@@ -1,5 +1,5 @@
 // CONFIGURAÇÃO DA API
-const API_BASE_URL = "http://200.156.26.159:5001";
+const API_BASE_URL = "http://200.156.26.159";
 
 window.systemLog = function(mensagem, tipo = "INFO") {
     const timestamp = new Date().toLocaleTimeString();
