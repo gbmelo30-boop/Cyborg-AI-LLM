@@ -1,6 +1,5 @@
-// ==============================================================================
 // LÓGICA DE INTERFACE, ANIMAÇÕES E EVENTOS (UI) - LLaMA/RAG
-// ==============================================================================
+
 const BOT_NAME = 'Cyborg AI';
 let currentSessionId = null;
 let isProcessing = false;
