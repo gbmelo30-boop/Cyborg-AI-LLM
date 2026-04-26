@@ -240,47 +240,59 @@ def chat():
 
     last_user_content = messages[-1]['content']
 
-    # --- LÓGICA DE SALVAMENTO NO BANCO ---
+# --- LÓGICA DE SALVAMENTO NO BANCO ---
+    print(f"DEBUG: Tentando salvar no Supabase... Session ID: {session_id}, User ID: {user_id}")
     if supabase:
         try:
             if not session_id:
                 title = last_user_content[:30] + "..." if len(last_user_content) > 30 else last_user_content
-                nova_sessao = supabase.table("chat_sessions").insert({
+                dados_sessao = {
                     "title": title,
                     "grupo": grupo_pesquisa,
                     "tema": tema_pesquisa,
                     "user_id": user_id
-                }).execute()
+                }
+                print(f"DEBUG: Dados da nova sessao: {dados_sessao}")
+                nova_sessao = supabase.table("chat_sessions").insert(dados_sessao).execute()
+                print(f"DEBUG: Resposta Supabase (Sessao): {nova_sessao}")
                 
                 if nova_sessao.data:
                     session_id = nova_sessao.data[0]['id']
                     logger.info(f"Sessão criada no banco: {session_id}")
 
             if session_id:
-                supabase.table("chat_messages").insert({
+                dados_msg = {
                     "session_id": session_id,
                     "role": "user",
                     "content": last_user_content
-                }).execute()
+                }
+                print(f"DEBUG: Dados da nova mensagem: {dados_msg}")
+                res_msg = supabase.table("chat_messages").insert(dados_msg).execute()
+                print(f"DEBUG: Resposta Supabase (Mensagem User): {res_msg}")
 
         except Exception as e:
+            print(f"DEBUG ERRO CRÍTICO SUPABASE: {e}")
             logger.error(f"Erro ao salvar dados do usuário no banco: {e}")
+    else:
+        print("DEBUG: O objeto 'supabase' está nulo! A conexão não foi feita no início do script.")
 
     # --- PROCESSAMENTO DO MODELO ---
     response_text, rag_foi_usado = generate_llm_response(messages, use_rag, tema_pesquisa)
     response_text = response_text.replace("<<FIM>>", "").strip()
 
-    # --- SALVA A RESPOSTA DA IA NO BANCO ---
+# --- SALVA A RESPOSTA DA IA NO BANCO ---
     if supabase and session_id:
         try:
-            supabase.table("chat_messages").insert({
+            res_ia = supabase.table("chat_messages").insert({
                 "session_id": session_id,
                 "role": "assistant",
                 "content": response_text,
                 "used_rag": rag_foi_usado 
             }).execute()
+            print(f"DEBUG: Resposta Supabase (Mensagem IA): {res_ia}")
             logger.info("Resposta da IA salva no banco com sucesso.")
         except Exception as e:
+            print(f"DEBUG ERRO CRÍTICO SUPABASE (IA): {e}")
             logger.error(f"Erro ao salvar resposta da IA no banco: {e}")
 
     return jsonify({
