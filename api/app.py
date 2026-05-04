@@ -223,82 +223,40 @@ FECHAMENTO:
         logger.error(f"Erro LLM: {e}")
         return "Ocorreu um erro ao gerar resposta.", False
 
-
 @app.route('/api/chat', methods=['POST'])
 def chat():
     data = request.json
     messages = data.get('messages', [])
     use_rag = data.get('use_rag', False)
     
+    # O front-end envia o tema e o ID da sessão que ele acabou de criar/usar
     tema_pesquisa = data.get('tema') or data.get('topic') or 'Sem Tema'
-    grupo_pesquisa = data.get('grupo') or data.get('group') or 'Sem Grupo'
-    session_id = data.get('session_id')
-    user_id = data.get('user_id') or 'id_nao_informado'
+    session_id = data.get('session_id') 
     
     if not messages:
         return jsonify({"error": "Nenhuma mensagem enviada"}), 400
 
-    last_user_content = messages[-1]['content']
+    # LOG para depuração no terminal do servidor
+    logger.info(f"Gerando resposta Llama para Sessão: {session_id} | Tema: {tema_pesquisa}")
 
-# --- LÓGICA DE SALVAMENTO NO BANCO ---
-    print(f"DEBUG: Tentando salvar no Supabase... Session ID: {session_id}, User ID: {user_id}")
-    if supabase:
-        try:
-            if not session_id:
-                title = last_user_content[:30] + "..." if len(last_user_content) > 30 else last_user_content
-                dados_sessao = {
-                    "title": title,
-                    "grupo": grupo_pesquisa,
-                    "tema": tema_pesquisa,
-                    "user_id": user_id
-                }
-                print(f"DEBUG: Dados da nova sessao: {dados_sessao}")
-                nova_sessao = supabase.table("chat_sessions").insert(dados_sessao).execute()
-                print(f"DEBUG: Resposta Supabase (Sessao): {nova_sessao}")
-                
-                if nova_sessao.data:
-                    session_id = nova_sessao.data[0]['id']
-                    logger.info(f"Sessão criada no banco: {session_id}")
+    try:
+        # 1. Chama a função que você já tem para rodar o Llama local e RAG
+        response_text, rag_foi_usado = generate_llm_response(messages, use_rag, tema_pesquisa)
+        
+        # 2. Limpa a tag de parada caso o modelo gere
+        response_text = response_text.replace("<<FIM>>", "").strip()
 
-            if session_id:
-                dados_msg = {
-                    "session_id": session_id,
-                    "role": "user",
-                    "content": last_user_content
-                }
-                print(f"DEBUG: Dados da nova mensagem: {dados_msg}")
-                res_msg = supabase.table("chat_messages").insert(dados_msg).execute()
-                print(f"DEBUG: Resposta Supabase (Mensagem User): {res_msg}")
+        # 3. Retorna apenas os dados para o Front-end. 
+        # O salvamento no banco será feito pelo public/js/cyborg.js assim que ele receber isso aqui.
+        return jsonify({
+            "response": response_text,
+            "session_id": session_id,
+            "used_rag": rag_foi_usado
+        })
 
-        except Exception as e:
-            print(f"DEBUG ERRO CRÍTICO SUPABASE: {e}")
-            logger.error(f"Erro ao salvar dados do usuário no banco: {e}")
-    else:
-        print("DEBUG: O objeto 'supabase' está nulo! A conexão não foi feita no início do script.")
-
-    # --- PROCESSAMENTO DO MODELO ---
-    response_text, rag_foi_usado = generate_llm_response(messages, use_rag, tema_pesquisa)
-    response_text = response_text.replace("<<FIM>>", "").strip()
-
-# --- SALVA A RESPOSTA DA IA NO BANCO ---
-    if supabase and session_id:
-        try:
-            res_ia = supabase.table("chat_messages").insert({
-                "session_id": session_id,
-                "role": "assistant",
-                "content": response_text,
-                "used_rag": rag_foi_usado 
-            }).execute()
-            print(f"DEBUG: Resposta Supabase (Mensagem IA): {res_ia}")
-            logger.info("Resposta da IA salva no banco com sucesso.")
-        except Exception as e:
-            print(f"DEBUG ERRO CRÍTICO SUPABASE (IA): {e}")
-            logger.error(f"Erro ao salvar resposta da IA no banco: {e}")
-
-    return jsonify({
-        "response": response_text,
-        "session_id": session_id
-    })
+    except Exception as e:
+        logger.error(f"Erro ao processar Llama: {e}")
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/guest_login', methods=['POST'])
 def guest_login():
