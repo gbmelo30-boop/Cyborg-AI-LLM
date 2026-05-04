@@ -311,7 +311,7 @@ window.handleChatSubmit = async (e) => {
     historyDiv.appendChild(loaderDiv);
     historyDiv.scrollTop = historyDiv.scrollHeight;
 
-    if(typeof CYBORG !== 'undefined') {
+if(typeof CYBORG !== 'undefined') {
         const resultado = await CYBORG.enviarMensagem(text, currentSessionId);
 
         const loaderEl = document.getElementById(loaderId);
@@ -324,6 +324,11 @@ window.handleChatSubmit = async (e) => {
             if (resultado.sessionId) currentSessionId = resultado.sessionId;
             const htmlContent = typeof marked !== 'undefined' ? marked.parse(resultado.response) : resultado.response;
             addMessage(BOT_NAME, htmlContent, true);
+            
+            if (window.carregarListaSessoes) {
+                window.carregarListaSessoes(); 
+            }
+            
         } else {
             addMessage(BOT_NAME, "Erro ao processar mensagem (Servidor indisponível).", false);
         }
