@@ -123,12 +123,12 @@ const DB = {
             .order('created_at', { ascending: false });
 
         if (error) { 
-            console.error("🚨 ERRO no Supabase (listarSessoes):", error);
+            console.error("ERRO no Supabase (listarSessoes):", error);
             window.systemLog("Erro listarSessoes: " + error.message, "ERRO"); 
             return []; 
         }
         
-        console.log("✅ Histórico recebido do banco:", data);
+        console.log("Histórico recebido do banco:", data);
         return data;
     },
 
