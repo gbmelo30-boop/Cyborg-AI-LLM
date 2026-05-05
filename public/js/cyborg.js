@@ -1,4 +1,6 @@
-
+// ==============================================================================
+// COMUNICAÇÃO COM O BACKEND E SALVAMENTO (LLaMA)
+// ==============================================================================
 
 const CYBORG = {
     init: () => { 
@@ -16,6 +18,25 @@ const CYBORG = {
         await CYBORG.delay(300);
 
         try {
+            // ==================================================================
+            // 1. SALVA A MENSAGEM DO USUÁRIO NO BANCO DE DADOS
+            // ==================================================================
+            let currentSessionId = sessionId;
+            
+            // Se for o início de uma nova conversa, cria a sessão no banco
+            if (!currentSessionId) {
+                const sessao = await DB.criarSessao(textoUsuario);
+                if (sessao) {
+                    currentSessionId = sessao.id;
+                } else {
+                    return null; // Para se der erro ao criar
+                }
+            }
+            
+            // Salva a pergunta do usuário no Supabase
+            await DB.salvarMensagem(currentSessionId, "user", textoUsuario);
+            // ==================================================================
+
             const historyForAI = [{ role: 'user', content: textoUsuario }];
 
             const contextData = window.currentResearchContext || 
@@ -24,6 +45,7 @@ const CYBORG = {
 
             window.systemLog(`Solicitando resposta (Tema: ${contextData.topic} | RAG: ${window.useRag})`);
 
+            // Faz o pedido para o Python (LLaMA)
             const response = await fetch(`${API_BASE_URL}/api/chat`, {
                 method: 'POST',
                 headers: { 
@@ -34,7 +56,7 @@ const CYBORG = {
                     tema: contextData.topic,
                     grupo: contextData.group,
                     use_rag: window.useRag,
-                    session_id: sessionId,
+                    session_id: currentSessionId, // Envia o ID para o Python saber qual é
                     user_id: DB.user.id
                 })
             });
@@ -49,10 +71,15 @@ const CYBORG = {
                 throw new Error(result.error);
             }
 
-            // O backend retorna a resposta processada e o session_id oficial do banco
+            // ==================================================================
+            // 2. SALVA A RESPOSTA DA IA NO BANCO DE DADOS
+            // ==================================================================
+            await DB.salvarMensagem(currentSessionId, "assistant", result.response);
+            // ==================================================================
+
             return { 
                 response: result.response, 
-                sessionId: result.session_id 
+                sessionId: currentSessionId 
             };
 
         } catch (e) {
