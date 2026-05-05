@@ -1,5 +1,5 @@
 // ==============================================================================
-// BANCO DE DADOS (VERSÃO COM RASTREAMENTO DE ERROS)
+// BANCO DE DADOS
 // ==============================================================================
 const DB = {
     user: null,
@@ -55,14 +55,14 @@ const DB = {
 
     criarSessao: async (primeiraMensagem) => {
         if (!DB.user) {
-            console.error("🚨 ERRO DB: Tentativa de criar sessão sem usuário logado!");
+            console.error("ERRO DB: Tentativa de criar sessão sem usuário logado!");
             return null;
         }
         
         const titulo = primeiraMensagem.length > 30 ? primeiraMensagem.substring(0, 30) + "..." : primeiraMensagem;
         const context = JSON.parse(localStorage.getItem('cyborg_current_session')) || {};
 
-        console.log(`➡️ Tentando criar sessão no Supabase para o user_id: ${DB.user.id}...`);
+        console.log(`Tentando criar sessão no Supabase para o user_id: ${DB.user.id}...`);
         
         const { data, error } = await window.supabaseClient
             .from('chat_sessions')
@@ -76,12 +76,12 @@ const DB = {
             .single();
 
         if (error) { 
-            console.error("🚨 ERRO CRÍTICO no Supabase (criarSessao):", error);
+            console.error("ERRO CRÍTICO no Supabase (criarSessao):", error);
             window.systemLog("Erro criarSessao: " + error.message, "ERRO"); 
             return null; 
         }
         
-        console.log("✅ SUCESSO! Sessão criada no Supabase:", data);
+        console.log("SUCESSO! Sessão criada no Supabase:", data);
         return data;
     },
 
@@ -91,10 +91,10 @@ const DB = {
             .insert([{ session_id: sessionId, role: role, content: content }]);
             
         if (error) {
-            console.error("🚨 ERRO no Supabase (salvarMensagem):", error);
+            console.error("ERRO no Supabase (salvarMensagem):", error);
             window.systemLog(`Erro salvarMensagem: ${error.message}`, "ERRO");
         } else {
-            console.log(`✅ Mensagem de '${role}' salva com sucesso no Supabase!`);
+            console.log(`Mensagem de '${role}' salva com sucesso no Supabase!`);
         }
     },
 
@@ -109,15 +109,16 @@ const DB = {
     },
 
     listarSessoes: async () => {
-        console.log("➡️ Buscando histórico de conversas no Supabase...");
+        // Se não tiver usuário identificado, retorna lista vazia
+        if (!DB.user) return [];
+
+        console.log("Buscando histórico do usuário atual:", DB.user.id);
         
-        // --------------------------------------------------------------------------
-        // AQUI ESTÁ A MÁGICA: Removi o filtro `.eq('user_id', DB.user.id)`
-        // Isso vai forçar o banco a trazer TODAS as conversas, ignorando o dono.
-        // --------------------------------------------------------------------------
+        // Faz a busca no banco filtrando apenas as conversas deste usuário (user_id)
         const { data, error } = await window.supabaseClient
             .from('chat_sessions')
             .select('*')
+            .eq('user_id', DB.user.id)
             .order('is_pinned', { ascending: false })
             .order('created_at', { ascending: false });
 
