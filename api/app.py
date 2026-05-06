@@ -187,7 +187,7 @@ FECHAMENTO:
 
         output = llm.create_chat_completion(
             messages=formatted_messages,
-            temperature=1.6,
+            temperature=0.9,
             max_tokens=None,
             stop=["<<FIM>>", "<|eot_id|>"]
         )
