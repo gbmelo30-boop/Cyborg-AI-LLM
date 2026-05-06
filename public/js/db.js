@@ -115,10 +115,12 @@ const DB = {
         console.log("Buscando histórico do usuário atual:", DB.user.id);
         
         // Faz a busca no banco filtrando apenas as conversas deste usuário (user_id)
+        // E QUE NÃO ESTEJAM OCULTAS!
         const { data, error } = await window.supabaseClient
             .from('chat_sessions')
             .select('*')
             .eq('user_id', DB.user.id)
+            .eq('oculta_para_usuario', false) // <-- NOVA REGRA DE VISIBILIDADE
             .order('is_pinned', { ascending: false })
             .order('created_at', { ascending: false });
 
@@ -133,8 +135,17 @@ const DB = {
     },
 
     deletarSessao: async (sessionId) => {
-        const { error } = await window.supabaseClient.from('chat_sessions').delete().eq('id', sessionId);
-        if (error) window.systemLog("Erro deletarSessao: " + error.message, "ERRO");
+        // A MÁGICA: Em vez de .delete(), nós usamos .update() para esconder a sessão
+        const { error } = await window.supabaseClient
+            .from('chat_sessions')
+            .update({ oculta_para_usuario: true })
+            .eq('id', sessionId);
+            
+        if (error) {
+            window.systemLog("Erro deletarSessao: " + error.message, "ERRO");
+        } else {
+            console.log("Sessão ocultada da tela do usuário (mas mantida no banco de dados para pesquisa!).");
+        }
     },
 
     renomearSessao: async (sessionId, novoTitulo) => {
