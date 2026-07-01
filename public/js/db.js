@@ -92,13 +92,7 @@ const DB = {
     // Soft delete (mantém no banco para pesquisa, some da lista do usuário)
     deletarSessao: async (sessionId) => DB._patchSessao(sessionId, { oculta_para_usuario: true }),
     renomearSessao: async (sessionId, novoTitulo) => DB._patchSessao(sessionId, { title: novoTitulo }),
-    fixarSessao: async (sessionId, statusAtual) => DB._patchSessao(sessionId, { is_pinned: !statusAtual }),
-
-    // Baixar o histórico em CSV (abre o download direto do backend)
-    exportarCSV: () => {
-        const uid = DB.user ? DB.user.id : '';
-        window.open(`${API_BASE_URL}/api/export?user_id=${encodeURIComponent(uid)}`, '_blank');
-    }
+    fixarSessao: async (sessionId, statusAtual) => DB._patchSessao(sessionId, { is_pinned: !statusAtual })
 };
 
 window.DB = DB;

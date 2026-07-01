@@ -315,15 +315,26 @@ def salvar_mensagem():
     return jsonify(m)
 
 
-@app.route('/api/export', methods=['GET'])
-def exportar_csv():
-    user_id = request.args.get('user_id')
-    csv_data = '\ufeff' + db_local.export_csv(user_id)   # BOM p/ acentos no Excel
-    return Response(
-        csv_data,
-        mimetype='text/csv; charset=utf-8',
-        headers={"Content-Disposition": "attachment; filename=historico_cyborg.csv"},
-    )
+@app.route('/api/rag_test', methods=['GET'])
+def rag_test():
+    """Diagnóstico rápido do RAG (sem chamar a LLM). Ex.: /api/rag_test?q=ciborgue"""
+    q = request.args.get('q', '')
+    if not q:
+        return jsonify({"error": "passe ?q=sua+consulta"}), 400
+    if not embed_model:
+        return jsonify({"error": "embeddings indisponível"}), 500
+    vec = embed_model.embed_query(q)
+    docs = db_local.search_documents(vec, RAG_MATCH_THRESHOLD, RAG_MATCH_COUNT)
+    return jsonify({
+        "encontrou": bool(docs),
+        "qtd": len(docs),
+        "limiar": RAG_MATCH_THRESHOLD,
+        "total_documentos": db_local.count_documents(),
+        "resultados": [
+            {"similaridade": round(d["similaridade"], 3), "trecho": (d["conteudo"] or "")[:160]}
+            for d in docs
+        ],
+    })
 
 
 @app.route('/api/guest_login', methods=['POST'])

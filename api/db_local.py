@@ -160,21 +160,24 @@ def _fmt_dt(iso_str):
         return iso_str or ""
 
 
-def export_csv(user_id=None):
-    """Gera CSV pareando cada pergunta (user) com a resposta (assistant) seguinte,
-    por sessao - mesma logica do 'Codigo 3' do Supabase."""
-    q = "SELECT id,grupo,tema,created_at FROM chat_sessions"
+def export_csv(user_id=None, delimiter=";"):
+    """Gera CSV pareando cada pergunta (usuario) com a resposta (chatbot) seguinte,
+    por sessao - mesma logica do 'Codigo 3' do Supabase. Colunas bem separadas:
+    session_id, usuario, grupo, tema, pergunta, resposta, data_hora.
+    Delimitador ';' (padrao do Excel em pt-BR -> abre em colunas)."""
+    q = "SELECT id,user_id,user_name,grupo,tema,created_at FROM chat_sessions"
     params = []
     if user_id:
         q += " WHERE user_id=?"; params.append(user_id)
     q += " ORDER BY created_at ASC"
 
     buf = io.StringIO()
-    w = csv.writer(buf)
-    w.writerow(["session_id", "grupo", "tema", "pergunta", "resposta", "data_hora"])
+    w = csv.writer(buf, delimiter=delimiter)
+    w.writerow(["session_id", "usuario", "grupo", "tema", "pergunta", "resposta", "data_hora"])
     with _conn() as c:
         sessions = c.execute(q, params).fetchall()
         for s in sessions:
+            usuario = s["user_name"] or s["user_id"] or ""
             msgs = c.execute(
                 "SELECT role,content,created_at FROM chat_messages WHERE session_id=? ORDER BY created_at ASC",
                 (s["id"],),
@@ -190,7 +193,7 @@ def export_csv(user_id=None):
                         i += 2
                     else:
                         i += 1
-                    w.writerow([s["id"], s["grupo"], s["tema"], pergunta, resposta, data_hora])
+                    w.writerow([s["id"], usuario, s["grupo"], s["tema"], pergunta, resposta, data_hora])
                 else:
                     i += 1
     return buf.getvalue()
