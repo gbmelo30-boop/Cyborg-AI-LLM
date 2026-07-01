@@ -183,7 +183,7 @@ window.handleStartResearch = async () => {
     btn.innerText = "ENTRANDO...";
 
     try {
-        const anonymousId = crypto.randomUUID();
+        const anonymousId = window.gerarUUID();
         const anonEmail   = `anonimo_${firstName.toLowerCase()}@pesquisa.ic`;
 
         const sessionData = {
