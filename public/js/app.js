@@ -71,17 +71,63 @@ window.switchView = function(viewIdToShow) {
         }
     });
 };
-window.voltarParaIntro = function() { window.switchView('view-intro'); };
-window.irParaLogin = function(event) { if(event) event.preventDefault(); window.switchView('view-auth'); };
-window.irParaChat = function() {
-    window.switchView('view-chat');
-    const historyDiv = document.getElementById('chat-history');
-    if(historyDiv && historyDiv.innerHTML.trim() === '') {
-        const ctx       = JSON.parse(localStorage.getItem('cyborg_current_session') || '{}');
-        const firstName = ctx.userName || '';
-        const greeting  = getGreeting(firstName);
-        addMessage(BOT_NAME, `${greeting} Sou o Cyborg AI, como posso ajudá-lo?`);
+window.gsapSwitch = function(fromId, toId, kind, onDone) {
+    const fromEl = document.getElementById(fromId);
+    const toEl = document.getElementById(toId);
+    if (!toEl) { if (onDone) onDone(); return; }
+
+    // Sem GSAP disponível: mantém o comportamento antigo
+    if (typeof gsap === 'undefined') { window.switchView(toId); if (onDone) onDone(); return; }
+    if (window.__viewAnimating) return;
+
+    window.__viewAnimating = true;
+    toEl.classList.remove('hidden-view');
+    toEl.classList.add('active-view');
+    // Desliga transições CSS concorrentes durante a animação GSAP
+    gsap.set([fromEl, toEl].filter(Boolean), { transition: 'none' });
+
+    const finish = () => {
+        if (fromEl && fromId !== toId) {
+            fromEl.classList.remove('active-view');
+            fromEl.classList.add('hidden-view');
+            gsap.set(fromEl, { clearProps: 'opacity,transform,transition,zIndex,willChange' });
+        }
+        gsap.set(toEl, { clearProps: 'opacity,transform,transition,zIndex,willChange' });
+        document.body.style.perspective = '';
+        window.__viewAnimating = false;
+        if (onDone) onDone();
+    };
+
+    const tl = gsap.timeline({ onComplete: finish });
+
+    if (kind === 'depth-3d') {
+        // Animação 2 (cadastro -> chat): leve profundidade 3D, elementos "chegando de trás"
+        document.body.style.perspective = '1400px';
+        gsap.set(toEl,   { opacity: 0, z: -460, rotationX: 7, transformOrigin: '50% 55%', zIndex: 300, willChange: 'transform,opacity' });
+        if (fromEl) gsap.set(fromEl, { zIndex: 200, willChange: 'transform,opacity' });
+        if (fromEl) tl.to(fromEl, { opacity: 0, z: 220, rotationX: -5, duration: 0.55, ease: 'power2.in' }, 0);
+        tl.to(toEl, { opacity: 1, z: 0, rotationX: 0, duration: 0.9, ease: 'power3.out' }, 0.22);
+    } else {
+        // Animação 1 (intro -> cadastro): simples e elegante (fade + leve deslize/escala)
+        gsap.set(toEl, { opacity: 0, y: 26, scale: 0.985, zIndex: 300, willChange: 'transform,opacity' });
+        if (fromEl) tl.to(fromEl, { opacity: 0, y: -16, scale: 1.012, duration: 0.5, ease: 'power2.inOut' }, 0);
+        tl.to(toEl, { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: 'power3.out' }, 0.12);
     }
+};
+
+window.voltarParaIntro = function() { window.switchView('view-intro'); };
+window.irParaLogin = function(event) { if(event) event.preventDefault(); window.gsapSwitch('view-intro', 'view-auth', 'fade-elegant'); };
+window.irParaChat = function() {
+    const mostrarSaudacao = () => {
+        const historyDiv = document.getElementById('chat-history');
+        if(historyDiv && historyDiv.innerHTML.trim() === '') {
+            const ctx       = JSON.parse(localStorage.getItem('cyborg_current_session') || '{}');
+            const firstName = ctx.userName || '';
+            const greeting  = getGreeting(firstName);
+            addMessage(BOT_NAME, `${greeting} Sou o Cyborg AI, como posso ajudá-lo?`);
+        }
+    };
+    window.gsapSwitch('view-auth', 'view-chat', 'depth-3d', mostrarSaudacao);
 };
 
 function getGreeting(firstName) {
