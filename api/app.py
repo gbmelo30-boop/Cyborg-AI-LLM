@@ -69,7 +69,7 @@ def buscar_contexto(pergunta):
         return "", False
 
 
-def generate_llm_response(messages, use_rag=True, tema_pesquisa="Geral"):
+def generate_llm_response(messages, use_rag=True, tema_pesquisa="Geral", user_name=""):
     try:
         last_user_msg = messages[-1]['content']
         contexto_rag = ""
@@ -80,9 +80,15 @@ def generate_llm_response(messages, use_rag=True, tema_pesquisa="Geral"):
             if contexto_rag:
                 logger.info("Contexto RAG encontrado e injetado.")
 
+        clausula_nome = (
+            f" O nome do usuário é {user_name}. Mencione o nome de forma natural e esporádica"
+            " durante a conversa para criar proximidade — não em toda mensagem, apenas quando"
+            " for contextualmente adequado." if user_name else ""
+        )
+
         SYSTEM_PROMPT = f"""Você é o Cyborg AI, um assistente que provoca reflexões críticas para revelar aspectos de sistemas que não estão explícitos na fala inicial do usuário.
 
-CONTEXTO ATUAL DE DISCUSSÃO: O usuário selecionou a frente "{tema_pesquisa}". Sempre leve esse tema em consideração ao interpretar a entrada e gerar sua reflexão.
+CONTEXTO ATUAL DE DISCUSSÃO: O usuário selecionou a frente "{tema_pesquisa}". Sempre leve esse tema em consideração ao interpretar a entrada e gerar sua reflexão.{clausula_nome}
 
 OBJETIVO:
 
@@ -207,6 +213,7 @@ def chat():
     
     # O front-end envia o tema e o ID da sessão que ele acabou de criar/usar
     tema_pesquisa = data.get('tema') or data.get('topic') or 'Sem Tema'
+    user_name = (data.get('userName') or '').strip()
     session_id = data.get('session_id') 
     
     if not messages:
@@ -217,7 +224,7 @@ def chat():
 
     try:
         # 1. Chama a função que você já tem para rodar o Llama local e RAG
-        response_text, rag_foi_usado = generate_llm_response(messages, use_rag, tema_pesquisa)
+        response_text, rag_foi_usado = generate_llm_response(messages, use_rag, tema_pesquisa, user_name)
         
         # 2. Limpa a tag de parada caso o modelo gere
         response_text = response_text.replace("<<FIM>>", "").strip()

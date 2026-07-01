@@ -1,15 +1,17 @@
-// LÓGICA DE INTERFACE, ANIMAÇÕES E EVENTOS (UI) - LLaMA/RAG
-
+// ==============================================================================
+// LÓGICA DE INTERFACE, ANIMAÇÕES E EVENTOS (UI)
+// ==============================================================================
 const BOT_NAME = 'Cyborg AI';
 let currentSessionId = null;
 let isProcessing = false;
-window.useRag = false; // Estado inicial do RAG desativado
 
-// --- CONTROLE DO RAG (CONTEXTO DE PDFS) ---
+// --- CONTROLE DO RAG (biblioteca de PDFs) — exclusivo da versão LLM ---
+window.useRag = false;
 window.toggleRag = (checkbox) => {
     window.useRag = checkbox.checked;
     const statusLabel = document.getElementById('rag-status');
-    if(window.useRag) {
+    if (!statusLabel) return;
+    if (window.useRag) {
         statusLabel.innerText = "ATIVADO";
         statusLabel.style.color = "#00ff00";
         window.systemLog("RAG Ativado pelo usuário.");
@@ -69,66 +71,102 @@ window.switchView = function(viewIdToShow) {
         }
     });
 };
-
 window.voltarParaIntro = function() { window.switchView('view-intro'); };
 window.irParaLogin = function(event) { if(event) event.preventDefault(); window.switchView('view-auth'); };
 window.irParaChat = function() {
     window.switchView('view-chat');
     const historyDiv = document.getElementById('chat-history');
     if(historyDiv && historyDiv.innerHTML.trim() === '') {
-        addMessage(BOT_NAME, "Olá! Sou o Cyborg AI. Como posso ajudar?");
+        const ctx       = JSON.parse(localStorage.getItem('cyborg_current_session') || '{}');
+        const firstName = ctx.userName || '';
+        const greeting  = getGreeting(firstName);
+        addMessage(BOT_NAME, `${greeting} Sou o Cyborg AI, como posso ajudá-lo?`);
     }
 };
 
-// --- LÓGICA DE IDENTIFICAÇÃO PARA PESQUISA ---
-window.handleStartResearch = async () => {
-    const group = document.getElementById('research-group').value;
-    const topic = document.getElementById('research-topic').value;
-    const errorDiv = document.getElementById('error-message');
+function getGreeting(firstName) {
+    const hour = new Date().getHours();
+    let period;
+    if (hour >= 5 && hour < 12)       period = 'Bom dia';
+    else if (hour >= 12 && hour < 18) period = 'Boa tarde';
+    else                               period = 'Boa noite';
+    return firstName ? `${period}, ${firstName}!` : `${period}!`;
+}
 
-    if (!group || !topic) {
-        errorDiv.innerText = "Selecione o grupo e o tema antes de continuar.";
+function capitalizeName(str) {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+async function typewriterEffect(element, text) {
+    const msPerChar = Math.max(3, Math.min(20, 2400 / text.length));
+    return new Promise(resolve => {
+        let i = 0;
+        element.textContent = '';
+        element.classList.add('typing-cursor');
+        const tick = () => {
+            if (i < text.length) {
+                element.textContent += text[i++];
+                const hist = document.getElementById('chat-history');
+                if (hist) hist.scrollTop = hist.scrollHeight;
+                setTimeout(tick, msPerChar);
+            } else {
+                element.classList.remove('typing-cursor');
+                resolve();
+            }
+        };
+        tick();
+    });
+}
+
+window.handleStartResearch = async () => {
+    const nameInput = document.getElementById('user-name-input');
+    const errorDiv  = document.getElementById('error-message');
+    const rawName   = nameInput ? nameInput.value.trim() : '';
+    const firstName = rawName ? capitalizeName(rawName.split(/\s+/)[0]) : '';
+
+    if (!firstName) {
+        errorDiv.innerText = "Digite seu nome para continuar.";
         errorDiv.style.display = 'block';
+        if (nameInput) nameInput.focus();
         return;
     }
 
     errorDiv.style.display = 'none';
     const btn = document.querySelector('.btn-start-research');
-    btn.innerText = "CONFIGURANDO...";
+    btn.innerText = "ENTRANDO...";
 
     try {
-        let sessionData = JSON.parse(localStorage.getItem('cyborg_current_session'));
-        
-        if (!sessionData || sessionData.group !== group || sessionData.topic !== topic) {
-            
-            const anonymousId = ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-                (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-            );
-            const anonEmail = `anonimo_${group.replace(/\s+/g, '')}@pesquisa.ic`;
+        const anonymousId = crypto.randomUUID();
+        const anonEmail   = `anonimo_${firstName.toLowerCase()}@pesquisa.ic`;
 
-            sessionData = {
-                userId: anonymousId,
-                group: group,
-                topic: topic,
-                email: anonEmail
-            };
-            localStorage.setItem('cyborg_current_session', JSON.stringify(sessionData));
-        }
+        const sessionData = {
+            userId:   anonymousId,
+            userName: firstName,
+            group:    'Individual/Visitante',
+            topic:    'Geral',
+            email:    anonEmail
+        };
+        localStorage.setItem('cyborg_current_session', JSON.stringify(sessionData));
 
         if (typeof DB !== 'undefined') {
-            DB.user = { id: sessionData.userId, email: sessionData.email };
+            DB.user    = { id: sessionData.userId, email: sessionData.email };
             DB.isGuest = true;
-            window.currentResearchContext = { group: sessionData.group, topic: sessionData.topic };
+            window.currentResearchContext = {
+                group:    sessionData.group,
+                topic:    sessionData.topic,
+                userName: sessionData.userName
+            };
         }
 
-        window.systemLog(`Sessão Iniciada: ${sessionData.group} | ${sessionData.topic}`);
+        window.systemLog(`Sessão Iniciada: ${firstName}`);
         if (window.irParaChat) window.irParaChat();
 
     } catch (e) {
         errorDiv.innerText = "Erro ao inicializar: " + e.message;
         errorDiv.style.display = 'block';
     } finally {
-        btn.innerText = "INICIAR";
+        btn.innerText = "ENTRAR";
     }
 };
 
@@ -185,7 +223,7 @@ window.carregarListaSessoes = async () => {
 window.carregarSessao = async (id) => {
     currentSessionId = id;
     document.getElementById('chat-history').innerHTML = '';
-    window.toggleSidebar();
+    window.closeSidebarMobile();
     window.closeModal('modal-historico');
     const msgs = await DB.carregarHistorico(id);
     if (msgs && msgs.length > 0) {
@@ -200,8 +238,11 @@ window.carregarSessao = async (id) => {
 window.novaConversa = () => {
     currentSessionId = null;
     document.getElementById('chat-history').innerHTML = '';
-    addMessage(BOT_NAME, "Olá! Sou o Cyborg AI. Como posso ajudar?");
-    window.toggleSidebar();
+    const ctx       = JSON.parse(localStorage.getItem('cyborg_current_session') || '{}');
+    const firstName = ctx.userName || '';
+    const greeting  = getGreeting(firstName);
+    addMessage(BOT_NAME, `${greeting} Sou o Cyborg AI, como posso ajudá-lo?`);
+    window.closeSidebarMobile();
 };
 
 window.filtrarHistorico = () => { carregarListaSessoes(); }
@@ -215,18 +256,29 @@ window.deletarSessao = async (id) => {
 };
 
 // --- INTERFACE DO CHAT ---
-window.toggleSidebar = () => { document.getElementById('side-panel').classList.toggle('is-open'); };
-window.toggleInputSize = () => {
-    const form = document.getElementById('chat-form');
-    const btn = document.getElementById('expand-button');
-    const isExpanded = form.classList.toggle('expanded');
-    const input = document.getElementById('user-input');
-    if (isExpanded) {
-        btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-14v3h3v2h-5V5h2z"/></svg>';
-        input.style.height = '100%';
+window.sidebarIsDesktop = () => window.matchMedia('(min-width: 768px)').matches;
+window.toggleSidebar = () => {
+    if (window.sidebarIsDesktop()) {
+        const expanded = document.body.classList.toggle('sidebar-expanded');
+        try { localStorage.setItem('cyborgSidebarExpanded', expanded ? '1' : '0'); } catch (e) {}
     } else {
-        btn.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M15 3l2.3 2.3-2.89 2.87 1.42 1.42L18.7 6.7 21 9V3zM3 9l2.3-2.3 2.87 2.89 1.42-1.42L6.7 5.3 9 3H3zM9 21l-2.3-2.3 2.89-2.87-1.42-1.42L5.3 17.3 3 15v6zM21 15l-2.3 2.3-2.87-2.89-1.42 1.42L17.3 18.7 15 21h6z"/></svg>';
-        input.style.height = '54px';
+        document.getElementById('side-panel').classList.toggle('is-open');
+    }
+};
+window.closeSidebarMobile = () => { document.getElementById('side-panel').classList.remove('is-open'); };
+window.toggleInputSize = () => {
+    const form  = document.getElementById('chat-form');
+    const btn   = document.getElementById('expand-button');
+    const input = document.getElementById('user-input');
+    const isExpanded = form.classList.toggle('expanded');
+    if (isExpanded) {
+        btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-14v3h3v2h-5V5h2z"/></svg>';
+        input.style.minHeight = 'calc(100% - 20px)';
+        input.style.maxHeight = 'none';
+    } else {
+        btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M15 3l2.3 2.3-2.89 2.87 1.42 1.42L18.7 6.7 21 9V3zM3 9l2.3-2.3 2.87 2.89 1.42-1.42L6.7 5.3 9 3H3zM9 21l-2.3-2.3 2.89-2.87-1.42-1.42L5.3 17.3 3 15v6zM21 15l-2.3 2.3-2.87-2.89-1.42 1.42L17.3 18.7 15 21h6z"/></svg>';
+        input.style.minHeight = '36px';
+        input.style.maxHeight = '160px';
     }
 };
 
@@ -250,7 +302,9 @@ window.addMessage = function(author, content, isHtml = false, timestamp = null) 
 
     const metaDiv = document.createElement('div');
     metaDiv.className = 'message-meta';
-    const iconHtml = isBot ? '<div class="header-halo" style="width:12px;height:12px;margin:0;"></div>' : '<div style="width:12px;height:12px;background:#ccc;border-radius:50%;"></div>';
+    const iconHtml = isBot
+        ? `<svg class="header-halo" style="width:16px;height:16px;" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="none" stroke-width="2.2" stroke-dasharray="14.6 2.2" stroke-linecap="round" transform="rotate(-90 10 10)"/></svg>`
+        : `<div style="width:12px;height:12px;background:var(--secondary-text-color);border-radius:50%;opacity:0.7;"></div>`;
     metaDiv.innerHTML = `${iconHtml} <span>${author}</span>`;
 
     const bubbleDiv = document.createElement('div');
@@ -278,8 +332,8 @@ window.handleChatSubmit = async (e) => {
     if (isProcessing) return;
 
     const userInput = document.getElementById('user-input');
-    const sendBtn = document.getElementById('send-button');
-    const chatForm = document.getElementById('chat-form');
+    const sendBtn   = document.getElementById('send-button');
+    const chatForm  = document.getElementById('chat-form');
     const historyDiv = document.getElementById('chat-history');
 
     const text = userInput.value.trim();
@@ -291,51 +345,67 @@ window.handleChatSubmit = async (e) => {
     addMessage("Você", text, false);
 
     isProcessing = true;
-    sendBtn.innerHTML = '<span style="font-size:20px; animation:spin 1s infinite">↻</span>';
+    sendBtn.innerHTML = '<span style="font-size:18px; animation:spin 1s linear infinite; display:inline-block;">↻</span>';
 
     const loaderId = 'loader-' + Date.now();
     const loaderDiv = document.createElement('div');
     loaderDiv.id = loaderId;
     loaderDiv.className = 'message-container bot-container';
-
     loaderDiv.innerHTML = `
-        <div class="message-meta"><span>${BOT_NAME}</span></div>
-        <div class="message-bubble fade-in">
-            <div class="typing-indicator">
-                <div class="typing-dot"></div>
-                <div class="typing-dot"></div>
-                <div class="typing-dot"></div>
-            </div>
+        <div class="message-meta">
+            <svg class="header-halo led-loading" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="10" cy="10" r="8" fill="none" stroke-width="2.2"
+                    stroke-dasharray="14.6 2.2" stroke-linecap="round"
+                    transform="rotate(-90 10 10)"/>
+            </svg>
+            <span>${BOT_NAME}</span>
         </div>
+        <div class="message-bubble fade-in" id="${loaderId}-bubble" style="padding:8px 16px; min-height:10px;"></div>
     `;
     historyDiv.appendChild(loaderDiv);
     historyDiv.scrollTop = historyDiv.scrollHeight;
 
-if(typeof CYBORG !== 'undefined') {
+    if(typeof CYBORG !== 'undefined') {
         const resultado = await CYBORG.enviarMensagem(text, currentSessionId);
 
-        const loaderEl = document.getElementById(loaderId);
-        if(loaderEl) loaderEl.remove();
-
         isProcessing = false;
-        sendBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>';
+        sendBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>';
 
-        if (resultado && resultado.response) {
+        const loaderEl = document.getElementById(loaderId);
+        const bubbleEl = document.getElementById(`${loaderId}-bubble`);
+        const ledEl    = loaderEl ? loaderEl.querySelector('.led-loading') : null;
+
+        if (resultado && resultado.response && !resultado.error) {
             if (resultado.sessionId) currentSessionId = resultado.sessionId;
-            const htmlContent = typeof marked !== 'undefined' ? marked.parse(resultado.response) : resultado.response;
-            addMessage(BOT_NAME, htmlContent, true);
-            
-            if (window.carregarListaSessoes) {
-                window.carregarListaSessoes(); 
+
+            const rawText   = resultado.response;
+            const htmlFinal = typeof marked !== 'undefined' ? marked.parse(rawText) : rawText;
+
+            if (bubbleEl) await typewriterEffect(bubbleEl, rawText);
+
+            if (bubbleEl) {
+                bubbleEl.innerHTML = htmlFinal;
+                const timeDiv = document.createElement('span');
+                timeDiv.className = 'message-time';
+                timeDiv.innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                bubbleEl.appendChild(timeDiv);
             }
-            
+
+            if (ledEl) ledEl.classList.add('led-done');
+
         } else {
-            addMessage(BOT_NAME, "Erro ao processar mensagem (Servidor indisponível).", false);
+            if (ledEl) ledEl.classList.add('led-error');
+            setTimeout(() => {
+                if(loaderEl) loaderEl.remove();
+                addMessage(BOT_NAME, "Minhas redes neurais sentiram um distúrbio. Tente novamente.", false);
+            }, 1500);
         }
     }
 };
 
-// --- EVENT LISTENERS GERAIS ---
+// ==============================================================================
+// EVENT LISTENERS GERAIS (Animação de Loading e Tema)
+// ==============================================================================
 $(document).ready(function() {
     const themeSwitcher = document.getElementById('theme-switcher');
     const body = document.body;
@@ -346,7 +416,6 @@ $(document).ready(function() {
             body.classList.add('light-theme');
         }
     };
-
     const toggleTheme = () => {
         body.classList.toggle('light-theme');
         const currentTheme = body.classList.contains('light-theme') ? 'light' : 'dark';
@@ -355,6 +424,10 @@ $(document).ready(function() {
 
     if (themeSwitcher) themeSwitcher.addEventListener('click', toggleTheme);
     applySavedTheme();
+
+    if (window.sidebarIsDesktop && window.sidebarIsDesktop() && localStorage.getItem('cyborgSidebarExpanded') === '1') {
+        document.body.classList.add('sidebar-expanded');
+    }
 
     const loadingSequence = document.getElementById('loading-sequence');
     const startButton = document.getElementById('start-button');
