@@ -13,7 +13,7 @@ const DB = {
     },
 
     entrarComoConvidado: async () => {
-        DB.user = { id: crypto.randomUUID(), email: 'anonimo@pesquisa.guest' };
+        DB.user = { id: window.gerarUUID(), email: 'anonimo@pesquisa.guest' };
         DB.isGuest = true;
         return { success: true };
     },
