@@ -30,7 +30,7 @@ MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "models", "Meta-Llama
 try:
     llm = Llama(
         model_path=MODEL_PATH,
-        n_ctx=2046,
+        n_ctx=3072,
         n_gpu_layers=-1,
         verbose=False
     )
@@ -46,24 +46,46 @@ except Exception as e:
     embed_model = None
 
 
+# --- Ajustes de RAG (enxuto: mais seletivo e rápido, sem janela gigante) ---
+RAG_MATCH_THRESHOLD = 0.55   # só injeta contexto realmente relevante; abaixo disso, usa o prompt puro
+RAG_MATCH_COUNT = 3          # recupera alguns candidatos e seleciona dentro do orçamento
+RAG_MAX_CHARS = 700          # orçamento enxuto de contexto -> velocidade e sem estourar o n_ctx
+
+
 def buscar_contexto(pergunta):
-    """Busca o contexto no banco e avisa se encontrou (True/False)"""
+    """Busca contexto relevante de forma enxuta. Retorna (contexto, encontrou?).
+    Se nada passar o limiar de similaridade, devolve vazio para que o modelo
+    use apenas o system prompt (que já rende ótimos textos)."""
     try:
         if not embed_model or not supabase:
             return "", False
-            
+
         vec = embed_model.embed_query(pergunta)
         res = supabase.rpc('match_documentos', {
             'query_embedding': vec,
-            'match_threshold': 0.5,
-            'match_count': 2
+            'match_threshold': RAG_MATCH_THRESHOLD,
+            'match_count': RAG_MATCH_COUNT
         }).execute()
 
-        if res.data:
-            contexto = "\n\n".join([item['conteudo'] for item in res.data])
-            return contexto, True
-            
-        return "", False
+        if not res.data:
+            return "", False
+
+        # Concatena respeitando um orçamento enxuto de caracteres
+        partes, total = [], 0
+        for item in res.data:
+            txt = (item.get('conteudo') or '').strip()
+            if not txt:
+                continue
+            restante = RAG_MAX_CHARS - total
+            if restante <= 0:
+                break
+            if len(txt) > restante:
+                txt = txt[:restante].rsplit(' ', 1)[0]
+            partes.append(txt)
+            total += len(txt)
+
+        contexto = "\n\n".join(partes).strip()
+        return contexto, bool(contexto)
     except Exception as e:
         logger.error(f"Erro RAG: {e}")
         return "", False
@@ -181,9 +203,14 @@ FECHAMENTO:
         final_content = last_user_msg
         if contexto_rag:
             final_content = (
-                f"[INSTRUÇÃO INTERNA: Referência factual.]\n\n"
-                f"CONTEXTO EXTRAÍDO:\n{contexto_rag}\n\n"
-                f"FALA DO USUÁRIO:\n{last_user_msg}"
+                "[MATERIAL DE APOIO — uso interno, NÃO exibir ao usuário]\n"
+                "As anotações abaixo servem apenas como repertório de fundo para enriquecer a sua "
+                "reflexão. NÃO as cite, não copie trechos, não as trate como fatos a relatar e não "
+                "deixe que mudem o seu tom: mantenha exatamente o estilo reflexivo, fluido e "
+                "provocativo definido nas instruções. Se não forem úteis, ignore-as.\n\n"
+                f"ANOTAÇÕES:\n{contexto_rag}\n\n"
+                "---\n"
+                f"MENSAGEM DO USUÁRIO (responda a isto, no seu estilo):\n{last_user_msg}"
             )
         
         formatted_messages.append({"role": "user", "content": final_content})
