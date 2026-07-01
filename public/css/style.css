@@ -930,3 +930,23 @@ body.light-theme .modal-box .slide strong {
 .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
 input:checked + .slider { background-color: var(--led-static-blue); }
 input:checked + .slider:before { transform: translateX(26px); }
+/* ============================================================================== */
+/* Esconde as barras de rolagem (mantendo a rolagem funcional)                    */
+/* ============================================================================== */
+.chat-history,
+.side-panel-body,
+.history-list-container,
+.modal-content,
+#user-input {
+    scrollbar-width: none;        /* Firefox */
+    -ms-overflow-style: none;     /* IE / Edge antigo */
+}
+.chat-history::-webkit-scrollbar,
+.side-panel-body::-webkit-scrollbar,
+.history-list-container::-webkit-scrollbar,
+.modal-content::-webkit-scrollbar,
+#user-input::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;                /* Chrome / Safari / Edge */
+}
