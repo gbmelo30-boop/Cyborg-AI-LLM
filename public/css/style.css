@@ -921,65 +921,6 @@ body.light-theme .modal-box .slide strong {
 }
 
 /* ============================================================================== */
-/* Sidebar responsiva — rail estilo Gemini (>= 768px)                             */
-/* Abaixo de 768px mantém-se o drawer off-canvas original (comportamento mobile). */
-/* ============================================================================== */
-#view-chat #rail-toggle-button {
-    display: none;
-    background: transparent;
-    border: none;
-    color: var(--icon-fill);
-    cursor: pointer;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-#view-chat #rail-toggle-button:hover { background-color: var(--component-hover-bg); }
-#view-chat #rail-toggle-button svg { width: 24px; height: 24px; fill: currentColor; }
-
-@media (min-width: 768px) {
-    /* Rail sempre visível, recolhido por padrão (apenas ícones) */
-    #view-chat .side-panel {
-        transform: none;
-        width: 76px;
-        overflow-x: hidden;
-        transition: width 0.25s ease;
-    }
-    body.sidebar-expanded #view-chat .side-panel { width: 264px; }
-
-    /* Conteúdo recuado para acomodar o rail (empurra, não sobrepõe) */
-    #view-chat .cyborg-chat-container {
-        width: auto !important;
-        margin-left: 76px !important;
-        transition: margin-left 0.25s ease;
-    }
-    body.sidebar-expanded #view-chat .cyborg-chat-container { margin-left: 264px !important; }
-
-    /* O hambúrguer do topo some no desktop; o toggle vive no topo do rail */
-    #view-chat #sidebar-toggle-button { display: none; }
-    #view-chat #sidebar-close-button { display: none; }
-    #view-chat #rail-toggle-button { display: flex; }
-
-    /* Cabeçalho do rail alinhado à altura do header do chat */
-    #view-chat .side-panel-header { padding: 0; justify-content: center; }
-    body.sidebar-expanded #view-chat .side-panel-header { justify-content: flex-start; gap: 12px; padding: 0 18px; }
-
-    /* Corpo e itens de menu */
-    #view-chat .side-panel-body { padding: 12px 14px; }
-    #view-chat .side-panel .menu-item { justify-content: center; padding: 14px 0; }
-    body.sidebar-expanded #view-chat .side-panel .menu-item { justify-content: flex-start; padding: 15px; }
-
-    /* Rótulos aparecem somente quando expandido */
-    #view-chat .side-panel .menu-item span,
-    #view-chat .side-panel .side-panel-header > span { display: none; white-space: nowrap; }
-    body.sidebar-expanded #view-chat .side-panel .menu-item span,
-    body.sidebar-expanded #view-chat .side-panel .side-panel-header > span { display: inline; }
-}
-
-/* ============================================================================== */
 /* Configurações / RAG — toggle exclusivo da versão LLM                           */
 /* ============================================================================== */
 .config-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; gap: 20px; border-bottom: 1px solid var(--border-color); }
