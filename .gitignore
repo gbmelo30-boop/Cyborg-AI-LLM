@@ -205,3 +205,9 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Banco de dados local do Cyborg (SQLite)
+data/
+*.db
+*.db-wal
+*.db-shm

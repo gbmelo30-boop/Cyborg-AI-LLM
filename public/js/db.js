@@ -1,163 +1,104 @@
 // ==============================================================================
-// BANCO DE DADOS
+// CAMADA DE DADOS (via backend próprio + SQLite local) — sem Supabase.
+// Mantém a mesma interface DB.* que o resto do app já usa; por baixo, agora
+// fala com os endpoints do app.py (/api/sessions, /api/messages, ...).
 // ==============================================================================
 const DB = {
     user: null,
     isGuest: false,
 
     init: async () => {
-        const _supabase = supabase.createClient(
-            "https://tnsgxgxpnraqmefldslw.supabase.co",
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRuc2d4Z3hwbnJhcW1lZmxkc2x3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxMzEyMTksImV4cCI6MjA4NTcwNzIxOX0.MCi4al1nt4-feqW8r8fNymISpOT2sdfx58xPVv0sjTc"
-        );
-        window.supabaseClient = _supabase;
-
-        const { data } = await _supabase.auth.getSession();
-        if (data.session) {
-            DB.user = data.session.user;
-            DB.isGuest = false;
-            window.systemLog(`Usuário reconectado: ${DB.user.email}`);
-            return true;
-        }
+        window.systemLog("Camada de dados local (backend) pronta.");
         return false;
-    },
-
-    login: async (email, password) => {
-        try {
-            const { data, error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
-            if (error) throw error;
-            DB.user = data.user;
-            DB.isGuest = false;
-            return { success: true };
-        } catch (e) {
-            return { success: false, error: e.message };
-        }
-    },
-
-    signup: async (email, password) => {
-        try {
-            const { data, error } = await window.supabaseClient.auth.signUp({ email, password });
-            if (error) throw error;
-            return { success: true, msg: "Conta criada!" };
-        } catch (e) {
-            return { success: false, error: e.message };
-        }
     },
 
     entrarComoConvidado: async () => {
         DB.user = { id: crypto.randomUUID(), email: 'anonimo@pesquisa.guest' };
         DB.isGuest = true;
-        window.systemLog("Entrou como Convidado.");
         return { success: true };
     },
 
-    logout: async () => { /* Implementado na UI */ },
+    logout: async () => { DB.user = null; },
 
     criarSessao: async (primeiraMensagem) => {
-        if (!DB.user) {
-            console.error("ERRO DB: Tentativa de criar sessão sem usuário logado!");
+        if (!DB.user) return null;
+        const ctx = JSON.parse(localStorage.getItem('cyborg_current_session')) || {};
+        try {
+            const r = await fetch(`${API_BASE_URL}/api/sessions`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: DB.user.id,
+                    title: primeiraMensagem,
+                    grupo: ctx.group || 'Uso Individual',
+                    tema: ctx.topic || 'Geral',
+                    user_name: ctx.userName || null
+                })
+            });
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return await r.json();
+        } catch (e) {
+            window.systemLog("Erro criarSessao: " + e.message, "ERRO");
             return null;
         }
-        
-        const titulo = primeiraMensagem.length > 30 ? primeiraMensagem.substring(0, 30) + "..." : primeiraMensagem;
-        const context = JSON.parse(localStorage.getItem('cyborg_current_session')) || {};
-
-        console.log(`Tentando criar sessão no Supabase para o user_id: ${DB.user.id}...`);
-        
-        const { data, error } = await window.supabaseClient
-            .from('chat_sessions')
-            .insert([{ 
-                user_id: DB.user.id, 
-                title: titulo,
-                grupo: context.group || 'Individual/Visitante',
-                tema: context.topic || 'Geral'
-            }])
-            .select()
-            .single();
-
-        if (error) { 
-            console.error("ERRO CRÍTICO no Supabase (criarSessao):", error);
-            window.systemLog("Erro criarSessao: " + error.message, "ERRO"); 
-            return null; 
-        }
-        
-        console.log("SUCESSO! Sessão criada no Supabase:", data);
-        return data;
     },
 
-    salvarMensagem: async (sessionId, role, content) => {
-        const { error } = await window.supabaseClient
-            .from('chat_messages')
-            .insert([{ session_id: sessionId, role: role, content: content }]);
-            
-        if (error) {
-            console.error("ERRO no Supabase (salvarMensagem):", error);
-            window.systemLog(`Erro salvarMensagem: ${error.message}`, "ERRO");
-        } else {
-            console.log(`Mensagem de '${role}' salva com sucesso no Supabase!`);
+    salvarMensagem: async (sessionId, role, content, usedRag = false) => {
+        try {
+            await fetch(`${API_BASE_URL}/api/messages`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ session_id: sessionId, role: role, content: content, used_rag: usedRag })
+            });
+        } catch (e) {
+            window.systemLog(`Erro salvarMensagem: ${e.message}`, "ERRO");
         }
     },
 
     carregarHistorico: async (sessionId) => {
-        const { data, error } = await window.supabaseClient
-            .from('chat_messages')
-            .select('role, content')
-            .eq('session_id', sessionId)
-            .order('created_at', { ascending: true });
-        if (error) return [];
-        return data;
+        try {
+            const r = await fetch(`${API_BASE_URL}/api/sessions/${sessionId}/messages`);
+            if (!r.ok) return [];
+            return await r.json();
+        } catch (e) {
+            return [];
+        }
     },
 
     listarSessoes: async () => {
-        // Se não tiver usuário identificado, retorna lista vazia
         if (!DB.user) return [];
-
-        console.log("Buscando histórico do usuário atual:", DB.user.id);
-        
-        // Faz a busca no banco filtrando apenas as conversas deste usuário (user_id)
-        // E QUE NÃO ESTEJAM OCULTAS!
-        const { data, error } = await window.supabaseClient
-            .from('chat_sessions')
-            .select('*')
-            .eq('user_id', DB.user.id)
-            .eq('oculta_para_usuario', false) // <-- NOVA REGRA DE VISIBILIDADE
-            .order('is_pinned', { ascending: false })
-            .order('created_at', { ascending: false });
-
-        if (error) { 
-            console.error("ERRO no Supabase (listarSessoes):", error);
-            window.systemLog("Erro listarSessoes: " + error.message, "ERRO"); 
-            return []; 
-        }
-        
-        console.log("Histórico recebido do banco:", data);
-        return data;
-    },
-
-    deletarSessao: async (sessionId) => {
-        // A MÁGICA: Em vez de .delete(), nós usamos .update() para esconder a sessão
-        const { error } = await window.supabaseClient
-            .from('chat_sessions')
-            .update({ oculta_para_usuario: true })
-            .eq('id', sessionId);
-            
-        if (error) {
-            window.systemLog("Erro deletarSessao: " + error.message, "ERRO");
-        } else {
-            console.log("Sessão ocultada da tela do usuário (mas mantida no banco de dados para pesquisa!).");
+        try {
+            const r = await fetch(`${API_BASE_URL}/api/sessions?user_id=${encodeURIComponent(DB.user.id)}`);
+            if (!r.ok) return [];
+            return await r.json();
+        } catch (e) {
+            window.systemLog("Erro listarSessoes: " + e.message, "ERRO");
+            return [];
         }
     },
 
-    renomearSessao: async (sessionId, novoTitulo) => {
-        const { error } = await window.supabaseClient.from('chat_sessions').update({ title: novoTitulo }).eq('id', sessionId);
-        if (error) window.systemLog("Erro renomear: " + error.message, "ERRO");
+    _patchSessao: async (sessionId, campos) => {
+        try {
+            await fetch(`${API_BASE_URL}/api/sessions/${sessionId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(campos)
+            });
+        } catch (e) {
+            window.systemLog("Erro ao atualizar sessão: " + e.message, "ERRO");
+        }
     },
 
-    fixarSessao: async (sessionId, statusAtual) => {
-        const { error } = await window.supabaseClient.from('chat_sessions').update({ is_pinned: !statusAtual }).eq('id', sessionId);
-        if (error) window.systemLog("Erro fixar: " + error.message, "ERRO");
+    // Soft delete (mantém no banco para pesquisa, some da lista do usuário)
+    deletarSessao: async (sessionId) => DB._patchSessao(sessionId, { oculta_para_usuario: true }),
+    renomearSessao: async (sessionId, novoTitulo) => DB._patchSessao(sessionId, { title: novoTitulo }),
+    fixarSessao: async (sessionId, statusAtual) => DB._patchSessao(sessionId, { is_pinned: !statusAtual }),
+
+    // Baixar o histórico em CSV (abre o download direto do backend)
+    exportarCSV: () => {
+        const uid = DB.user ? DB.user.id : '';
+        window.open(`${API_BASE_URL}/api/export?user_id=${encodeURIComponent(uid)}`, '_blank');
     }
 };
 
-DB.init();
 window.DB = DB;

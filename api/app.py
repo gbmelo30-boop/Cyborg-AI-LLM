@@ -1,12 +1,13 @@
 import os
 import logging
 import uuid
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 from dotenv import load_dotenv
 from llama_cpp import Llama
-from supabase import create_client, Client
 from langchain_huggingface import HuggingFaceEmbeddings
+
+import db_local
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger("Cyborg_Backend_LLaMA")
@@ -16,13 +17,12 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-# 1. Conexão com o Supabase
+# 1. Banco de dados local (SQLite) — autônomo, sem Supabase
 try:
-    supabase: Client = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
-    logger.info("Supabase conectado.")
+    db_local.init_db()
+    logger.info("Banco de dados local (SQLite) pronto.")
 except Exception as e:
-    logger.error(f"Erro Supabase: {e}")
-    supabase = None
+    logger.error(f"Erro ao iniciar o banco local: {e}")
 
 # 2. Carregamento do Modelo Llama Local
 # Modelo selecionável por variável de ambiente; padrão Q4 (mais leve/rápido, ideal p/ RAM limitada)
@@ -59,22 +59,18 @@ def buscar_contexto(pergunta):
     Se nada passar o limiar de similaridade, devolve vazio para que o modelo
     use apenas o system prompt (que já rende ótimos textos)."""
     try:
-        if not embed_model or not supabase:
+        if not embed_model:
             return "", False
 
         vec = embed_model.embed_query(pergunta)
-        res = supabase.rpc('match_documentos', {
-            'query_embedding': vec,
-            'match_threshold': RAG_MATCH_THRESHOLD,
-            'match_count': RAG_MATCH_COUNT
-        }).execute()
+        docs = db_local.search_documents(vec, RAG_MATCH_THRESHOLD, RAG_MATCH_COUNT)
 
-        if not res.data:
+        if not docs:
             return "", False
 
         # Concatena respeitando um orçamento enxuto de caracteres
         partes, total = [], 0
-        for item in res.data:
+        for item in docs:
             txt = (item.get('conteudo') or '').strip()
             if not txt:
                 continue
@@ -269,6 +265,66 @@ def chat():
     except Exception as e:
         logger.error(f"Erro ao processar Llama: {e}")
         return jsonify({"error": str(e)}), 500
+
+# ============================================================================
+# ENDPOINTS DE HISTÓRICO (SQLite local) — usados pelo front-end (public/js/db.js)
+# ============================================================================
+@app.route('/api/sessions', methods=['POST'])
+def criar_sessao():
+    d = request.json or {}
+    if not d.get('user_id'):
+        return jsonify({"error": "user_id obrigatório"}), 400
+    sessao = db_local.create_session(
+        d['user_id'], d.get('title', ''),
+        d.get('grupo', 'Uso Individual'), d.get('tema', 'Geral'), d.get('user_name')
+    )
+    return jsonify(sessao)
+
+
+@app.route('/api/sessions', methods=['GET'])
+def listar_sessoes():
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify([])
+    return jsonify(db_local.list_sessions(user_id))
+
+
+@app.route('/api/sessions/<session_id>/messages', methods=['GET'])
+def historico_sessao(session_id):
+    return jsonify(db_local.get_messages(session_id))
+
+
+@app.route('/api/sessions/<session_id>', methods=['PATCH'])
+def atualizar_sessao(session_id):
+    d = request.json or {}
+    db_local.update_session(
+        session_id,
+        title=d.get('title'),
+        is_pinned=d.get('is_pinned'),
+        oculta=d.get('oculta_para_usuario'),
+    )
+    return jsonify({"ok": True})
+
+
+@app.route('/api/messages', methods=['POST'])
+def salvar_mensagem():
+    d = request.json or {}
+    if not d.get('session_id') or not d.get('role'):
+        return jsonify({"error": "session_id e role são obrigatórios"}), 400
+    m = db_local.add_message(d['session_id'], d['role'], d.get('content', ''), d.get('used_rag', False))
+    return jsonify(m)
+
+
+@app.route('/api/export', methods=['GET'])
+def exportar_csv():
+    user_id = request.args.get('user_id')
+    csv_data = '\ufeff' + db_local.export_csv(user_id)   # BOM p/ acentos no Excel
+    return Response(
+        csv_data,
+        mimetype='text/csv; charset=utf-8',
+        headers={"Content-Disposition": "attachment; filename=historico_cyborg.csv"},
+    )
+
 
 @app.route('/api/guest_login', methods=['POST'])
 def guest_login():

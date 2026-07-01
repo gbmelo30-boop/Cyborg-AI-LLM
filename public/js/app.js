@@ -219,7 +219,7 @@ window.handleStartResearch = async () => {
 // --- LOGOUT E HISTÓRICO ---
 window.handleLogout = async () => {
     if(typeof DB !== 'undefined' && DB.logout) {
-        if(window.supabaseClient) await window.supabaseClient.auth.signOut();
+        await DB.logout();
         DB.user = null;
     }
     document.getElementById('chat-history').innerHTML = '';
@@ -229,6 +229,7 @@ window.handleLogout = async () => {
 };
 
 window.abrirHistorico = function() { window.openModal('modal-historico'); };
+window.exportarHistoricoCSV = function() { if (window.DB && window.DB.exportarCSV) window.DB.exportarCSV(); if (window.closeSidebarMobile) window.closeSidebarMobile(); };
 
 window.carregarListaSessoes = async () => {
     if(typeof DB === 'undefined') return;
