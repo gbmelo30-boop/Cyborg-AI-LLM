@@ -25,9 +25,13 @@
             </div>
         </div>
         <main>
-            <div class="led-ring"></div>
+            <svg class="led-ring" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="45" cy="45" r="38" fill="none" stroke-width="8"
+                    stroke-dasharray="73.2 6.4" stroke-linecap="round"
+                    transform="rotate(-90 45 45)"/>
+            </svg>
             <h1>CYBORG AI</h1>
-            <p class="p-main">Uma jornada pela fronteira entre humano e máquina.</p>
+            <p class="p-main">Uma jornada pela fronteira entre humano e máquina</p>
             <div class="loader-button-container">
                 <div id="loading-sequence">
                     <div class="loading-bar-container"><div class="loading-bar-progress"></div></div>
@@ -54,41 +58,30 @@
             <div class="login-form-panel">
                 <div id="setup-container">
                     <h2>Identificação</h2>
-                    <span class="setup-label">Escolha uma opção:</span>
-                    <select id="research-group" class="setup-select">
-    <option value="" disabled selected>Selecione o grupo</option>
-    <option value="Uso Individual">Uso individual</option>
-    <hr>
-    <option value="Grupo 1">Grupo 1</option>
-    <option value="Grupo 2">Grupo 2</option>
-    <option value="Grupo 3">Grupo 3</option>
-    <option value="Grupo 4">Grupo 4</option>
-    <option value="Grupo 5">Grupo 5</option>
-    <option value="Grupo 6">Grupo 6</option>
-    <option value="Grupo 7">Grupo 7</option>
-    <option value="Grupo 8">Grupo 8</option>
-</select>
-
-<span class="setup-label">Frente de discussão:</span>
-<select id="research-topic" class="setup-select">
-    <option value="" disabled selected>Selecione o tema</option>
-    <option value="Geral">Uso geral</option>
-    <option value="Terapia Mediada por IA">Terapia mediada por IA</option>
-    <option value="Produção de Código Mediada por IA">Produção de código mediada por IA</option>
-    <option value="Companheiros Artificiais">Companheiros artificiais</option>
-    <option value="IA e Justiça Algorítmica">IA e justiça algorítmica</option>
-</select>
-
-<div id="error-message" class="error-message"></div>
-
-<button type="button" class="btn-start-research" onclick="window.handleStartResearch()">
-    INICIAR
-</button>
+                    <p class="auth-subtitle">Como prefere ser chamado?</p>
+                    <input
+                        type="text"
+                        id="user-name-input"
+                        class="name-input"
+                        placeholder="Digite seu nome..."
+                        maxlength="50"
+                        autocomplete="off"
+                        autocapitalize="words"
+                        onkeydown="if(event.key==='Enter'){event.preventDefault();window.handleStartResearch();}"
+                    />
+                    <div id="error-message" class="error-message"></div>
+                    <button type="button" class="btn-start-research" onclick="window.handleStartResearch()">
+                        ENTRAR
+                    </button>
                 </div>
             </div>
             <div class="branding-panel">
                 <div class="brand-main-content">
-                    <div class="led-ring"></div>
+                    <svg class="led-ring" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="45" cy="45" r="38" fill="none" stroke-width="8"
+                            stroke-dasharray="73.2 6.4" stroke-linecap="round"
+                            transform="rotate(-90 45 45)"/>
+                    </svg>
                     <h1 class="cyborg-title">CYBORG AI</h1>
                 </div>
             </div>
@@ -97,39 +90,41 @@
 
     <section id="view-chat" class="hidden-view">
         <div class="cyborg-chat-wrapper">
-            
             <div id="side-panel" class="side-panel">
                 <div class="side-panel-header">
+                    <button id="rail-toggle-button" title="Expandir / Recolher menu" onclick="toggleSidebar()">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"></path></svg>
+                    </button>
                     <span>Menu</span>
                     <button id="sidebar-close-button" title="Fechar Menu" onclick="toggleSidebar()">
                         <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
                     </button>
                 </div>
                 <div class="side-panel-body">
-                    <button class="menu-item" onclick="openModal('modal-instrucoes')">
+                    <button class="menu-item" title="Instruções" onclick="openModal('modal-instrucoes')">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
                         <span>Instruções</span>
                     </button>
-                    <button class="menu-item" onclick="novaConversa()">
+                    <button class="menu-item" title="Nova Conversa" onclick="novaConversa()">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
                         <span>Nova Conversa</span>
                     </button>
-                    <button class="menu-item" onclick="abrirHistorico()">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.25 2.52.77-1.28-3.52-2.09V8H12z"/></svg>
-                        <span>Histórico</span>
+                    <button class="menu-item" title="Histórico" onclick="abrirHistorico()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.25 2.52.77-1.28-3.52-2.09V8H12z"/></svg>
+                    <span>Histórico</span>
                     </button>
-                    <button class="menu-item" onclick="openModal('modal-config')">
+                    <button class="menu-item" title="Configurações" onclick="openModal('modal-config')">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.58 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
                         <span>Configurações</span>
                     </button>
-                    <button class="menu-item" id="sidebar-theme-switcher" onclick="alternarTemaGlobal()">
+                    <button class="menu-item" id="sidebar-theme-switcher" title="Alternar Tema" onclick="alternarTemaGlobal()">
                         <div style="width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;">
                             <svg class="dark-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 2c-1.82 0-3.53.5-5 1.35 2.99 1.73 5 4.95 5 8.65s-2.01 6.92-5 8.65C6.02 21.49 7.74 22 9.5 22c5.52 0 10-4.48 10-10S15.02 2 9.5 2z"/></svg>
                             <svg class="light-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.06 1.06c.39.39 1.02.39 1.41 0s.39-1.02 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.06 1.06c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.02 0 1.41s1.02.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.02 0 1.41s1.02.39 1.41 0l1.06-1.06z"/></svg>
                         </div>
                         <span>Alternar Tema</span>
                     </button>
-                    <button class="menu-item" id="logout-button" onclick="handleLogout()">
+                    <button class="menu-item" id="logout-button" title="Sair" onclick="handleLogout()">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
                         <span>Sair</span>
                     </button>
@@ -143,26 +138,31 @@
                             <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"></path></svg>
                         </button>
                         <div class="brand-container" style="margin-left: 15px;">
-                            <div class="header-halo"></div> <span class="cyborg-brand">Cyborg AI</span>
+                            <svg class="header-halo" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="10" cy="10" r="8" fill="none" stroke-width="2.2"
+                                    stroke-dasharray="14.6 2.2" stroke-linecap="round"
+                                    transform="rotate(-90 10 10)"/>
+                            </svg>
+                            <span class="cyborg-brand">Cyborg AI</span>
                         </div>
                     </div>
-                    <div class="header-right" style="width: 40px;"></div>
+                    <div class="header-right"></div>
                 </header>
                 
                 <div class="chat-history" id="chat-history"></div>
 
                 <form class="input-area" id="chat-form" onsubmit="handleChatSubmit(event)">
-                    <div class="input-wrapper">
+                    <div class="input-pill">
                         <textarea id="user-input" placeholder="Converse com o Cyborg AI..." rows="1"></textarea>
-                        <button type="button" id="expand-button" title="Expandir/Recolher" onclick="toggleInputSize()">
-                            <svg id="icon-expand" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15 3l2.3 2.3-2.89 2.87 1.42 1.42L18.7 6.7 21 9V3zM3 9l2.3-2.3 2.87 2.89 1.42-1.42L6.7 5.3 9 3H3zM9 21l-2.3-2.3 2.89-2.87-1.42-1.42L5.3 17.3 3 15v6zM21 15l-2.3 2.3-2.87-2.89-1.42 1.42L17.3 18.7 15 21h6z"/></svg>
-                        </button>
+                        <div class="input-actions">
+                            <button type="button" id="expand-button" title="Expandir/Recolher" onclick="toggleInputSize()">
+                                <svg id="icon-expand" width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15 3l2.3 2.3-2.89 2.87 1.42 1.42L18.7 6.7 21 9V3zM3 9l2.3-2.3 2.87 2.89 1.42-1.42L6.7 5.3 9 3H3zM9 21l-2.3-2.3 2.89-2.87-1.42-1.42L5.3 17.3 3 15v6zM21 15l-2.3 2.3-2.87-2.89-1.42 1.42L17.3 18.7 15 21h6z"/></svg>
+                            </button>
+                            <button type="submit" id="send-button" title="Enviar">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                            </button>
+                        </div>
                     </div>
-                    <button type="submit" id="send-button" title="Enviar">
-                        <span id="send-button-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-                        </span>
-                    </button>
                 </form>
             </main>
 
@@ -209,21 +209,6 @@
                 </div>
             </div>
 
-            <div id="modal-historico" class="modal-overlay">
-                <div class="modal-box">
-                    <div class="modal-header">
-                        <span class="modal-title">Histórico de Conversas</span>
-                        <button class="close-modal" onclick="closeModal('modal-historico')">&times;</button>
-                    </div>
-                    <div class="modal-content">
-                        <input type="text" id="history-search" class="history-search" placeholder="Buscar conversa..." oninput="filtrarHistorico()">
-                        <div id="history-list" class="history-list-container">
-                            <div style="text-align:center; color: #666; margin-top: 20px;">Carregando...</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <div id="modal-config" class="modal-overlay">
                 <div class="modal-box">
                     <div class="modal-header">
@@ -249,13 +234,28 @@
                     </div>
                 </div>
             </div>
+
+            <div id="modal-historico" class="modal-overlay">
+                <div class="modal-box">
+                    <div class="modal-header">
+                        <span class="modal-title">Histórico de Conversas</span>
+                        <button class="close-modal" onclick="closeModal('modal-historico')">&times;</button>
+                    </div>
+                    <div class="modal-content">
+                        <input type="text" id="history-search" class="history-search" placeholder="Buscar conversa..." oninput="filtrarHistorico()">
+                        <div id="history-list" class="history-list-container">
+                            <div style="text-align:center; color: #666; margin-top: 20px;">Carregando...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
-    <script src="js/config.js?v=2"></script>
-    <script src="js/db.js?v=2"></script>
-    <script src="js/cyborg.js?v=2"></script>
-    <script src="js/app.js?v=2"></script>
+    <script src="js/config.js?v=3"></script>
+    <script src="js/db.js?v=3"></script>
+    <script src="js/cyborg.js?v=3"></script>
+    <script src="js/app.js?v=3"></script>
 
 </body>
 </html>

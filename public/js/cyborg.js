@@ -1,97 +1,89 @@
 // ==============================================================================
-// COMUNICAÇÃO COM O BACKEND E SALVAMENTO (LLaMA)
+// COMUNICAÇÃO COM O BACKEND E SALVAMENTO (LLaMA + RAG)
 // ==============================================================================
-
 const CYBORG = {
-    init: () => { 
-        window.systemLog("Cyborg AI (LLaMA): Conectado via Fetch."); 
-    },
+    init: () => { window.systemLog("Cyborg AI (LLaMA): Conectado via Fetch."); },
 
     delay: (ms) => new Promise(resolve => setTimeout(resolve, ms)),
 
     enviarMensagem: async (textoUsuario, sessionId = null) => {
-        if (!DB.user) { 
-            window.systemLog("Usuário não identificado", "ERRO"); 
-            return { response: "Erro: Você precisa estar identificado para conversar.", error: true }; 
+        if (!DB.user) {
+            window.systemLog("Usuário não identificado", "ERRO");
+            return { response: "Erro: Você precisa estar identificado para conversar.", error: true };
         }
 
         await CYBORG.delay(300);
+        let currentSessionId = sessionId;
+
+        // Cria a sessão no início de uma nova conversa
+        if (!currentSessionId) {
+            const sessao = await DB.criarSessao(textoUsuario);
+            if (sessao) currentSessionId = sessao.id;
+            else return null;
+        }
 
         try {
-            // ==================================================================
-            // 1. SALVA A MENSAGEM DO USUÁRIO NO BANCO DE DADOS
-            // ==================================================================
-            let currentSessionId = sessionId;
-            
-            // Se for o início de uma nova conversa, cria a sessão no banco
-            if (!currentSessionId) {
-                const sessao = await DB.criarSessao(textoUsuario);
-                if (sessao) {
-                    currentSessionId = sessao.id;
-                } else {
-                    return null; // Para se der erro ao criar
-                }
-            }
-            
-            // Salva a pergunta do usuário no Supabase
+            // 1. Salva a pergunta do usuário
             await DB.salvarMensagem(currentSessionId, "user", textoUsuario);
-            // ==================================================================
 
-            const historyForAI = [{ role: 'user', content: textoUsuario }];
+            // 2. Monta o histórico completo — dá memória conversacional ao modelo
+            const historicoRaw = await DB.carregarHistorico(currentSessionId);
+            const historyForAI = historicoRaw.map(msg => ({
+                role: msg.role === 'assistant' ? 'assistant' : 'user',
+                content: msg.content
+            }));
 
-            const contextData = window.currentResearchContext || 
-                                JSON.parse(localStorage.getItem('cyborg_current_session')) || 
-                                { group: 'Sem Grupo', topic: 'Geral' };
+            const contextData = window.currentResearchContext ||
+                                JSON.parse(localStorage.getItem('cyborg_current_session')) ||
+                                { group: 'Individual/Visitante', topic: 'Geral' };
+            const temaAtual = contextData.topic || 'Geral';
+            const userNameAtual = contextData.userName || '';
 
-            window.systemLog(`Solicitando resposta (Tema: ${contextData.topic} | RAG: ${window.useRag})`);
+            window.systemLog(`Solicitando resposta (Tema: ${temaAtual} | RAG: ${window.useRag})`);
 
-            // Faz o pedido para o Python (LLaMA)
+            if (!API_BASE_URL || API_BASE_URL.includes("COLE_O_LINK")) {
+                throw new Error("Link da API não configurado.");
+            }
+
             const response = await fetch(`${API_BASE_URL}/api/chat`, {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json' 
-                },
-                body: JSON.stringify({ 
-                    messages: historyForAI, 
-                    tema: contextData.topic,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    messages: historyForAI,
+                    tema: temaAtual,
                     grupo: contextData.group,
+                    userName: userNameAtual,
                     use_rag: window.useRag,
-                    session_id: currentSessionId, // Envia o ID para o Python saber qual é
+                    session_id: currentSessionId,
                     user_id: DB.user.id
                 })
             });
 
             if (!response.ok) {
-                throw new Error(`Erro na conexão com o servidor: ${response.status}`);
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(errData.error || `Erro HTTP: ${response.status}`);
             }
 
             const result = await response.json();
+            if (result.error) throw new Error(result.error);
 
-            if (result.error) {
-                throw new Error(result.error);
-            }
+            const text = (result.response || "").replace("<<FIM>>", "").trim();
 
-            // ==================================================================
-            // 2. SALVA A RESPOSTA DA IA NO BANCO DE DADOS
-            // ==================================================================
-            await DB.salvarMensagem(currentSessionId, "assistant", result.response);
-            // ==================================================================
+            // 3. Salva a resposta da IA
+            await DB.salvarMensagem(currentSessionId, "assistant", text);
+            window.systemLog("Resposta salva.");
 
-            return { 
-                response: result.response, 
-                sessionId: currentSessionId 
-            };
+            return { response: text, sessionId: currentSessionId };
 
         } catch (e) {
-            window.systemLog("Erro ao comunicar com o servidor LLaMA: " + e.message, "ERRO");
-            return { 
-                response: "**Erro de Conexão:** Não foi possível alcançar o servidor do Cyborg AI. Verifique se o backend está rodando.", 
-                error: e.message 
+            console.error("ERRO GERAL:", e);
+            return {
+                response: "**Erro de Conexão:** Não foi possível alcançar o servidor do Cyborg AI. " + e.message,
+                error: e.message
             };
         }
     }
 };
 
-// Inicialização e exposição global
 CYBORG.init();
 window.CYBORG = CYBORG;
