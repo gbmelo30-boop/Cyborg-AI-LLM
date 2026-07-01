@@ -229,7 +229,6 @@ window.handleLogout = async () => {
 };
 
 window.abrirHistorico = function() { window.openModal('modal-historico'); };
-window.exportarHistoricoCSV = function() { if (window.DB && window.DB.exportarCSV) window.DB.exportarCSV(); if (window.closeSidebarMobile) window.closeSidebarMobile(); };
 
 window.carregarListaSessoes = async () => {
     if(typeof DB === 'undefined') return;
