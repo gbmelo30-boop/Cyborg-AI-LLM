@@ -25,7 +25,9 @@ except Exception as e:
     supabase = None
 
 # 2. Carregamento do Modelo Llama Local
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "models", "Meta-Llama-3.1-8B-Instruct-Q8_0.gguf")
+# Modelo selecionável por variável de ambiente; padrão Q4 (mais leve/rápido, ideal p/ RAM limitada)
+MODEL_FILE = os.getenv("MODEL_FILE", "Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf")
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "models", MODEL_FILE)
 
 try:
     llm = Llama(
