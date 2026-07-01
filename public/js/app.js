@@ -223,7 +223,7 @@ window.carregarListaSessoes = async () => {
 window.carregarSessao = async (id) => {
     currentSessionId = id;
     document.getElementById('chat-history').innerHTML = '';
-    window.closeSidebarMobile();
+    window.toggleSidebar();
     window.closeModal('modal-historico');
     const msgs = await DB.carregarHistorico(id);
     if (msgs && msgs.length > 0) {
@@ -242,7 +242,7 @@ window.novaConversa = () => {
     const firstName = ctx.userName || '';
     const greeting  = getGreeting(firstName);
     addMessage(BOT_NAME, `${greeting} Sou o Cyborg AI, como posso ajudá-lo?`);
-    window.closeSidebarMobile();
+    window.toggleSidebar();
 };
 
 window.filtrarHistorico = () => { carregarListaSessoes(); }
@@ -256,16 +256,7 @@ window.deletarSessao = async (id) => {
 };
 
 // --- INTERFACE DO CHAT ---
-window.sidebarIsDesktop = () => window.matchMedia('(min-width: 768px)').matches;
-window.toggleSidebar = () => {
-    if (window.sidebarIsDesktop()) {
-        const expanded = document.body.classList.toggle('sidebar-expanded');
-        try { localStorage.setItem('cyborgSidebarExpanded', expanded ? '1' : '0'); } catch (e) {}
-    } else {
-        document.getElementById('side-panel').classList.toggle('is-open');
-    }
-};
-window.closeSidebarMobile = () => { document.getElementById('side-panel').classList.remove('is-open'); };
+window.toggleSidebar = () => { document.getElementById('side-panel').classList.toggle('is-open'); };
 window.toggleInputSize = () => {
     const form  = document.getElementById('chat-form');
     const btn   = document.getElementById('expand-button');
@@ -424,10 +415,6 @@ $(document).ready(function() {
 
     if (themeSwitcher) themeSwitcher.addEventListener('click', toggleTheme);
     applySavedTheme();
-
-    if (window.sidebarIsDesktop && window.sidebarIsDesktop() && localStorage.getItem('cyborgSidebarExpanded') === '1') {
-        document.body.classList.add('sidebar-expanded');
-    }
 
     const loadingSequence = document.getElementById('loading-sequence');
     const startButton = document.getElementById('start-button');
