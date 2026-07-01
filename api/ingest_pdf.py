@@ -1,17 +1,47 @@
 # ==============================================================================
 # INGESTÃO DE PDFs -> banco local SQLite (RAG).
 # Lê os PDFs de ./documentos_pdf, fatia em trechos, gera embeddings e grava
-# tudo no SQLite local (tabela documentos). Rode uma vez (e sempre que trocar
-# os PDFs):   python3 api/ingest_pdf.py
+# tudo no SQLite local (tabela documentos). Sem dependência do langchain para
+# o fatiamento (fatiador próprio em Python puro -> mais autônomo).
+# Rode uma vez (e sempre que trocar os PDFs):   python3 api/ingest_pdf.py
 # ==============================================================================
 import os
 from pypdf import PdfReader
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 import db_local
 
 embed_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+
+
+def split_text(texto, chunk_size=1000, overlap=150):
+    """Fatiador recursivo simples: pedaços de ~chunk_size caracteres com
+    sobreposição, tentando cortar em quebras naturais (parágrafo/linha/espaço)."""
+    texto = (texto or "").strip()
+    n = len(texto)
+    if n == 0:
+        return []
+    chunks = []
+    start = 0
+    while start < n:
+        end = min(start + chunk_size, n)
+        if end < n:
+            janela = texto[start:end]
+            corte = -1
+            for sep in ("\n\n", "\n", " "):
+                idx = janela.rfind(sep)
+                if idx > chunk_size * 0.5:
+                    corte = idx
+                    break
+            if corte != -1:
+                end = start + corte
+        pedaco = texto[start:end].strip()
+        if pedaco:
+            chunks.append(pedaco)
+        if end >= n:
+            break
+        start = max(end - overlap, start + 1)
+    return chunks
 
 
 def processar_pdfs():
@@ -19,14 +49,6 @@ def processar_pdfs():
     db_local.clear_documents()  # reingestão limpa (evita duplicar trechos)
 
     pdf_path = os.path.join(os.path.dirname(__file__), "documentos_pdf")
-
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,
-        chunk_overlap=150,
-        length_function=len,
-        separators=["\n\n", "\n", " ", ""],
-    )
-
     if not os.path.exists(pdf_path):
         print(f"Erro: a pasta {pdf_path} não foi encontrada.")
         return
@@ -52,7 +74,7 @@ def processar_pdfs():
                 print(f"  {arquivo} ignorado: sem texto extraível.")
                 continue
 
-            chunks = text_splitter.split_text(texto_completo)
+            chunks = split_text(texto_completo, chunk_size=1000, overlap=150)
             print(f"  {len(chunks)} trechos.")
 
             for i, chunk_text in enumerate(chunks):
@@ -66,9 +88,9 @@ def processar_pdfs():
         except Exception as e:
             print(f"  Erro em {arquivo}: {e}")
 
-    print(f"\nConcluído. Total de trechos no banco: {db_local.count_documents()} (adicionados agora: {total})")
+    print(f"\nConcluido. Total de trechos no banco: {db_local.count_documents()} (adicionados agora: {total})")
 
 
 if __name__ == "__main__":
-    print("Iniciando ingestão de conhecimento do Cyborg AI (SQLite local)...")
+    print("Iniciando ingestao de conhecimento do Cyborg AI (SQLite local)...")
     processar_pdfs()
