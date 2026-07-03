@@ -378,6 +378,22 @@ def admin_settings():
     })
 
 
+@app.route('/api/admin/export', methods=['POST'])
+def admin_export():
+    """Baixa o histórico completo em CSV (protegido pela senha de admin)."""
+    d = request.json or {}
+    if not ADMIN_PASSWORD:
+        return jsonify({"error": "Admin não configurado no servidor (defina ADMIN_PASSWORD no api/.env)."}), 503
+    if not _admin_ok(d.get("password")):
+        return jsonify({"error": "Senha incorreta."}), 401
+    csv_data = '\ufeff' + db_local.export_csv()  # BOM p/ acentos no Excel; delimitador ';'
+    return Response(
+        csv_data,
+        mimetype='text/csv; charset=utf-8',
+        headers={"Content-Disposition": "attachment; filename=historico_cyborg.csv"},
+    )
+
+
 @app.route('/api/guest_login', methods=['POST'])
 def guest_login():
     return jsonify({"user_id": str(uuid.uuid4()), "role": "guest"})
