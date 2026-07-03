@@ -37,7 +37,6 @@ const CYBORG = {
                                 JSON.parse(localStorage.getItem('cyborg_current_session')) ||
                                 { group: 'Individual/Visitante', topic: 'Geral' };
             const temaAtual = contextData.topic || 'Geral';
-            const userNameAtual = contextData.userName || '';
 
             window.systemLog(`Solicitando resposta (Tema: ${temaAtual} | RAG: ${window.useRag})`);
 
@@ -52,7 +51,6 @@ const CYBORG = {
                     messages: historyForAI,
                     tema: temaAtual,
                     grupo: contextData.group,
-                    userName: userNameAtual,
                     use_rag: window.useRag,
                     session_id: currentSessionId,
                     user_id: DB.user.id

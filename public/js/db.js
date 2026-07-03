@@ -31,8 +31,7 @@ const DB = {
                     user_id: DB.user.id,
                     title: primeiraMensagem,
                     grupo: ctx.group || 'Uso Individual',
-                    tema: ctx.topic || 'Geral',
-                    user_name: ctx.userName || null
+                    tema: ctx.topic || 'Geral'
                 })
             });
             if (!r.ok) throw new Error('HTTP ' + r.status);
