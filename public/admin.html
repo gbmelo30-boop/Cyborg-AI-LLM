@@ -71,6 +71,7 @@
         <div class="stat"><div class="n" id="s-mensagens">–</div><div class="l">Mensagens</div></div>
         <div class="stat"><div class="n" id="s-documentos">–</div><div class="l">Docs RAG</div></div>
       </div>
+      <button class="primary" style="margin-top:20px" onclick="baixarCSV()">Baixar histórico (CSV)</button>
       <div class="toast" id="toast"></div>
     </div>
   </div>
@@ -111,6 +112,22 @@
     const r = await api({ [chave]: valor });
     if (r.ok) { pintar(r.data); t.innerText = "Salvo ✓"; setTimeout(() => t.innerText = "", 1500); }
     else { t.innerText = "Falha ao salvar."; }
+  }
+  async function baixarCSV() {
+    const t = $('toast'); t.innerText = "Gerando CSV...";
+    try {
+      const r = await fetch('/api/admin/export', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: SENHA })
+      });
+      if (!r.ok) { t.innerText = "Falha ao gerar o CSV."; return; }
+      const blob = await r.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'historico_cyborg.csv';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      t.innerText = "Download iniciado ✓"; setTimeout(() => t.innerText = "", 2000);
+    } catch (e) { t.innerText = "Erro ao baixar."; }
   }
 </script>
 </body>
