@@ -50,17 +50,19 @@ except Exception as e:
     llm = None
 
 # 3. Carregamento do Embeddings para RAG
+# Modelo multilíngue (mesma dimensão 384) -> muito melhor p/ português. Override via env.
+EMBED_MODEL = os.getenv("EMBED_MODEL", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
 try:
-    embed_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    embed_model = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
 except Exception as e:
     logger.error(f"Erro ao carregar Embeddings: {e}")
     embed_model = None
 
 
 # --- Ajustes de RAG (enxuto: mais seletivo e rápido, sem janela gigante) ---
-RAG_MATCH_THRESHOLD = 0.55   # só injeta contexto realmente relevante; abaixo disso, usa o prompt puro
-RAG_MATCH_COUNT = 3          # recupera alguns candidatos e seleciona dentro do orçamento
-RAG_MAX_CHARS = 700          # orçamento enxuto de contexto -> velocidade e sem estourar o n_ctx
+RAG_MATCH_THRESHOLD = 0.45   # só injeta contexto realmente relevante; abaixo disso, usa o prompt puro
+RAG_MATCH_COUNT = 4          # recupera alguns candidatos e seleciona dentro do orçamento
+RAG_MAX_CHARS = 900          # orçamento enxuto de contexto -> velocidade e sem estourar o n_ctx
 
 
 def buscar_contexto(pergunta):
@@ -211,11 +213,13 @@ FECHAMENTO:
         if contexto_rag:
             final_content = (
                 "[MATERIAL DE APOIO — uso interno, NÃO exibir ao usuário]\n"
-                "As anotações abaixo servem apenas como repertório de fundo para enriquecer a sua "
-                "reflexão. NÃO as cite, não copie trechos, não as trate como fatos a relatar e não "
-                "deixe que mudem o seu tom: mantenha exatamente o estilo reflexivo, fluido e "
-                "provocativo definido nas instruções. Se não forem úteis, ignore-as.\n\n"
-                f"ANOTAÇÕES:\n{contexto_rag}\n\n"
+                "Use as ideias abaixo como repertório para APROFUNDAR e ENRIQUECER a sua reflexão "
+                "sobre a fala do usuário — elas trazem conceitos e ângulos úteis do referencial da "
+                "pesquisa. Incorpore o que for pertinente de forma natural, com AS SUAS palavras, "
+                "sem citar, sem copiar trechos e sem nomear fontes, mantendo exatamente o seu estilo "
+                "reflexivo, fluido e provocativo. Deixe a resposta mais rica e específica do que "
+                "seria sem esse repertório. Se algum trecho não ajudar, ignore-o.\n\n"
+                f"REPERTÓRIO:\n{contexto_rag}\n\n"
                 "---\n"
                 f"MENSAGEM DO USUÁRIO (responda a isto, no seu estilo):\n{last_user_msg}"
             )

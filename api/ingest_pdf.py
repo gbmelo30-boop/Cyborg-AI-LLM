@@ -11,7 +11,8 @@ from langchain_huggingface import HuggingFaceEmbeddings
 
 import db_local
 
-embed_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+EMBED_MODEL = os.getenv("EMBED_MODEL", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+embed_model = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
 
 
 def split_text(texto, chunk_size=1000, overlap=150):
@@ -74,7 +75,7 @@ def processar_pdfs():
                 print(f"  {arquivo} ignorado: sem texto extraível.")
                 continue
 
-            chunks = split_text(texto_completo, chunk_size=1000, overlap=150)
+            chunks = split_text(texto_completo, chunk_size=800, overlap=120)
             print(f"  {len(chunks)} trechos.")
 
             for i, chunk_text in enumerate(chunks):
