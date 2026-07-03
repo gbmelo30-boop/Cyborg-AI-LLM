@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cyborg AI — Painel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg:#0d1117; --card:#161b22; --border:#30363d; --text:#e6edf3; --muted:#7d8590; --acc:#7DF9FF; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; min-height:100vh; background:var(--bg); color:var(--text); font-family:'Share Tech Mono',monospace; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .card{ width:100%; max-width:520px; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:28px; }
+  h1{ font-size:1.4em; letter-spacing:2px; margin:0 0 4px; }
+  .sub{ color:var(--muted); font-size:.85em; margin-bottom:22px; }
+  .acc{ color:var(--acc); }
+  label.f{ display:block; font-size:.8em; color:var(--muted); margin-bottom:6px; }
+  input[type=password]{ width:100%; background:var(--bg); border:1px solid var(--border); color:var(--text); border-radius:8px; padding:12px; font-family:inherit; font-size:1em; outline:none; }
+  input[type=password]:focus{ border-color:var(--acc); }
+  button.primary{ width:100%; margin-top:16px; padding:13px; background:var(--acc); color:#06202b; border:none; border-radius:8px; font-family:inherit; font-weight:700; letter-spacing:1px; cursor:pointer; }
+  button.primary:hover{ filter:brightness(1.1); }
+  .row{ display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 0; border-bottom:1px solid var(--border); }
+  .row .t{ font-size:1.05em; }
+  .row .d{ font-size:.8em; color:var(--muted); }
+  .switch{ position:relative; display:inline-block; width:52px; height:26px; flex-shrink:0; }
+  .switch input{ opacity:0; width:0; height:0; }
+  .slider{ position:absolute; cursor:pointer; inset:0; background:#333; transition:.3s; border-radius:34px; border:1px solid var(--border); }
+  .slider:before{ position:absolute; content:""; height:18px; width:18px; left:4px; bottom:3px; background:#fff; transition:.3s; border-radius:50%; }
+  input:checked + .slider{ background:var(--acc); }
+  input:checked + .slider:before{ transform:translateX(24px); }
+  .stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:22px; }
+  .stat{ background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:14px; text-align:center; }
+  .stat .n{ font-size:1.6em; color:var(--acc); }
+  .stat .l{ font-size:.72em; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
+  .err{ color:#ff6b6b; font-size:.85em; margin-top:12px; min-height:18px; text-align:center; }
+  .hidden{ display:none; }
+  .toast{ text-align:center; font-size:.8em; color:var(--muted); margin-top:14px; min-height:16px; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>CYBORG <span class="acc">// PAINEL</span></h1>
+    <div class="sub">Controle interno (acesso restrito).</div>
+
+    <div id="gate">
+      <label class="f">Senha de administrador</label>
+      <input type="password" id="pw" placeholder="Digite a senha..." autocomplete="off"
+             onkeydown="if(event.key==='Enter') entrar()">
+      <button class="primary" onclick="entrar()">ENTRAR</button>
+      <div class="err" id="err"></div>
+    </div>
+
+    <div id="panel" class="hidden">
+      <div class="row">
+        <div>
+          <div class="t">Gravar conversas no BD</div>
+          <div class="d">Quando desligado, o chat funciona mas nada é salvo.</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="t-gravar" onchange="salvar('gravar_no_bd', this.checked)"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div>
+          <div class="t">RAG ligado por padrão</div>
+          <div class="d">Define, para todos, se o RAG começa ligado.</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="t-rag" onchange="salvar('rag_padrao', this.checked)"><span class="slider"></span></label>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="n" id="s-sessoes">–</div><div class="l">Sessões</div></div>
+        <div class="stat"><div class="n" id="s-mensagens">–</div><div class="l">Mensagens</div></div>
+        <div class="stat"><div class="n" id="s-documentos">–</div><div class="l">Docs RAG</div></div>
+      </div>
+      <div class="toast" id="toast"></div>
+    </div>
+  </div>
+
+<script>
+  let SENHA = "";
+  const $ = id => document.getElementById(id);
+
+  async function api(updates) {
+    const body = { password: SENHA };
+    if (updates) body.updates = updates;
+    const r = await fetch('/api/admin/settings', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+    });
+    const data = await r.json().catch(() => ({}));
+    return { ok: r.ok, status: r.status, data };
+  }
+
+  function pintar(d) {
+    $('t-gravar').checked = !!d.config.gravar_no_bd;
+    $('t-rag').checked = !!d.config.rag_padrao;
+    $('s-sessoes').innerText = d.stats.sessoes;
+    $('s-mensagens').innerText = d.stats.mensagens;
+    $('s-documentos').innerText = d.stats.documentos;
+  }
+
+  async function entrar() {
+    SENHA = $('pw').value;
+    $('err').innerText = "";
+    const r = await api(null);
+    if (r.ok) { $('gate').classList.add('hidden'); $('panel').classList.remove('hidden'); pintar(r.data); }
+    else if (r.status === 401) $('err').innerText = "Senha incorreta.";
+    else $('err').innerText = (r.data && r.data.error) || "Erro ao acessar o painel.";
+  }
+
+  async function salvar(chave, valor) {
+    const t = $('toast'); t.innerText = "Salvando...";
+    const r = await api({ [chave]: valor });
+    if (r.ok) { pintar(r.data); t.innerText = "Salvo ✓"; setTimeout(() => t.innerText = "", 1500); }
+    else { t.innerText = "Falha ao salvar."; }
+  }
+</script>
+</body>
+</html>
