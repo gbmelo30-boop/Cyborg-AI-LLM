@@ -950,3 +950,44 @@ input:checked + .slider:before { transform: translateX(26px); }
     height: 0;
     display: none;                /* Chrome / Safari / Edge */
 }
+
+
+/* ============================================================================== */
+/* Painel admin (modal in-app)                                                    */
+/* ============================================================================== */
+.hidden-admin { display: none !important; }
+#modal-admin .admin-label { font-size: 0.85em; color: var(--secondary-text-color); margin-bottom: 8px; }
+#modal-admin .pw-wrap { position: relative; }
+#modal-admin .admin-input {
+    width: 100%; box-sizing: border-box;
+    background: var(--chat-bg); color: var(--primary-text-color);
+    border: 1px solid var(--border-color); border-radius: 8px;
+    padding: 13px 46px 13px 14px; font-family: inherit; font-size: 1em; outline: none;
+}
+#modal-admin .admin-input:focus { border-color: var(--led-static-blue); }
+#modal-admin .eye {
+    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    background: transparent; border: none; color: var(--secondary-text-color);
+    cursor: pointer; padding: 6px; display: flex; align-items: center;
+}
+#modal-admin .eye:hover { color: var(--led-static-blue); }
+#modal-admin .btn-admin-primary {
+    width: 100%; margin-top: 16px; padding: 13px; background: var(--led-static-blue);
+    color: #06202b; border: none; border-radius: 8px; font-family: inherit;
+    font-weight: bold; letter-spacing: 1px; cursor: pointer;
+}
+#modal-admin .btn-admin-primary:hover { filter: brightness(1.1); }
+#modal-admin .btn-admin-danger {
+    width: 100%; margin-top: 10px; padding: 12px; background: transparent;
+    color: #ff6b6b; border: 1px solid #ff6b6b; border-radius: 8px; font-family: inherit;
+    font-weight: bold; letter-spacing: 1px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+#modal-admin .btn-admin-danger:hover { background: rgba(255,107,107,0.12); }
+#modal-admin .btn-admin-danger svg { width: 18px; height: 18px; fill: currentColor; }
+#modal-admin .admin-err { color: #ff6b6b; font-size: 0.85em; margin-top: 12px; min-height: 18px; text-align: center; }
+#modal-admin .admin-toast { text-align: center; font-size: 0.8em; color: var(--secondary-text-color); margin-top: 14px; min-height: 16px; }
+#modal-admin .admin-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 22px; }
+#modal-admin .admin-stat { background: var(--chat-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; text-align: center; }
+#modal-admin .admin-stat .n { font-size: 1.5em; color: var(--led-static-blue); }
+#modal-admin .admin-stat .l { font-size: 0.7em; color: var(--secondary-text-color); text-transform: uppercase; letter-spacing: 1px; }
