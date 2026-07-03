@@ -340,7 +340,7 @@ window.addMessage = function(author, content, isHtml = false, timestamp = null) 
     const metaDiv = document.createElement('div');
     metaDiv.className = 'message-meta';
     const iconHtml = isBot
-        ? `<svg class="header-halo" style="width:16px;height:16px;" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="none" stroke-width="2.2" stroke-dasharray="14.6 2.2" stroke-linecap="round" transform="rotate(-90 10 10)"/></svg>`
+        ? `<svg class="header-halo" style="width:16px;height:16px;" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="none" stroke-width="2.2" stroke-linecap="round" transform="rotate(-90 10 10)"/></svg>`
         : `<div style="width:12px;height:12px;background:var(--secondary-text-color);border-radius:50%;opacity:0.7;"></div>`;
     metaDiv.innerHTML = `${iconHtml} <span>${author}</span>`;
 
@@ -392,7 +392,7 @@ window.handleChatSubmit = async (e) => {
         <div class="message-meta">
             <svg class="header-halo led-loading" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="10" cy="10" r="8" fill="none" stroke-width="2.2"
-                    stroke-dasharray="14.6 2.2" stroke-linecap="round"
+                    stroke-linecap="round"
                     transform="rotate(-90 10 10)"/>
             </svg>
             <span>${BOT_NAME}</span>
@@ -545,6 +545,8 @@ window.abrirAdmin = function() {
     const eye = document.getElementById('admin-eye-svg'); if (eye) eye.innerHTML = __ADMIN_EYE_ON;
     const err = document.getElementById('admin-err'); if (err) err.innerText = "";
     document.getElementById('admin-panel').classList.add('hidden-admin');
+    const sv = document.getElementById('admin-stats-view'); if (sv) sv.classList.add('hidden-admin');
+    const mv = document.getElementById('admin-messages-view'); if (mv) mv.classList.add('hidden-admin');
     document.getElementById('admin-gate').classList.remove('hidden-admin');
     if (window.closeModal) window.closeModal('modal-config');
     window.openModal('modal-admin');
@@ -552,15 +554,19 @@ window.abrirAdmin = function() {
 };
 
 window.adminVoltar = function() {
-    const panel = document.getElementById('admin-panel');
-    if (panel && !panel.classList.contains('hidden-admin')) {
-        panel.classList.add('hidden-admin');
-        document.getElementById('admin-gate').classList.remove('hidden-admin');
-        __adminSenha = "";
-        const pw = document.getElementById('admin-pw'); if (pw) pw.value = "";
-    } else {
-        window.closeModal('modal-admin');
+    const msgs = document.getElementById('admin-messages-view');
+    const stats = document.getElementById('admin-stats-view');
+    if (msgs && !msgs.classList.contains('hidden-admin')) {
+        msgs.classList.add('hidden-admin');
+        stats.classList.remove('hidden-admin');
+        return;
     }
+    if (stats && !stats.classList.contains('hidden-admin')) {
+        stats.classList.add('hidden-admin');
+        document.getElementById('admin-panel').classList.remove('hidden-admin');
+        return;
+    }
+    window.closeModal('modal-admin');
 };
 
 window.adminToggleSenha = function() {
@@ -643,3 +649,71 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     } catch (e) {}
 });
+
+
+// ---- Estatísticas e conversas (admin) ----
+function __escapeHtml(x) {
+    return String(x == null ? '' : x).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function __adminFmtData(iso) {
+    try { return new Date(iso).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
+    catch (e) { return iso || ''; }
+}
+
+window.adminAbrirStats = async function() {
+    document.getElementById('admin-panel').classList.add('hidden-admin');
+    document.getElementById('admin-messages-view').classList.add('hidden-admin');
+    document.getElementById('admin-stats-view').classList.remove('hidden-admin');
+    await adminCarregarSessoes();
+};
+
+async function adminCarregarSessoes() {
+    const lista = document.getElementById('admin-sessoes-lista');
+    lista.innerHTML = '<div class="admin-empty">Carregando...</div>';
+    try {
+        const r = await __adminApi('/api/admin/sessions', { password: __adminSenha });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) { lista.innerHTML = '<div class="admin-empty">Erro ao carregar.</div>'; return; }
+        if (data.stats) __adminStats(data.stats);
+        const sess = data.sessoes || [];
+        if (!sess.length) { lista.innerHTML = '<div class="admin-empty">Nenhuma conversa registrada.</div>'; return; }
+        lista.innerHTML = '';
+        sess.forEach(sx => {
+            const div = document.createElement('div');
+            div.className = 'admin-list-item';
+            div.onclick = () => adminVerMensagens(sx.id, sx);
+            const usuario = sx.user_name || sx.user_id || '—';
+            div.innerHTML =
+                '<div class="ali-top"><span class="ali-user">' + __escapeHtml(usuario) + '</span>' +
+                '<span class="ali-count">' + sx.n_msgs + ' msg</span></div>' +
+                '<div class="ali-sub">' + __escapeHtml(sx.grupo || '') + ' \u00b7 ' + __escapeHtml(sx.tema || '') + ' \u00b7 ' + __adminFmtData(sx.created_at) + '</div>' +
+                '<div class="ali-title">' + __escapeHtml(sx.title || '') + '</div>';
+            lista.appendChild(div);
+        });
+    } catch (e) { lista.innerHTML = '<div class="admin-empty">Erro de conexão.</div>'; }
+}
+
+window.adminVerMensagens = async function(sessionId, sx) {
+    document.getElementById('admin-stats-view').classList.add('hidden-admin');
+    document.getElementById('admin-messages-view').classList.remove('hidden-admin');
+    const usuario = sx ? (sx.user_name || sx.user_id || '—') : '';
+    document.getElementById('admin-msg-titulo').innerText = 'Conversa de ' + usuario;
+    const lista = document.getElementById('admin-mensagens-lista');
+    lista.innerHTML = '<div class="admin-empty">Carregando...</div>';
+    try {
+        const r = await __adminApi('/api/admin/messages', { password: __adminSenha, session_id: sessionId });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) { lista.innerHTML = '<div class="admin-empty">Erro ao carregar.</div>'; return; }
+        const msgs = data.mensagens || [];
+        if (!msgs.length) { lista.innerHTML = '<div class="admin-empty">Sem mensagens.</div>'; return; }
+        lista.innerHTML = '';
+        msgs.forEach(m => {
+            const div = document.createElement('div');
+            div.className = 'admin-msg ' + (m.role === 'user' ? 'admin-msg-user' : 'admin-msg-bot');
+            div.innerHTML =
+                '<div class="am-role">' + (m.role === 'user' ? 'Usuário' : 'Cyborg AI') + ' \u00b7 ' + __adminFmtData(m.created_at) + '</div>' +
+                '<div class="am-text">' + __escapeHtml(m.content || '') + '</div>';
+            lista.appendChild(div);
+        });
+    } catch (e) { lista.innerHTML = '<div class="admin-empty">Erro de conexão.</div>'; }
+};

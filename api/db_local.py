@@ -108,6 +108,18 @@ def clear_history():
         c.execute("DELETE FROM chat_sessions")
 
 
+def list_all_sessions():
+    """Todas as sessões (inclui ocultas) com contagem de mensagens — uso admin."""
+    with _conn() as c:
+        rows = c.execute(
+            "SELECT s.id, s.user_id, s.user_name, s.grupo, s.tema, s.title, s.created_at, "
+            "       s.oculta_para_usuario, "
+            "       (SELECT COUNT(*) FROM chat_messages m WHERE m.session_id = s.id) AS n_msgs "
+            "FROM chat_sessions s ORDER BY s.created_at DESC"
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
 def stats():
     with _conn() as c:
         ns = c.execute("SELECT COUNT(*) AS n FROM chat_sessions").fetchone()["n"]
