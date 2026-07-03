@@ -394,6 +394,18 @@ def admin_export():
     )
 
 
+@app.route('/api/admin/clear_history', methods=['POST'])
+def admin_clear_history():
+    """Apaga todo o histórico (sessões + mensagens). Protegido pela senha admin."""
+    d = request.json or {}
+    if not ADMIN_PASSWORD:
+        return jsonify({"error": "Admin não configurado no servidor (defina ADMIN_PASSWORD no api/.env)."}), 503
+    if not _admin_ok(d.get("password")):
+        return jsonify({"error": "Senha incorreta."}), 401
+    db_local.clear_history()
+    return jsonify({"ok": True, "stats": db_local.stats()})
+
+
 @app.route('/api/guest_login', methods=['POST'])
 def guest_login():
     return jsonify({"user_id": str(uuid.uuid4()), "role": "guest"})

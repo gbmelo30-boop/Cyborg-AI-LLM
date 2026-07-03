@@ -101,6 +101,13 @@ def get_bool(chave, default=False):
     return str(v).lower() in ("1", "true", "yes", "on", "sim")
 
 
+def clear_history():
+    """Apaga TODAS as sessões e mensagens (não mexe nos documentos do RAG)."""
+    with _lock, _conn() as c:
+        c.execute("DELETE FROM chat_messages")
+        c.execute("DELETE FROM chat_sessions")
+
+
 def stats():
     with _conn() as c:
         ns = c.execute("SELECT COUNT(*) AS n FROM chat_sessions").fetchone()["n"]
