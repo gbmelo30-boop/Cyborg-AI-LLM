@@ -406,6 +406,29 @@ def admin_clear_history():
     return jsonify({"ok": True, "stats": db_local.stats()})
 
 
+@app.route('/api/admin/sessions', methods=['POST'])
+def admin_sessions():
+    d = request.json or {}
+    if not ADMIN_PASSWORD:
+        return jsonify({"error": "Admin não configurado no servidor (defina ADMIN_PASSWORD no api/.env)."}), 503
+    if not _admin_ok(d.get("password")):
+        return jsonify({"error": "Senha incorreta."}), 401
+    return jsonify({"sessoes": db_local.list_all_sessions(), "stats": db_local.stats()})
+
+
+@app.route('/api/admin/messages', methods=['POST'])
+def admin_messages():
+    d = request.json or {}
+    if not ADMIN_PASSWORD:
+        return jsonify({"error": "Admin não configurado no servidor (defina ADMIN_PASSWORD no api/.env)."}), 503
+    if not _admin_ok(d.get("password")):
+        return jsonify({"error": "Senha incorreta."}), 401
+    sid = d.get("session_id")
+    if not sid:
+        return jsonify({"error": "session_id obrigatório"}), 400
+    return jsonify({"mensagens": db_local.get_messages(sid)})
+
+
 @app.route('/api/guest_login', methods=['POST'])
 def guest_login():
     return jsonify({"user_id": str(uuid.uuid4()), "role": "guest"})

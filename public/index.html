@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Cyborg AI</title>
 
-    <link rel="stylesheet" href="css/style.css?v=6">
+    <link rel="stylesheet" href="css/style.css?v=7">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -137,7 +137,7 @@
                         <div class="brand-container" style="margin-left: 15px;">
                             <svg class="header-halo" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                 <circle cx="10" cy="10" r="8" fill="none" stroke-width="2.2"
-                                    stroke-dasharray="14.6 2.2" stroke-linecap="round"
+                                    stroke-linecap="round"
                                     transform="rotate(-90 10 10)"/>
                             </svg>
                             <span class="cyborg-brand">Cyborg AI</span>
@@ -272,14 +272,25 @@
                                 </div>
                                 <label class="switch"><input type="checkbox" id="admin-t-rag" onchange="adminSalvar('rag_padrao', this.checked)"><span class="slider"></span></label>
                             </div>
+                            <button class="btn-admin-secondary" onclick="adminAbrirStats()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 9.2h3V19H5V9.2zM10.6 5h2.8v14h-2.8V5zm5.6 8H19v6h-2.8v-6z"/></svg> Estatísticas e conversas</button>
+                            <button class="btn-admin-primary" style="margin-top:20px;" onclick="adminBaixarCSV()">Baixar histórico (CSV)</button>
+                            <button class="btn-admin-danger" onclick="adminApagar()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg> Apagar histórico</button>
+                            <div class="admin-toast" id="admin-toast"></div>
+                        </div>
+
+                        <div id="admin-stats-view" class="hidden-admin">
                             <div class="admin-stats">
                                 <div class="admin-stat"><div class="n" id="admin-s-sessoes">–</div><div class="l">Sessões</div></div>
                                 <div class="admin-stat"><div class="n" id="admin-s-mensagens">–</div><div class="l">Mensagens</div></div>
                                 <div class="admin-stat"><div class="n" id="admin-s-docs">–</div><div class="l">Docs RAG</div></div>
                             </div>
-                            <button class="btn-admin-primary" style="margin-top:20px;" onclick="adminBaixarCSV()">Baixar histórico (CSV)</button>
-                            <button class="btn-admin-danger" onclick="adminApagar()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg> Apagar histórico</button>
-                            <div class="admin-toast" id="admin-toast"></div>
+                            <div class="admin-subtitle">Conversas</div>
+                            <div id="admin-sessoes-lista" class="admin-list"></div>
+                        </div>
+
+                        <div id="admin-messages-view" class="hidden-admin">
+                            <div class="admin-subtitle" id="admin-msg-titulo">Mensagens</div>
+                            <div id="admin-mensagens-lista" class="admin-list"></div>
                         </div>
                     </div>
                 </div>
@@ -305,7 +316,7 @@
     <script src="js/config.js?v=7"></script>
     <script src="js/db.js?v=7"></script>
     <script src="js/cyborg.js?v=7"></script>
-    <script src="js/app.js?v=9"></script>
+    <script src="js/app.js?v=10"></script>
 
 </body>
 </html>

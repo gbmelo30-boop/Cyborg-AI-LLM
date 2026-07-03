@@ -612,17 +612,17 @@ body.light-theme #view-chat {
     height: 36px;
     border-radius: 50%;
     background-color: transparent;
-    border: 1px solid var(--border-color);
+    border: none;
     color: var(--secondary-text-color);
     cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-shrink: 0;
-    transition: background-color 0.2s, color 0.2s;
+    transition: color 0.2s;
 }
 #send-button:hover {
-    background-color: var(--component-hover-bg);
+    background-color: transparent;
     color: var(--primary-text-color);
 }
 
@@ -991,3 +991,25 @@ input:checked + .slider:before { transform: translateX(26px); }
 #modal-admin .admin-stat { background: var(--chat-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; text-align: center; }
 #modal-admin .admin-stat .n { font-size: 1.5em; color: var(--led-static-blue); }
 #modal-admin .admin-stat .l { font-size: 0.7em; color: var(--secondary-text-color); text-transform: uppercase; letter-spacing: 1px; }
+
+/* ============================================================================== */
+/* Painel admin — estatísticas e conversas                                        */
+/* ============================================================================== */
+#modal-admin .btn-admin-secondary { width:100%; margin-top:22px; padding:13px; background:transparent; color:var(--led-static-blue); border:1px solid var(--led-static-blue); border-radius:8px; font-family:inherit; font-weight:bold; letter-spacing:1px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
+#modal-admin .btn-admin-secondary:hover { background:rgba(125,249,255,0.1); }
+#modal-admin .btn-admin-secondary svg { width:18px; height:18px; fill:currentColor; }
+#modal-admin .admin-subtitle { margin:20px 0 10px; font-size:0.85em; color:var(--secondary-text-color); text-transform:uppercase; letter-spacing:1px; }
+#modal-admin .admin-list { max-height:320px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding-right:4px; }
+#modal-admin .admin-list-item { background:var(--chat-bg); border:1px solid var(--border-color); border-radius:8px; padding:12px; cursor:pointer; transition:border-color .2s; }
+#modal-admin .admin-list-item:hover { border-color:var(--led-static-blue); }
+#modal-admin .ali-top { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+#modal-admin .ali-user { font-weight:bold; color:var(--primary-text-color); }
+#modal-admin .ali-count { font-size:0.72em; color:var(--led-static-blue); flex-shrink:0; }
+#modal-admin .ali-sub { font-size:0.72em; color:var(--secondary-text-color); margin-top:3px; }
+#modal-admin .ali-title { font-size:0.85em; color:var(--secondary-text-color); margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#modal-admin .admin-empty { text-align:center; color:var(--secondary-text-color); padding:18px; font-size:0.85em; }
+#modal-admin .admin-msg { border-radius:8px; padding:10px 12px; border:1px solid var(--border-color); }
+#modal-admin .admin-msg-user { background:var(--user-message-bg); }
+#modal-admin .admin-msg-bot { background:var(--bot-message-bg); }
+#modal-admin .am-role { font-size:0.72em; color:var(--secondary-text-color); margin-bottom:4px; }
+#modal-admin .am-text { font-size:0.9em; color:var(--primary-text-color); white-space:pre-wrap; word-break:break-word; }
