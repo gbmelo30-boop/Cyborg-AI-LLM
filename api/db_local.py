@@ -7,6 +7,7 @@ import os
 import io
 import csv
 import uuid
+import hashlib
 import sqlite3
 import threading
 from datetime import datetime, timezone, timedelta
@@ -76,6 +77,8 @@ def init_db():
         # Valores padrão do painel admin (só inserem se ainda não existirem)
         c.execute("INSERT OR IGNORE INTO config (chave,valor) VALUES ('gravar_no_bd','true')")
         c.execute("INSERT OR IGNORE INTO config (chave,valor) VALUES ('rag_padrao','false')")
+        # Anonimizacao: garante que nenhum nome real fique guardado no banco.
+        c.execute("UPDATE chat_sessions SET user_name=NULL WHERE user_name IS NOT NULL")
 
 
 # ------------------------------------------------------------------- Config (admin)
@@ -117,7 +120,13 @@ def list_all_sessions():
             "       (SELECT COUNT(*) FROM chat_messages m WHERE m.session_id = s.id) AS n_msgs "
             "FROM chat_sessions s ORDER BY s.created_at DESC"
         ).fetchall()
-    return [dict(r) for r in rows]
+    out = []
+    for r in rows:
+        d = dict(r)
+        d["participante"] = anon_label(d.get("user_id"))
+        d["user_name"] = d["participante"]
+        out.append(d)
+    return out
 
 
 def stats():
@@ -129,9 +138,19 @@ def stats():
 
 
 # ------------------------------------------------------------------ Sessoes
+def anon_label(user_id):
+    """Rotulo anonimo e estavel por participante (derivado do ID do navegador).
+    Dois usuarios que digitem o mesmo nome recebem rotulos diferentes."""
+    if not user_id:
+        return "Participante ?"
+    codigo = hashlib.sha1(str(user_id).encode("utf-8")).hexdigest()[:6].upper()
+    return "Participante " + codigo
+
+
 def create_session(user_id, title, grupo="Uso Individual", tema="Geral", user_name=None):
     sid = str(uuid.uuid4())
     ts = now_iso()
+    user_name = None  # anonimizacao: o nome real nunca e gravado
     raw = (title or "").strip()
     titulo = (raw[:30] + "...") if len(raw) > 30 else (raw or "Nova conversa")
     if not get_bool("gravar_no_bd", True):
@@ -237,11 +256,11 @@ def export_csv(user_id=None, delimiter=";"):
 
     buf = io.StringIO()
     w = csv.writer(buf, delimiter=delimiter)
-    w.writerow(["session_id", "usuario", "grupo", "tema", "pergunta", "resposta", "data_hora"])
+    w.writerow(["session_id", "participante", "grupo", "tema", "pergunta", "resposta", "data_hora"])
     with _conn() as c:
         sessions = c.execute(q, params).fetchall()
         for s in sessions:
-            usuario = s["user_name"] or s["user_id"] or ""
+            participante = anon_label(s["user_id"])
             msgs = c.execute(
                 "SELECT role,content,created_at FROM chat_messages WHERE session_id=? ORDER BY created_at ASC",
                 (s["id"],),
@@ -257,7 +276,7 @@ def export_csv(user_id=None, delimiter=";"):
                         i += 2
                     else:
                         i += 1
-                    w.writerow([s["id"], usuario, s["grupo"], s["tema"], pergunta, resposta, data_hora])
+                    w.writerow([s["id"], participante, s["grupo"], s["tema"], pergunta, resposta, data_hora])
                 else:
                     i += 1
     return buf.getvalue()

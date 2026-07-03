@@ -251,7 +251,7 @@ def chat():
     
     # O front-end envia o tema e o ID da sessão que ele acabou de criar/usar
     tema_pesquisa = data.get('tema') or data.get('topic') or 'Sem Tema'
-    user_name = (data.get('userName') or '').strip()
+    user_name = ""  # anonimizacao: o backend nao usa/guarda o nome real
     session_id = data.get('session_id') 
     
     if not messages:
