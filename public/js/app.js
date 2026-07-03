@@ -477,7 +477,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const userInput = document.getElementById('user-input');
     if(userInput) {
         userInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); window.handleChatSubmit(e); }
+            if (e.key !== 'Enter' || e.isComposing) return;
+            if (e.ctrlKey || e.metaKey || e.shiftKey) {
+                // Ctrl/Cmd/Shift + Enter -> quebra de linha
+                e.preventDefault();
+                const el = e.target;
+                const ini = el.selectionStart, fim = el.selectionEnd;
+                el.value = el.value.slice(0, ini) + '\n' + el.value.slice(fim);
+                el.selectionStart = el.selectionEnd = ini + 1;
+                el.style.height = 'auto';
+                el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+                el.scrollTop = el.scrollHeight;
+            } else {
+                // Enter puro -> enviar (desktop e celular)
+                e.preventDefault();
+                window.handleChatSubmit(e);
+            }
         });
         userInput.addEventListener('focus', () => {
             setTimeout(() => {
@@ -517,3 +532,114 @@ async function aplicarConfigServidor() {
     } catch (e) {}
 }
 document.addEventListener('DOMContentLoaded', aplicarConfigServidor);
+
+
+// ===================== Painel admin (modal in-app) =====================
+let __adminSenha = "";
+const __ADMIN_EYE_ON = '<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12.5a5 5 0 110-10 5 5 0 010 10zm0-8a3 3 0 100 6 3 3 0 000-6z"/>';
+const __ADMIN_EYE_OFF = '<path d="M12 7a5 5 0 015 5c0 .64-.13 1.25-.36 1.82l2.92 2.92c1.51-1.26 2.7-2.89 3.44-4.74C21.27 7.61 17 4.5 12 4.5c-1.4 0-2.74.25-3.98.7l2.16 2.16c.57-.23 1.18-.36 1.82-.36zM2 4.27l2.28 2.28.46.46A11.8 11.8 0 001 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65a3 3 0 003 3c.22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53a5 5 0 01-5-5c0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16a3 3 0 00-3-3l-.17.01z"/>';
+
+window.abrirAdmin = function() {
+    __adminSenha = "";
+    const pw = document.getElementById('admin-pw'); if (pw) { pw.value = ""; pw.type = "password"; }
+    const eye = document.getElementById('admin-eye-svg'); if (eye) eye.innerHTML = __ADMIN_EYE_ON;
+    const err = document.getElementById('admin-err'); if (err) err.innerText = "";
+    document.getElementById('admin-panel').classList.add('hidden-admin');
+    document.getElementById('admin-gate').classList.remove('hidden-admin');
+    if (window.closeModal) window.closeModal('modal-config');
+    window.openModal('modal-admin');
+    if (pw) setTimeout(() => pw.focus(), 120);
+};
+
+window.adminVoltar = function() {
+    const panel = document.getElementById('admin-panel');
+    if (panel && !panel.classList.contains('hidden-admin')) {
+        panel.classList.add('hidden-admin');
+        document.getElementById('admin-gate').classList.remove('hidden-admin');
+        __adminSenha = "";
+        const pw = document.getElementById('admin-pw'); if (pw) pw.value = "";
+    } else {
+        window.closeModal('modal-admin');
+    }
+};
+
+window.adminToggleSenha = function() {
+    const inp = document.getElementById('admin-pw');
+    const mostrando = inp.type === 'text';
+    inp.type = mostrando ? 'password' : 'text';
+    document.getElementById('admin-eye-svg').innerHTML = mostrando ? __ADMIN_EYE_ON : __ADMIN_EYE_OFF;
+};
+
+async function __adminApi(path, body) {
+    return fetch(`${API_BASE_URL}${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+}
+function __adminStats(st) {
+    if (!st) return;
+    document.getElementById('admin-s-sessoes').innerText = st.sessoes;
+    document.getElementById('admin-s-mensagens').innerText = st.mensagens;
+    document.getElementById('admin-s-docs').innerText = st.documentos;
+}
+function __adminPintar(d) {
+    document.getElementById('admin-t-gravar').checked = !!d.config.gravar_no_bd;
+    document.getElementById('admin-t-rag').checked = !!d.config.rag_padrao;
+    __adminStats(d.stats);
+}
+
+window.adminEntrar = async function() {
+    __adminSenha = document.getElementById('admin-pw').value;
+    const err = document.getElementById('admin-err'); err.innerText = "";
+    try {
+        const r = await __adminApi('/api/admin/settings', { password: __adminSenha });
+        const data = await r.json().catch(() => ({}));
+        if (r.ok) {
+            document.getElementById('admin-gate').classList.add('hidden-admin');
+            document.getElementById('admin-panel').classList.remove('hidden-admin');
+            __adminPintar(data);
+        } else if (r.status === 401) { err.innerText = "Senha incorreta."; }
+        else { err.innerText = data.error || "Erro ao acessar o painel."; }
+    } catch (e) { err.innerText = "Erro de conexão."; }
+};
+
+window.adminSalvar = async function(chave, valor) {
+    const t = document.getElementById('admin-toast'); t.innerText = "Salvando...";
+    try {
+        const r = await __adminApi('/api/admin/settings', { password: __adminSenha, updates: { [chave]: valor } });
+        const data = await r.json().catch(() => ({}));
+        if (r.ok) { __adminPintar(data); t.innerText = "Salvo \u2713"; setTimeout(() => t.innerText = "", 1500); }
+        else t.innerText = "Falha ao salvar.";
+    } catch (e) { t.innerText = "Erro ao salvar."; }
+};
+
+window.adminBaixarCSV = async function() {
+    const t = document.getElementById('admin-toast'); t.innerText = "Gerando CSV...";
+    try {
+        const r = await __adminApi('/api/admin/export', { password: __adminSenha });
+        if (!r.ok) { t.innerText = "Falha ao gerar o CSV."; return; }
+        const blob = await r.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'historico_cyborg.csv';
+        document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+        t.innerText = "Download iniciado \u2713"; setTimeout(() => t.innerText = "", 2000);
+    } catch (e) { t.innerText = "Erro ao baixar."; }
+};
+
+window.adminApagar = async function() {
+    if (!confirm('Apagar TODAS as sessões e mensagens do banco? Esta ação não pode ser desfeita.')) return;
+    const t = document.getElementById('admin-toast'); t.innerText = "Apagando...";
+    try {
+        const r = await __adminApi('/api/admin/clear_history', { password: __adminSenha });
+        const data = await r.json().catch(() => ({}));
+        if (r.ok) { __adminStats(data.stats); t.innerText = "Histórico apagado \u2713"; setTimeout(() => t.innerText = "", 2000); }
+        else t.innerText = data.error || "Falha ao apagar.";
+    } catch (e) { t.innerText = "Erro ao apagar."; }
+};
+
+// Acesso pela URL secreta: admin.html redireciona para index.html?admin=1
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        if (new URLSearchParams(location.search).get('admin') === '1') {
+            window.switchView('view-chat');
+            setTimeout(() => window.abrirAdmin(), 300);
+        }
+    } catch (e) {}
+});
