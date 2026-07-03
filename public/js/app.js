@@ -501,3 +501,19 @@ if (window.visualViewport) {
         }
     });
 }
+
+
+// Aplica a config global do servidor (ex.: RAG ligado por padrão) no carregamento
+async function aplicarConfigServidor() {
+    try {
+        const r = await fetch(`${API_BASE_URL}/api/config`);
+        if (!r.ok) return;
+        const cfg = await r.json();
+        window.useRag = !!cfg.rag_padrao;
+        const chk = document.getElementById('rag-toggle');
+        const st = document.getElementById('rag-status');
+        if (chk) chk.checked = window.useRag;
+        if (st) { st.innerText = window.useRag ? 'ATIVADO' : 'DESATIVADO'; st.style.color = window.useRag ? '#00ff00' : '#ff4444'; }
+    } catch (e) {}
+}
+document.addEventListener('DOMContentLoaded', aplicarConfigServidor);

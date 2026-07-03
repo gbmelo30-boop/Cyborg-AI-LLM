@@ -67,8 +67,46 @@ def init_db():
             );
             CREATE INDEX IF NOT EXISTS idx_msg_session ON chat_messages(session_id, created_at);
             CREATE INDEX IF NOT EXISTS idx_sess_user ON chat_sessions(user_id);
+            CREATE TABLE IF NOT EXISTS config (
+                chave TEXT PRIMARY KEY,
+                valor TEXT
+            );
             """
         )
+        # Valores padrão do painel admin (só inserem se ainda não existirem)
+        c.execute("INSERT OR IGNORE INTO config (chave,valor) VALUES ('gravar_no_bd','true')")
+        c.execute("INSERT OR IGNORE INTO config (chave,valor) VALUES ('rag_padrao','false')")
+
+
+# ------------------------------------------------------------------- Config (admin)
+def get_config(chave, default=None):
+    with _conn() as c:
+        r = c.execute("SELECT valor FROM config WHERE chave=?", (chave,)).fetchone()
+    return r["valor"] if r else default
+
+
+def set_config(chave, valor):
+    with _lock, _conn() as c:
+        c.execute(
+            "INSERT INTO config (chave,valor) VALUES (?,?) "
+            "ON CONFLICT(chave) DO UPDATE SET valor=excluded.valor",
+            (chave, str(valor)),
+        )
+
+
+def get_bool(chave, default=False):
+    v = get_config(chave, None)
+    if v is None:
+        return default
+    return str(v).lower() in ("1", "true", "yes", "on", "sim")
+
+
+def stats():
+    with _conn() as c:
+        ns = c.execute("SELECT COUNT(*) AS n FROM chat_sessions").fetchone()["n"]
+        nm = c.execute("SELECT COUNT(*) AS n FROM chat_messages").fetchone()["n"]
+        nd = c.execute("SELECT COUNT(*) AS n FROM documentos").fetchone()["n"]
+    return {"sessoes": ns, "mensagens": nm, "documentos": nd}
 
 
 # ------------------------------------------------------------------ Sessoes
@@ -77,6 +115,11 @@ def create_session(user_id, title, grupo="Uso Individual", tema="Geral", user_na
     ts = now_iso()
     raw = (title or "").strip()
     titulo = (raw[:30] + "...") if len(raw) > 30 else (raw or "Nova conversa")
+    if not get_bool("gravar_no_bd", True):
+        # Gravação desligada no painel admin: sessão efêmera (não persiste)
+        return {"id": sid, "user_id": user_id, "title": titulo, "grupo": grupo,
+                "tema": tema, "user_name": user_name, "is_pinned": False,
+                "created_at": ts, "gravado": False}
     with _lock, _conn() as c:
         c.execute(
             "INSERT INTO chat_sessions (id,user_id,title,grupo,tema,user_name,is_pinned,oculta_para_usuario,created_at)"
@@ -126,6 +169,8 @@ def add_message(session_id, role, content, used_rag=False):
         role = "assistant"
     mid = str(uuid.uuid4())
     ts = now_iso()
+    if not get_bool("gravar_no_bd", True):
+        return {"id": mid, "created_at": ts, "gravado": False}
     with _lock, _conn() as c:
         c.execute(
             "INSERT INTO chat_messages (id,session_id,role,content,used_rag,created_at)"

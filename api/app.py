@@ -1,4 +1,5 @@
 import os
+import hmac
 import logging
 import uuid
 from flask import Flask, request, jsonify, Response
@@ -13,6 +14,14 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger("Cyborg_Backend_LLaMA")
 
 load_dotenv()
+
+# Senha do painel admin (backdoor). Fica no api/.env, fora do código/Git.
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "")
+
+
+def _admin_ok(pw):
+    return bool(ADMIN_PASSWORD) and hmac.compare_digest(str(pw or ""), ADMIN_PASSWORD)
+
 
 app = Flask(__name__)
 CORS(app)
@@ -334,6 +343,38 @@ def rag_test():
             {"similaridade": round(d["similaridade"], 3), "trecho": (d["conteudo"] or "")[:160]}
             for d in docs
         ],
+    })
+
+
+@app.route('/api/config', methods=['GET'])
+def config_publica():
+    """Config pública (não sensível) que o front usa no carregamento."""
+    return jsonify({"rag_padrao": db_local.get_bool("rag_padrao", False)})
+
+
+@app.route('/api/admin/settings', methods=['POST'])
+def admin_settings():
+    """Painel admin (backdoor). Requer a senha (ADMIN_PASSWORD do .env).
+    Sem 'updates' -> só devolve o estado atual (login). Com 'updates' -> aplica."""
+    d = request.json or {}
+    if not ADMIN_PASSWORD:
+        return jsonify({"error": "Admin não configurado no servidor (defina ADMIN_PASSWORD no api/.env)."}), 503
+    if not _admin_ok(d.get("password")):
+        return jsonify({"error": "Senha incorreta."}), 401
+
+    permitidos = {"gravar_no_bd", "rag_padrao"}
+    updates = d.get("updates") or {}
+    for k, v in updates.items():
+        if k in permitidos:
+            liga = (v is True) or (str(v).lower() in ("1", "true", "on", "sim"))
+            db_local.set_config(k, "true" if liga else "false")
+
+    return jsonify({
+        "config": {
+            "gravar_no_bd": db_local.get_bool("gravar_no_bd", True),
+            "rag_padrao": db_local.get_bool("rag_padrao", False),
+        },
+        "stats": db_local.stats(),
     })
 
 
