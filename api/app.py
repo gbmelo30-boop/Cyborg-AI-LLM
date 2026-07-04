@@ -197,8 +197,8 @@ RESTRIÇÕES:
 TAMANHO:
 
 - Mínimo de 50 palavras
-- Máximo de 180 palavras
-- Ideal entre 2 e 3 parágrafos curtos
+- Máximo de 350 palavras
+- Ideal entre 2 e 4 parágrafos
 
 FECHAMENTO:
 
@@ -239,7 +239,7 @@ FECHAMENTO:
         output = llm.create_chat_completion(
             messages=formatted_messages,
             temperature=0.5,
-            max_tokens=350,
+            max_tokens=None,
             stop=["<<FIM>>", "<|eot_id|>"]
         )
 
