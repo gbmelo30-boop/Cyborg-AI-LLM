@@ -1046,3 +1046,18 @@ input:checked + .slider:before { transform: translateX(26px); }
     .chat-welcome { flex-direction: column; text-align: center; gap: 16px; bottom: 104px; }
     .chat-welcome .cw-text { font-size: 1.4rem; }
 }
+
+
+/* ============================================================================== */
+/* Seleção de idioma                                                              */
+/* ============================================================================== */
+.lang-option {
+    width: 100%; display: flex; align-items: center; justify-content: space-between;
+    background: transparent; border: 1px solid var(--border-color); border-radius: 8px;
+    color: var(--primary-text-color); padding: 14px 16px; margin-bottom: 10px;
+    font-family: inherit; font-size: 1em; cursor: pointer; transition: border-color .2s, color .2s, background .2s;
+}
+.lang-option:hover { background: var(--component-hover-bg); }
+.lang-option.active { border-color: var(--led-static-blue); color: var(--led-static-blue); }
+.lang-option .lang-check { opacity: 0; color: var(--led-static-blue); font-weight: bold; }
+.lang-option.active .lang-check { opacity: 1; }

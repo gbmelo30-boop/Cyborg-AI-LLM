@@ -18,6 +18,7 @@ window.I18N = {
     nav_settings: "Configurações",
     nav_theme: "Alternar Tema",
     nav_logout: "Sair",
+    nav_lang: "Idioma",
     instr_title: "Instruções de Uso",
     btn_prev: "< Anterior",
     btn_next: "Próximo >",
@@ -62,6 +63,7 @@ window.I18N = {
     nav_settings: "Settings",
     nav_theme: "Toggle Theme",
     nav_logout: "Log Out",
+    nav_lang: "Language",
     instr_title: "How to Use",
     btn_prev: "< Previous",
     btn_next: "Next >",
@@ -112,13 +114,25 @@ window.applyLang = function(lang){
   document.querySelectorAll('[data-i18n]').forEach(function(el){ const v = window.T(el.getAttribute('data-i18n')); if (v != null) el.textContent = v; });
   document.querySelectorAll('[data-i18n-ph]').forEach(function(el){ const v = window.T(el.getAttribute('data-i18n-ph')); if (v != null) el.setAttribute('placeholder', v); });
   document.querySelectorAll('[data-i18n-html]').forEach(function(el){ const v = window.T(el.getAttribute('data-i18n-html')); if (v != null) el.innerHTML = v; });
-  const ll = document.getElementById('lang-label'); if (ll) ll.textContent = (window.currentLang === 'pt') ? 'English' : 'Português';
+  if (window.marcarIdioma) window.marcarIdioma();
+  try {
+    var ctxL = JSON.parse(localStorage.getItem('cyborg_current_session') || '{}');
+    var wt = document.getElementById('chat-welcome-text');
+    if (wt && window.saudacao) { var g = window.saudacao(ctxL.userName || ''); wt.textContent = g; window.__welcomeGreeting = g; }
+  } catch (e) {}
   const st = document.getElementById('rag-status'); if (st) st.textContent = window.useRag ? window.T('on') : window.T('off');
 };
 
-window.toggleLang = function(){
-  window.applyLang(window.currentLang === 'pt' ? 'en' : 'pt');
+window.marcarIdioma = function(){
+  var pt = document.getElementById('lang-opt-pt'), en = document.getElementById('lang-opt-en');
+  if (pt) pt.classList.toggle('active', window.currentLang === 'pt');
+  if (en) en.classList.toggle('active', window.currentLang === 'en');
+};
+window.selecionarIdioma = function(lang){ window.applyLang(lang); };
+window.abrirIdioma = function(){
   if (window.closeSidebarMobile) window.closeSidebarMobile();
+  if (window.openModal) window.openModal('modal-idioma');
+  if (window.marcarIdioma) window.marcarIdioma();
 };
 
 document.addEventListener('DOMContentLoaded', function(){ window.applyLang(window.currentLang); });
