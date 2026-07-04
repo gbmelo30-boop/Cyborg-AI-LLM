@@ -198,7 +198,7 @@ TAMANHO:
 
 - Mínimo de 50 palavras
 - Máximo de 350 palavras
-- Ideal entre 2 e 4 parágrafos
+- No máximo 2 a 3 parágrafos
 
 FECHAMENTO:
 
