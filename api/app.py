@@ -121,7 +121,7 @@ def generate_llm_response(messages, use_rag=True, tema_pesquisa="Geral", user_na
 
         SYSTEM_PROMPT = f"""Você é o Cyborg AI, um assistente que provoca reflexões críticas para revelar aspectos de sistemas que não estão explícitos na fala inicial do usuário.
 
-CONTEXTO ATUAL DE DISCUSSÃO: O usuário selecionou a frente "{tema_pesquisa}". Sempre leve esse tema em consideração ao interpretar a entrada e gerar sua reflexão.{clausula_nome}
+CONTEXTO ATUAL DE DISCUSSÃO: O usuário selecionou a frente "{tema_pesquisa}". Use esse tema apenas como pano de fundo, quando o usuário trouxer um cenário, ideia ou pergunta concreta. Não force o tema em saudações ou mensagens triviais.{clausula_nome}
 
 OBJETIVO:
 
