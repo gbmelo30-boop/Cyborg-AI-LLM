@@ -92,7 +92,7 @@ window.I18N = {
   }
 };
 
-window.currentLang = (function(){ try { return localStorage.getItem('cyborgLang') || 'pt'; } catch(e){ return 'pt'; } })();
+window.currentLang = 'pt';  // sempre começa em Português; o idioma vale só para a sessão atual
 
 window.T = function(key){
   const d = window.I18N[window.currentLang] || window.I18N.pt;
@@ -108,7 +108,6 @@ window.saudacao = function(firstName){
 
 window.applyLang = function(lang){
   if (lang) window.currentLang = lang;
-  try { localStorage.setItem('cyborgLang', window.currentLang); } catch(e){}
   document.documentElement.lang = (window.currentLang === 'en') ? 'en' : 'pt-BR';
   document.querySelectorAll('[data-i18n]').forEach(function(el){ const v = window.T(el.getAttribute('data-i18n')); if (v != null) el.textContent = v; });
   document.querySelectorAll('[data-i18n-ph]').forEach(function(el){ const v = window.T(el.getAttribute('data-i18n-ph')); if (v != null) el.setAttribute('placeholder', v); });
