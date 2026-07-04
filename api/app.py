@@ -41,7 +41,7 @@ MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "models", MODEL_FILE)
 try:
     llm = Llama(
         model_path=MODEL_PATH,
-        n_ctx=3072,
+        n_ctx=8192,
         n_gpu_layers=-1,
         n_threads=(os.cpu_count() or 8),
         n_threads_batch=(os.cpu_count() or 8),
@@ -63,8 +63,8 @@ except Exception as e:
 
 # --- Ajustes de RAG (enxuto: mais seletivo e rápido, sem janela gigante) ---
 RAG_MATCH_THRESHOLD = 0.45   # só injeta contexto realmente relevante; abaixo disso, usa o prompt puro
-RAG_MATCH_COUNT = 4          # recupera alguns candidatos e seleciona dentro do orçamento
-RAG_MAX_CHARS = 900          # orçamento enxuto de contexto -> velocidade e sem estourar o n_ctx
+RAG_MATCH_COUNT = 6          # com a GPU, dá pra recuperar mais candidatos sem custo
+RAG_MAX_CHARS = 1800        # orçamento maior de contexto (n_ctx=8192 acomoda folgado)
 
 
 def buscar_contexto(pergunta):
