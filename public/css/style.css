@@ -670,7 +670,7 @@ body.light-theme #view-chat {
     border-right: 1px solid var(--border-color);
     z-index: 2000;
     transform: translateX(-100%);
-    transition: transform 0.3s ease-in-out;
+    transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1);
     display: flex; flex-direction: column;
 }
 .side-panel.is-open { transform: translateX(0); }
@@ -707,10 +707,12 @@ body.light-theme #view-chat {
 .modal-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.8); z-index: 3000;
-    display: none; align-items: center; justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     backdrop-filter: blur(5px);
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transition: opacity 0.32s ease, visibility 0.32s ease;
 }
-.modal-overlay.active { display: flex; }
+.modal-overlay.active { opacity: 1; visibility: visible; pointer-events: auto; }
 
 .modal-box {
     background-color: var(--chat-header-bg);
@@ -1069,21 +1071,33 @@ input:checked + .slider:before { transform: translateX(26px); }
     position: absolute; inset: 0;
     background: rgba(0,0,0,0.5);
     opacity: 0; visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s;
+    transition: opacity 0.42s ease, visibility 0.42s;
     z-index: 1999;
 }
 .side-panel.is-open ~ .sidebar-backdrop { opacity: 1; visibility: visible; }
 
-.side-panel.is-open .menu-item { animation: sidebarItemIn 0.32s ease both; }
-.side-panel.is-open .menu-item:nth-child(1) { animation-delay: 0.05s; }
-.side-panel.is-open .menu-item:nth-child(2) { animation-delay: 0.09s; }
-.side-panel.is-open .menu-item:nth-child(3) { animation-delay: 0.13s; }
-.side-panel.is-open .menu-item:nth-child(4) { animation-delay: 0.17s; }
-.side-panel.is-open .menu-item:nth-child(5) { animation-delay: 0.21s; }
-.side-panel.is-open .menu-item:nth-child(6) { animation-delay: 0.25s; }
-.side-panel.is-open .menu-item:nth-child(7) { animation-delay: 0.29s; }
-.side-panel.is-open .menu-item:nth-child(8) { animation-delay: 0.33s; }
+.side-panel.is-open .menu-item { animation: sidebarItemIn 0.42s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.side-panel.is-open .menu-item:nth-child(1) { animation-delay: 0.10s; }
+.side-panel.is-open .menu-item:nth-child(2) { animation-delay: 0.15s; }
+.side-panel.is-open .menu-item:nth-child(3) { animation-delay: 0.20s; }
+.side-panel.is-open .menu-item:nth-child(4) { animation-delay: 0.25s; }
+.side-panel.is-open .menu-item:nth-child(5) { animation-delay: 0.30s; }
+.side-panel.is-open .menu-item:nth-child(6) { animation-delay: 0.35s; }
+.side-panel.is-open .menu-item:nth-child(7) { animation-delay: 0.40s; }
+.side-panel.is-open .menu-item:nth-child(8) { animation-delay: 0.45s; }
 @keyframes sidebarItemIn {
-    from { opacity: 0; transform: translateX(-14px); }
+    from { opacity: 0; transform: translateX(-16px); }
     to   { opacity: 1; transform: translateX(0); }
+}
+
+
+/* Abertura/fechamento elegante da caixa dos modais (subtelinhas) */
+.modal-box {
+    transform: translateY(26px) scale(0.96);
+    opacity: 0;
+    transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+}
+.modal-overlay.active .modal-box {
+    transform: translateY(0) scale(1);
+    opacity: 1;
 }
