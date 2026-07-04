@@ -124,7 +124,7 @@ window.irParaChat = function() {
             const ctx       = JSON.parse(localStorage.getItem('cyborg_current_session') || '{}');
             const firstName = ctx.userName || '';
             const greeting  = getGreeting(firstName);
-            addMessage(BOT_NAME, `${greeting} Sou o Cyborg AI, como posso ajudá-lo?`);
+            window.mostrarBoasVindas(`${greeting} Sou o Cyborg AI, como posso ajudá-lo?`);
         }
     };
     window.gsapSwitch('view-auth', 'view-chat', 'depth-3d', mostrarSaudacao);
@@ -223,6 +223,7 @@ window.handleLogout = async () => {
         DB.user = null;
     }
     document.getElementById('chat-history').innerHTML = '';
+    if (window.esconderBoasVindas) window.esconderBoasVindas();
     currentSessionId = null;
     document.getElementById('side-panel').classList.remove('is-open');
     window.switchView('view-auth');
@@ -268,6 +269,7 @@ window.carregarListaSessoes = async () => {
 
 window.carregarSessao = async (id) => {
     currentSessionId = id;
+    if (window.esconderBoasVindas) window.esconderBoasVindas();
     document.getElementById('chat-history').innerHTML = '';
     window.toggleSidebar();
     window.closeModal('modal-historico');
@@ -287,7 +289,7 @@ window.novaConversa = () => {
     const ctx       = JSON.parse(localStorage.getItem('cyborg_current_session') || '{}');
     const firstName = ctx.userName || '';
     const greeting  = getGreeting(firstName);
-    addMessage(BOT_NAME, `${greeting} Sou o Cyborg AI, como posso ajudá-lo?`);
+    window.mostrarBoasVindas(`${greeting} Sou o Cyborg AI, como posso ajudá-lo?`);
     window.toggleSidebar();
 };
 
@@ -378,6 +380,8 @@ window.handleChatSubmit = async (e) => {
 
     userInput.value = '';
     if(chatForm.classList.contains('expanded')) window.toggleInputSize();
+
+    if (window.__welcomeActive) window.encerrarBoasVindas();
 
     addMessage("Você", text, false);
 
@@ -716,4 +720,37 @@ window.adminVerMensagens = async function(sessionId, sx) {
             lista.appendChild(div);
         });
     } catch (e) { lista.innerHTML = '<div class="admin-empty">Erro de conexão.</div>'; }
+};
+
+
+// ===================== Tela de boas-vindas do chat (mensagem central) =====================
+window.__welcomeActive = false;
+window.__welcomeGreeting = '';
+window.mostrarBoasVindas = function(texto) {
+    const el = document.getElementById('chat-welcome');
+    const txt = document.getElementById('chat-welcome-text');
+    if (!el || !txt) { if (typeof addMessage === 'function') addMessage(BOT_NAME, texto); return; }
+    window.__welcomeGreeting = texto;
+    txt.textContent = texto;
+    el.classList.add('active');
+    window.__welcomeActive = true;
+    if (typeof gsap !== 'undefined') {
+        gsap.fromTo(el, { opacity: 0, scale: 0.96 }, { opacity: 1, scale: 1, duration: 0.5, ease: 'power2.out' });
+    }
+};
+window.encerrarBoasVindas = function() {
+    if (!window.__welcomeActive) return;
+    window.__welcomeActive = false;
+    const el = document.getElementById('chat-welcome');
+    if (window.__welcomeGreeting) addMessage(BOT_NAME, window.__welcomeGreeting, false);
+    if (el) {
+        if (typeof gsap !== 'undefined') {
+            gsap.to(el, { opacity: 0, y: -16, duration: 0.35, ease: 'power2.in', onComplete: () => { el.classList.remove('active'); gsap.set(el, { clearProps: 'all' }); } });
+        } else { el.classList.remove('active'); }
+    }
+};
+window.esconderBoasVindas = function() {
+    window.__welcomeActive = false;
+    const el = document.getElementById('chat-welcome');
+    if (el) { el.classList.remove('active'); if (typeof gsap !== 'undefined') gsap.set(el, { clearProps: 'all' }); }
 };
