@@ -43,6 +43,8 @@ try:
         model_path=MODEL_PATH,
         n_ctx=3072,
         n_gpu_layers=-1,
+        n_threads=(os.cpu_count() or 8),
+        n_threads_batch=(os.cpu_count() or 8),
         verbose=False
     )
 except Exception as e:
@@ -195,8 +197,8 @@ RESTRIÇÕES:
 TAMANHO:
 
 - Mínimo de 50 palavras
-- Máximo de 350 palavras
-- Ideal entre 2 e 4 parágrafos
+- Máximo de 180 palavras
+- Ideal entre 2 e 3 parágrafos curtos
 
 FECHAMENTO:
 
@@ -237,7 +239,7 @@ FECHAMENTO:
         output = llm.create_chat_completion(
             messages=formatted_messages,
             temperature=0.5,
-            max_tokens=None,
+            max_tokens=350,
             stop=["<<FIM>>", "<|eot_id|>"]
         )
 
