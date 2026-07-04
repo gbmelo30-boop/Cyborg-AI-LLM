@@ -52,6 +52,7 @@ const CYBORG = {
                     tema: temaAtual,
                     grupo: contextData.group,
                     use_rag: window.useRag,
+                    idioma: window.currentLang || 'pt',
                     session_id: currentSessionId,
                     user_id: DB.user.id
                 })

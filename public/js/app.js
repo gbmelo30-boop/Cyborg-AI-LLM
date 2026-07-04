@@ -12,11 +12,11 @@ window.toggleRag = (checkbox) => {
     const statusLabel = document.getElementById('rag-status');
     if (!statusLabel) return;
     if (window.useRag) {
-        statusLabel.innerText = "ATIVADO";
+        statusLabel.innerText = window.T ? window.T("on") : "ATIVADO";
         statusLabel.style.color = "#00ff00";
         window.systemLog("RAG Ativado pelo usuário.");
     } else {
-        statusLabel.innerText = "DESATIVADO";
+        statusLabel.innerText = window.T ? window.T("off") : "DESATIVADO";
         statusLabel.style.color = "#ff4444";
         window.systemLog("RAG Desativado pelo usuário.");
     }
@@ -41,7 +41,7 @@ function showSlides(n) {
     if(indicator) indicator.innerText = slideIndex + " / " + slides.length;
     if(btnPrev) btnPrev.disabled = (slideIndex === 1);
     if(btnNext) {
-        btnNext.innerText = (slideIndex === slides.length) ? "Fechar" : "Próximo >";
+        btnNext.innerText = (slideIndex === slides.length) ? (window.T ? window.T("btn_close") : "Fechar") : (window.T ? window.T("btn_next") : "Próximo >");
         btnNext.onclick = (slideIndex === slides.length) ? function(){ window.closeModal('modal-instrucoes') } : function(){ window.changeSlide(1) };
     }
 }
@@ -124,7 +124,7 @@ window.irParaChat = function() {
             const ctx       = JSON.parse(localStorage.getItem('cyborg_current_session') || '{}');
             const firstName = ctx.userName || '';
             const greeting  = getGreeting(firstName);
-            window.mostrarBoasVindas(`${greeting} Sou o Cyborg AI, como posso ajudá-lo?`);
+            window.mostrarBoasVindas(window.saudacao(firstName));
         }
     };
     window.gsapSwitch('view-auth', 'view-chat', 'depth-3d', mostrarSaudacao);
@@ -172,7 +172,7 @@ window.handleStartResearch = async () => {
     const firstName = rawName ? capitalizeName(rawName.split(/\s+/)[0]) : '';
 
     if (!firstName) {
-        errorDiv.innerText = "Digite seu nome para continuar.";
+        errorDiv.innerText = window.T ? window.T("name_required") : "Digite seu nome para continuar.";
         errorDiv.style.display = 'block';
         if (nameInput) nameInput.focus();
         return;
@@ -234,11 +234,11 @@ window.abrirHistorico = function() { window.openModal('modal-historico'); };
 window.carregarListaSessoes = async () => {
     if(typeof DB === 'undefined') return;
     const listDiv = document.getElementById('history-list');
-    listDiv.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">Carregando...</div>';
+    listDiv.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">' + (window.T ? window.T("loading_word") : "Carregando...") + '</div>';
     const sessoes = await DB.listarSessoes();
     listDiv.innerHTML = '';
     if (!sessoes || sessoes.length === 0) {
-        listDiv.innerHTML = '<div style="padding:20px; text-align:center; opacity:0.5; font-size:0.8em;">Nenhuma conversa salva.</div>';
+        listDiv.innerHTML = '<div style="padding:20px; text-align:center; opacity:0.5; font-size:0.8em;">' + (window.T ? window.T("hist_empty") : "Nenhuma conversa salva.") + '</div>';
         return;
     }
     const termoBusca = document.getElementById('history-search').value.toLowerCase();
@@ -289,18 +289,18 @@ window.novaConversa = () => {
     const ctx       = JSON.parse(localStorage.getItem('cyborg_current_session') || '{}');
     const firstName = ctx.userName || '';
     const greeting  = getGreeting(firstName);
-    window.mostrarBoasVindas(`${greeting} Sou o Cyborg AI, como posso ajudá-lo?`);
+    window.mostrarBoasVindas(window.saudacao(firstName));
     window.toggleSidebar();
 };
 
 window.filtrarHistorico = () => { carregarListaSessoes(); }
 window.togglePin = async (id, status) => { await DB.fixarSessao(id, status); carregarListaSessoes(); };
 window.renomearConversa = async (id, atual) => {
-    const novo = prompt("Novo nome:", atual);
+    const novo = prompt(window.T ? window.T("rename_prompt") : "Novo nome:", atual);
     if(novo && novo.trim() !== "") { await DB.renomearSessao(id, novo.trim()); carregarListaSessoes(); }
 };
 window.deletarSessao = async (id) => {
-    if(confirm("Excluir conversa?")) { await DB.deletarSessao(id); if(currentSessionId === id) novaConversa(); carregarListaSessoes(); }
+    if(confirm(window.T ? window.T("confirm_delete") : "Excluir conversa?")) { await DB.deletarSessao(id); if(currentSessionId === id) novaConversa(); carregarListaSessoes(); }
 };
 
 // --- INTERFACE DO CHAT ---
@@ -344,7 +344,7 @@ window.addMessage = function(author, content, isHtml = false, timestamp = null) 
     const iconHtml = isBot
         ? `<svg class="header-halo" style="width:16px;height:16px;" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="none" stroke-width="2.2" stroke-linecap="round" transform="rotate(-90 10 10)"/></svg>`
         : `<div style="width:12px;height:12px;background:var(--secondary-text-color);border-radius:50%;opacity:0.7;"></div>`;
-    metaDiv.innerHTML = `${iconHtml} <span>${author}</span>`;
+    metaDiv.innerHTML = `${iconHtml} <span>${(isUser && window.T) ? window.T('you') : author}</span>`;
 
     const bubbleDiv = document.createElement('div');
     bubbleDiv.className = 'message-bubble fade-in';
@@ -438,7 +438,7 @@ window.handleChatSubmit = async (e) => {
             if (ledEl) ledEl.classList.add('led-error');
             setTimeout(() => {
                 if(loaderEl) loaderEl.remove();
-                addMessage(BOT_NAME, "Minhas redes neurais sentiram um distúrbio. Tente novamente.", false);
+                addMessage(BOT_NAME, window.T ? window.T("error_neural") : "Minhas redes neurais sentiram um distúrbio. Tente novamente.", false);
             }, 1500);
         }
     }
@@ -532,7 +532,7 @@ async function aplicarConfigServidor() {
         const chk = document.getElementById('rag-toggle');
         const st = document.getElementById('rag-status');
         if (chk) chk.checked = window.useRag;
-        if (st) { st.innerText = window.useRag ? 'ATIVADO' : 'DESATIVADO'; st.style.color = window.useRag ? '#00ff00' : '#ff4444'; }
+        if (st) { st.innerText = window.useRag ? (window.T ? window.T('on') : 'ATIVADO') : (window.T ? window.T('off') : 'DESATIVADO'); st.style.color = window.useRag ? '#00ff00' : '#ff4444'; }
     } catch (e) {}
 }
 document.addEventListener('DOMContentLoaded', aplicarConfigServidor);

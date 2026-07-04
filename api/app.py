@@ -100,7 +100,7 @@ def buscar_contexto(pergunta):
         return "", False
 
 
-def generate_llm_response(messages, use_rag=True, tema_pesquisa="Geral", user_name=""):
+def generate_llm_response(messages, use_rag=True, tema_pesquisa="Geral", user_name="", idioma="pt"):
     try:
         last_user_msg = messages[-1]['content']
         contexto_rag = ""
@@ -204,7 +204,12 @@ FECHAMENTO:
 - Não escreva nada após isso.
 """
 
-        formatted_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+        system_content = SYSTEM_PROMPT
+        if idioma == "en":
+            system_content += ("\n\nLANGUAGE: From now on, respond ONLY in English, no matter which "
+                               "language the user writes in. Keep exactly the same reflective, fluid and "
+                               "provocative style defined above.")
+        formatted_messages = [{"role": "system", "content": system_content}]
 
         for msg in messages[-4:-1]: 
              formatted_messages.append(msg)
@@ -251,6 +256,7 @@ def chat():
     
     # O front-end envia o tema e o ID da sessão que ele acabou de criar/usar
     tema_pesquisa = data.get('tema') or data.get('topic') or 'Sem Tema'
+    idioma = (data.get('idioma') or 'pt').lower()
     user_name = ""  # anonimizacao: o backend nao usa/guarda o nome real
     session_id = data.get('session_id') 
     
@@ -262,7 +268,7 @@ def chat():
 
     try:
         # 1. Chama a função que você já tem para rodar o Llama local e RAG
-        response_text, rag_foi_usado = generate_llm_response(messages, use_rag, tema_pesquisa, user_name)
+        response_text, rag_foi_usado = generate_llm_response(messages, use_rag, tema_pesquisa, user_name, idioma)
         
         # 2. Limpa a tag de parada caso o modelo gere
         response_text = response_text.replace("<<FIM>>", "").strip()
