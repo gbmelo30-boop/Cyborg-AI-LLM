@@ -1061,3 +1061,29 @@ input:checked + .slider:before { transform: translateX(26px); }
 .lang-option.active { border-color: var(--led-static-blue); color: var(--led-static-blue); }
 .lang-option .lang-check { opacity: 0; color: var(--led-static-blue); font-weight: bold; }
 .lang-option.active .lang-check { opacity: 1; }
+
+/* ============================================================================== */
+/* Transição da barra lateral: fundo escurecido + entrada escalonada dos itens    */
+/* ============================================================================== */
+.sidebar-backdrop {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.5);
+    opacity: 0; visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s;
+    z-index: 1999;
+}
+.side-panel.is-open ~ .sidebar-backdrop { opacity: 1; visibility: visible; }
+
+.side-panel.is-open .menu-item { animation: sidebarItemIn 0.32s ease both; }
+.side-panel.is-open .menu-item:nth-child(1) { animation-delay: 0.05s; }
+.side-panel.is-open .menu-item:nth-child(2) { animation-delay: 0.09s; }
+.side-panel.is-open .menu-item:nth-child(3) { animation-delay: 0.13s; }
+.side-panel.is-open .menu-item:nth-child(4) { animation-delay: 0.17s; }
+.side-panel.is-open .menu-item:nth-child(5) { animation-delay: 0.21s; }
+.side-panel.is-open .menu-item:nth-child(6) { animation-delay: 0.25s; }
+.side-panel.is-open .menu-item:nth-child(7) { animation-delay: 0.29s; }
+.side-panel.is-open .menu-item:nth-child(8) { animation-delay: 0.33s; }
+@keyframes sidebarItemIn {
+    from { opacity: 0; transform: translateX(-14px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
