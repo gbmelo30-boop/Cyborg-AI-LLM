@@ -1013,3 +1013,36 @@ input:checked + .slider:before { transform: translateX(26px); }
 #modal-admin .admin-msg-bot { background:var(--bot-message-bg); }
 #modal-admin .am-role { font-size:0.72em; color:var(--secondary-text-color); margin-bottom:4px; }
 #modal-admin .am-text { font-size:0.9em; color:var(--primary-text-color); white-space:pre-wrap; word-break:break-word; }
+
+/* ============================================================================== */
+/* Tela de boas-vindas do chat (mensagem central, anel à esquerda)                */
+/* ============================================================================== */
+.chat-welcome {
+    position: absolute;
+    top: 60px; left: 0; right: 0; bottom: 92px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    padding: 0 8%;
+    box-sizing: border-box;
+    pointer-events: none;
+    z-index: 5;
+}
+.chat-welcome.active { display: flex; }
+.chat-welcome .cw-ring {
+    width: 60px; height: 60px; flex-shrink: 0;
+    filter: drop-shadow(0 0 8px var(--led-static-blue)) drop-shadow(0 0 20px var(--led-glow));
+}
+.chat-welcome .cw-ring circle { stroke: var(--led-static-blue); }
+.chat-welcome .cw-text {
+    font-size: clamp(1.3rem, 3.2vw, 2.3rem);
+    font-weight: 500;
+    color: var(--primary-text-color);
+    line-height: 1.35;
+    max-width: 620px;
+}
+@media (max-width: 600px) {
+    .chat-welcome { flex-direction: column; text-align: center; gap: 16px; bottom: 104px; }
+    .chat-welcome .cw-text { font-size: 1.4rem; }
+}
