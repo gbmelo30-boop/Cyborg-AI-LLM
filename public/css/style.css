@@ -1043,8 +1043,8 @@ input:checked + .slider:before { transform: translateX(26px); }
     max-width: 620px;
 }
 @media (max-width: 600px) {
-    .chat-welcome { flex-direction: column; text-align: center; gap: 16px; bottom: 104px; }
-    .chat-welcome .cw-text { font-size: 1.4rem; }
+    .chat-welcome { flex-direction: column; text-align: center; gap: 14px; bottom: 104px; padding: 0 16px; }
+    .chat-welcome .cw-text { font-size: clamp(1rem, 4.6vw, 1.4rem); line-height: 1.4; max-width: 100%; }
 }
 
 
