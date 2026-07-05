@@ -938,7 +938,6 @@ input:checked + .slider:before { transform: translateX(26px); }
 /* ============================================================================== */
 /* Esconde as barras de rolagem (mantendo a rolagem funcional)                    */
 /* ============================================================================== */
-.chat-history,
 .side-panel-body,
 .history-list-container,
 .modal-content,
@@ -946,7 +945,6 @@ input:checked + .slider:before { transform: translateX(26px); }
     scrollbar-width: none;        /* Firefox */
     -ms-overflow-style: none;     /* IE / Edge antigo */
 }
-.chat-history::-webkit-scrollbar,
 .side-panel-body::-webkit-scrollbar,
 .history-list-container::-webkit-scrollbar,
 .modal-content::-webkit-scrollbar,
@@ -954,6 +952,48 @@ input:checked + .slider:before { transform: translateX(26px); }
     width: 0;
     height: 0;
     display: none;                /* Chrome / Safari / Edge */
+}
+
+
+/* ============================================================================== */
+/* Barra de rolagem do chat: fina, arredondada, aparece so ao passar o mouse       */
+/* ============================================================================== */
+.chat-history {
+    scrollbar-width: thin;                        /* Firefox */
+    scrollbar-color: transparent transparent;     /* invisivel por padrao */
+    transition: scrollbar-color 0.3s ease;
+}
+.chat-history:hover {
+    scrollbar-color: rgba(255,255,255,0.20) transparent;
+}
+.chat-history::-webkit-scrollbar {
+    width: 10px;
+}
+.chat-history::-webkit-scrollbar-track {
+    background: transparent;
+}
+.chat-history::-webkit-scrollbar-thumb {
+    background-color: transparent;                /* some ate o hover */
+    border-radius: 10px;
+    border: 3px solid transparent;                /* inset: thumb fininho e flutuante */
+    background-clip: padding-box;
+    transition: background-color 0.3s ease;
+}
+.chat-history:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(255,255,255,0.16);
+}
+.chat-history::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255,255,255,0.32);
+}
+/* Tema claro: thumb escuro sutil */
+body.light-theme .chat-history:hover {
+    scrollbar-color: rgba(0,0,0,0.22) transparent;
+}
+body.light-theme .chat-history:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.16);
+}
+body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0,0,0,0.32);
 }
 
 
