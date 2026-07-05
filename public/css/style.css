@@ -509,6 +509,9 @@ body.light-theme #view-chat {
     flex-direction: column;
     gap: 20px;
     scroll-behavior: smooth;
+    /* fade suave no rodape: a ultima linha dissolve macio em vez de cortar seco */
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 52px), transparent);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 52px), transparent);
 }
 
 .input-area {
