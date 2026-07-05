@@ -1101,3 +1101,31 @@ input:checked + .slider:before { transform: translateX(26px); }
     transform: translateY(0) scale(1);
     opacity: 1;
 }
+
+
+/* ==== Aparicao suave da mensagem (fade + leve subida + desfoque saindo) ==== */
+@keyframes msgAppear {
+    from { opacity: 0; transform: translateY(8px); filter: blur(6px); }
+    to   { opacity: 1; transform: translateY(0);   filter: blur(0); }
+}
+.message-bubble.msg-appear { animation: msgAppear 0.5s ease-out both; }
+
+/* ==== Markdown: citacoes em italico, blockquote, tabelas responsivas ==== */
+.message-bubble em { font-style: italic; opacity: 0.96; }
+.message-bubble blockquote {
+    margin: 8px 0; padding: 4px 12px;
+    border-left: 3px solid var(--led-static-blue);
+    color: var(--secondary-text-color); font-style: italic;
+}
+.message-bubble table {
+    border-collapse: collapse; margin: 12px 0; width: 100%;
+    font-size: 0.88em; display: block; overflow-x: auto; white-space: nowrap;
+}
+.message-bubble th, .message-bubble td {
+    border: 1px solid var(--border-color); padding: 6px 10px; text-align: left;
+}
+.message-bubble th { background: var(--bot-message-bg); font-weight: 600; }
+.message-bubble code {
+    background: var(--bot-message-bg); padding: 1px 5px; border-radius: 4px;
+    font-family: 'Share Tech Mono', monospace; font-size: 0.9em;
+}

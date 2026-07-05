@@ -277,7 +277,8 @@ window.carregarSessao = async (id) => {
     if (msgs && msgs.length > 0) {
         msgs.forEach(msg => {
             const isBot = msg.role === 'assistant';
-            const content = isBot && typeof marked !== 'undefined' ? marked.parse(msg.content) : msg.content;
+            let content = isBot && typeof marked !== 'undefined' ? marked.parse(msg.content) : msg.content;
+            if (isBot && typeof DOMPurify !== 'undefined') content = DOMPurify.sanitize(content);
             addMessage(isBot ? BOT_NAME : "Você", content, isBot);
         });
     }
@@ -420,12 +421,14 @@ window.handleChatSubmit = async (e) => {
             if (resultado.sessionId) currentSessionId = resultado.sessionId;
 
             const rawText   = resultado.response;
-            const htmlFinal = typeof marked !== 'undefined' ? marked.parse(rawText) : rawText;
-
-            if (bubbleEl) await typewriterEffect(bubbleEl, rawText);
+            let htmlFinal   = typeof marked !== 'undefined' ? marked.parse(rawText) : rawText;
+            if (typeof DOMPurify !== 'undefined') htmlFinal = DOMPurify.sanitize(htmlFinal);
 
             if (bubbleEl) {
                 bubbleEl.innerHTML = htmlFinal;
+                bubbleEl.classList.remove('fade-in');
+                void bubbleEl.offsetWidth;         // reflow p/ reiniciar a animacao
+                bubbleEl.classList.add('msg-appear');
                 const timeDiv = document.createElement('span');
                 timeDiv.className = 'message-time';
                 timeDiv.innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
