@@ -61,6 +61,18 @@ except Exception as e:
     embed_model = None
 
 
+# 4. Warm-up: paga o custo unico de init do CUDA/cuBLAS e dos embeddings no boot,
+#    para que a primeira mensagem do usuario ja venha rapida (sem "primeira lenta").
+try:
+    if llm:
+        llm.create_chat_completion(messages=[{"role": "user", "content": "oi"}], max_tokens=1)
+    if embed_model:
+        embed_model.embed_query("aquecimento")
+    logger.info("Modelo e embeddings aquecidos (warm-up concluido).")
+except Exception as e:
+    logger.warning(f"Warm-up falhou (nao critico): {e}")
+
+
 # --- Ajustes de RAG (enxuto: mais seletivo e rápido, sem janela gigante) ---
 RAG_MATCH_THRESHOLD = 0.45   # só injeta contexto realmente relevante; abaixo disso, usa o prompt puro
 RAG_MATCH_COUNT = 6          # com a GPU, dá pra recuperar mais candidatos sem custo
