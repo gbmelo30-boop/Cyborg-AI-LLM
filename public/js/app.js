@@ -100,18 +100,7 @@ window.gsapSwitch = function(fromId, toId, kind, onDone) {
 
     const tl = gsap.timeline({ onComplete: finish });
 
-    if (kind === 'cube') {
-        // Transicao 3D em cubo; direcao automatica pela ordem das telas
-        const order = ['view-intro','view-auth','view-chat'];
-        const forward = order.indexOf(toId) >= order.indexOf(fromId);
-        const dir = forward ? 1 : -1;
-        const w = window.innerWidth || 1000;
-        document.body.style.perspective = '1600px';
-        gsap.set(toEl, { transformOrigin: '50% 50%', backfaceVisibility: 'hidden', zIndex: 300, willChange: 'transform,opacity', opacity: 1, rotationY: dir * 90, x: dir * w * 0.5, z: -w * 0.35 });
-        if (fromEl) gsap.set(fromEl, { transformOrigin: '50% 50%', backfaceVisibility: 'hidden', zIndex: 200, willChange: 'transform,opacity' });
-        if (fromEl) tl.to(fromEl, { rotationY: -dir * 90, x: -dir * w * 0.5, z: -w * 0.35, opacity: 0, duration: 0.75, ease: 'power2.inOut' }, 0);
-        tl.to(toEl, { rotationY: 0, x: 0, z: 0, opacity: 1, duration: 0.75, ease: 'power2.inOut' }, 0);
-    } else if (kind === 'depth-3d') {
+    if (kind === 'depth-3d') {
         // Animação 2 (cadastro -> chat): leve profundidade 3D, elementos "chegando de trás"
         document.body.style.perspective = '1400px';
         gsap.set(toEl,   { opacity: 0, z: -460, rotationX: 7, transformOrigin: '50% 55%', zIndex: 300, willChange: 'transform,opacity' });
@@ -126,8 +115,8 @@ window.gsapSwitch = function(fromId, toId, kind, onDone) {
     }
 };
 
-window.voltarParaIntro = function() { window.gsapSwitch('view-auth', 'view-intro', 'cube'); };
-window.irParaLogin = function(event) { if(event) event.preventDefault(); window.gsapSwitch('view-intro', 'view-auth', 'cube'); };
+window.voltarParaIntro = function() { window.switchView('view-intro'); };
+window.irParaLogin = function(event) { if(event) event.preventDefault(); window.gsapSwitch('view-intro', 'view-auth', 'fade-elegant'); };
 window.irParaChat = function() {
     const mostrarSaudacao = () => {
         const historyDiv = document.getElementById('chat-history');
@@ -138,7 +127,7 @@ window.irParaChat = function() {
             window.mostrarBoasVindas(window.saudacao(firstName));
         }
     };
-    window.gsapSwitch('view-auth', 'view-chat', 'cube', mostrarSaudacao);
+    window.gsapSwitch('view-auth', 'view-chat', 'depth-3d', mostrarSaudacao);
 };
 
 function getGreeting(firstName) {
@@ -237,7 +226,7 @@ window.handleLogout = async () => {
     if (window.esconderBoasVindas) window.esconderBoasVindas();
     currentSessionId = null;
     document.getElementById('side-panel').classList.remove('is-open');
-    window.gsapSwitch('view-chat', 'view-auth', 'cube');
+    window.switchView('view-auth');
 };
 
 window.abrirHistorico = function() { window.openModal('modal-historico'); };
