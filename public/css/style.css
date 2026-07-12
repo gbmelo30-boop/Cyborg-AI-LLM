@@ -163,10 +163,10 @@ body.light-theme h1 {
     transition: color 0.3s;
     text-shadow: 0 2px 4px rgba(0,0,0,0.9);
     padding: 0 20px;
-    white-space: nowrap;
+    white-space: normal;
     overflow: visible;
     text-align: center;
-    max-width: none;
+    max-width: min(90%, 640px);
     margin-left: auto;
     margin-right: auto;
 }
@@ -1205,14 +1205,13 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 
 
 /* ============================================================================== */
-/* Surgimento do anel (logo) na tela inicial: ele se desenha ao aparecer            */
+/* Surgimento do anel (logo) na tela inicial: ele surge (aparece) suavemente            */
 /* ============================================================================== */
-#view-intro .led-ring circle {
-    stroke-dasharray: 239;
-    animation: ringDraw 1.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+#view-intro .led-ring {
+    animation: ringAppear 0.85s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    transform-origin: center;
 }
-@keyframes ringDraw {
-    0%   { stroke-dashoffset: 239; opacity: 0; }
-    25%  { opacity: 1; }
-    100% { stroke-dashoffset: 0; opacity: 1; }
+@keyframes ringAppear {
+    0%   { opacity: 0; transform: scale(0.3); }
+    100% { opacity: 1; transform: scale(1); }
 }
