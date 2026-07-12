@@ -100,7 +100,18 @@ window.gsapSwitch = function(fromId, toId, kind, onDone) {
 
     const tl = gsap.timeline({ onComplete: finish });
 
-    if (kind === 'depth-3d') {
+    if (kind === 'cube') {
+        // Transicao 3D em cubo; direcao automatica pela ordem das telas
+        const order = ['view-intro','view-auth','view-chat'];
+        const forward = order.indexOf(toId) >= order.indexOf(fromId);
+        const dir = forward ? 1 : -1;
+        const w = window.innerWidth || 1000;
+        document.body.style.perspective = '1600px';
+        gsap.set(toEl, { transformOrigin: '50% 50%', backfaceVisibility: 'hidden', zIndex: 300, willChange: 'transform,opacity', opacity: 1, rotationY: dir * 90, x: dir * w * 0.5, z: -w * 0.35 });
+        if (fromEl) gsap.set(fromEl, { transformOrigin: '50% 50%', backfaceVisibility: 'hidden', zIndex: 200, willChange: 'transform,opacity' });
+        if (fromEl) tl.to(fromEl, { rotationY: -dir * 90, x: -dir * w * 0.5, z: -w * 0.35, opacity: 0, duration: 0.75, ease: 'power2.inOut' }, 0);
+        tl.to(toEl, { rotationY: 0, x: 0, z: 0, opacity: 1, duration: 0.75, ease: 'power2.inOut' }, 0);
+    } else if (kind === 'depth-3d') {
         // Animação 2 (cadastro -> chat): leve profundidade 3D, elementos "chegando de trás"
         document.body.style.perspective = '1400px';
         gsap.set(toEl,   { opacity: 0, z: -460, rotationX: 7, transformOrigin: '50% 55%', zIndex: 300, willChange: 'transform,opacity' });
@@ -115,8 +126,8 @@ window.gsapSwitch = function(fromId, toId, kind, onDone) {
     }
 };
 
-window.voltarParaIntro = function() { window.switchView('view-intro'); };
-window.irParaLogin = function(event) { if(event) event.preventDefault(); window.gsapSwitch('view-intro', 'view-auth', 'fade-elegant'); };
+window.voltarParaIntro = function() { window.gsapSwitch('view-auth', 'view-intro', 'cube'); };
+window.irParaLogin = function(event) { if(event) event.preventDefault(); window.gsapSwitch('view-intro', 'view-auth', 'cube'); };
 window.irParaChat = function() {
     const mostrarSaudacao = () => {
         const historyDiv = document.getElementById('chat-history');
@@ -127,7 +138,7 @@ window.irParaChat = function() {
             window.mostrarBoasVindas(window.saudacao(firstName));
         }
     };
-    window.gsapSwitch('view-auth', 'view-chat', 'depth-3d', mostrarSaudacao);
+    window.gsapSwitch('view-auth', 'view-chat', 'cube', mostrarSaudacao);
 };
 
 function getGreeting(firstName) {
@@ -226,7 +237,7 @@ window.handleLogout = async () => {
     if (window.esconderBoasVindas) window.esconderBoasVindas();
     currentSessionId = null;
     document.getElementById('side-panel').classList.remove('is-open');
-    window.switchView('view-auth');
+    window.gsapSwitch('view-chat', 'view-auth', 'cube');
 };
 
 window.abrirHistorico = function() { window.openModal('modal-historico'); };
@@ -757,3 +768,37 @@ window.esconderBoasVindas = function() {
     const el = document.getElementById('chat-welcome');
     if (el) { el.classList.remove('active'); if (typeof gsap !== 'undefined') gsap.set(el, { clearProps: 'all' }); }
 };
+
+
+// ==============================================================================
+// Frases rotativas da tela inicial (ordem aleatoria + transicao suave)
+// ==============================================================================
+window.iniciarFrasesIntro = function() {
+    const el = document.getElementById('intro-sub');
+    if (!el) return;
+    if (window.__introPhraseTimer) clearInterval(window.__introPhraseTimer);
+    let ordem = [], idx = 0;
+    const lista = () => (window.I18N && window.I18N[window.currentLang] && window.I18N[window.currentLang].intro_phrases)
+                        || (window.I18N && window.I18N.pt && window.I18N.pt.intro_phrases) || [];
+    const embaralhar = () => {
+        const n = lista().length;
+        ordem = Array.from({ length: n }, (_, i) => i);
+        for (let i = ordem.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [ordem[i], ordem[j]] = [ordem[j], ordem[i]];
+        }
+        idx = 0;
+    };
+    embaralhar();
+    const trocar = () => {
+        const arr = lista();
+        if (!arr.length) return;
+        if (idx >= ordem.length) embaralhar();
+        const frase = arr[ordem[idx] % arr.length];
+        idx++;
+        el.style.opacity = '0';
+        setTimeout(() => { el.textContent = frase; el.style.opacity = '1'; }, 550);
+    };
+    window.__introPhraseTimer = setInterval(trocar, 5200);
+};
+document.addEventListener('DOMContentLoaded', () => { window.iniciarFrasesIntro(); });

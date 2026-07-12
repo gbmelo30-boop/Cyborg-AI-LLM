@@ -6,7 +6,7 @@ body {
     margin: 0;
     padding: 0;
     overflow: hidden;
-    background-color: var(--bg-color, #0d1117);
+    background-color: var(--bg-color, #000000);
     color: var(--primary-text-color, #ffffff);
     transition: background-color 0.3s, color 0.3s;
 }
@@ -16,7 +16,7 @@ body {
 /* Tela de boas vindas                                                            */
 /* ============================================================================== */
 :root {
-    --bg-color: #0d1117;
+    --bg-color: #000000;
     --primary-text-color: #ffffff;
     --secondary-text-color: #e6edf3;
     --tertiary-text-color: #d0d7de;
@@ -238,8 +238,8 @@ body.light-theme footer p { text-shadow: none; font-weight: bold; }
 /* Tela de Identificação                                                          */
 /* ============================================================================== */
 #view-auth {
-    --panel-left-bg-dark: #0d1117;
-    --panel-right-bg-dark: #161b22;
+    --panel-left-bg-dark: #0a0a0a;
+    --panel-right-bg-dark: #161616;
     --primary-text-dark: #e6edf3;
     --secondary-text-dark: #7d8590;
     --input-border-dark: #30363d;
@@ -1171,4 +1171,34 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 .message-bubble code {
     background: var(--bot-message-bg); padding: 1px 5px; border-radius: 4px;
     font-family: 'Share Tech Mono', monospace; font-size: 0.9em;
+}
+
+
+/* ============================================================================== */
+/* Titulo "CYBORG AI" que se desenha sozinho (letra a letra)                       */
+/* ============================================================================== */
+.brand { margin: 0; line-height: 1; }
+.brand-svg { width: min(72vw, 460px); height: auto; display: block; margin: 0 auto; overflow: visible; filter: drop-shadow(0 0 6px var(--led-glow)); }
+.brand-text { font-family: 'Share Tech Mono', monospace; font-size: 60px; letter-spacing: 6px; }
+.brand-text tspan {
+    fill: var(--primary-text-color);
+    stroke: var(--led-static-blue);
+    stroke-width: 1.1;
+    stroke-dasharray: 240;
+    stroke-dashoffset: 0;
+    fill-opacity: 1;
+    paint-order: stroke;
+    animation: brandInk 0.9s ease both;
+}
+@keyframes brandInk {
+    0%   { stroke-dashoffset: 240; fill-opacity: 0; }
+    55%  { stroke-dashoffset: 0;   fill-opacity: 0; }
+    100% { stroke-dashoffset: 0;   fill-opacity: 1; }
+}
+
+/* Transicao suave entre as frases rotativas da tela inicial */
+#view-intro .p-main { transition: opacity 0.55s ease, color 0.3s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+    .brand-text tspan { animation: none; fill-opacity: 1; stroke-dashoffset: 0; }
 }
