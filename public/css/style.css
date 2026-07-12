@@ -1178,11 +1178,11 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 /* Titulo "CYBORG AI" que se desenha sozinho (letra a letra)                       */
 /* ============================================================================== */
 .brand { margin: 0; line-height: 1; }
-.brand-svg { width: min(72vw, 460px); height: auto; display: block; margin: 0 auto; overflow: visible; filter: drop-shadow(0 0 6px var(--led-glow)); }
+.brand-svg { width: min(72vw, 460px); height: auto; display: block; margin: 0 auto; overflow: visible; }
 .brand-text { font-family: 'Share Tech Mono', monospace; font-size: 60px; letter-spacing: 6px; }
 .brand-text tspan {
     fill: var(--primary-text-color);
-    stroke: var(--led-static-blue);
+    stroke: var(--primary-text-color);
     stroke-width: 1.1;
     stroke-dasharray: 240;
     stroke-dashoffset: 0;
@@ -1201,4 +1201,18 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 
 @media (prefers-reduced-motion: reduce) {
     .brand-text tspan { animation: none; fill-opacity: 1; stroke-dashoffset: 0; }
+}
+
+
+/* ============================================================================== */
+/* Surgimento do anel (logo) na tela inicial: ele se desenha ao aparecer            */
+/* ============================================================================== */
+#view-intro .led-ring circle {
+    stroke-dasharray: 239;
+    animation: ringDraw 1.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes ringDraw {
+    0%   { stroke-dashoffset: 239; opacity: 0; }
+    25%  { opacity: 1; }
+    100% { stroke-dashoffset: 0; opacity: 1; }
 }
