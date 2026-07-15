@@ -238,70 +238,6 @@
                         <p style="margin-top:20px; font-size:0.8em; color:var(--secondary-text-color); text-align:center;">
                             <span data-i18n="status_label">Status:</span> <span id="rag-status" style="color: #ff4444; font-weight:bold;">DESATIVADO</span>
                         </p>
-                        <div style="margin-top:16px; border-top:1px solid var(--border-color); padding-top:12px;">
-                            <button class="menu-item" style="width:100%; margin:0;" onclick="abrirAdmin()" title="Painel administrativo">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
-                                <span data-i18n="admin_link">Painel administrativo</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="modal-admin" class="modal-overlay">
-                <div class="modal-box">
-                    <div class="modal-header" style="justify-content:flex-start; gap:12px;">
-                        <button class="close-modal" onclick="adminVoltar()" title="Voltar" style="font-size:1.5em; line-height:1;">&#8592;</button>
-                        <span class="modal-title">Cyborg // Painel</span>
-                    </div>
-                    <div class="modal-content">
-                        <div id="admin-gate">
-                            <div class="admin-label">Senha de administrador</div>
-                            <div class="pw-wrap">
-                                <input type="password" id="admin-pw" class="admin-input" placeholder="Digite a senha..." autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();adminEntrar();}">
-                                <button type="button" class="eye" onclick="adminToggleSenha()" aria-label="Mostrar ou ocultar a senha" title="Mostrar/ocultar senha">
-                                    <svg id="admin-eye-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12.5a5 5 0 110-10 5 5 0 010 10zm0-8a3 3 0 100 6 3 3 0 000-6z"/></svg>
-                                </button>
-                            </div>
-                            <button class="btn-admin-primary" onclick="adminEntrar()">ENTRAR</button>
-                            <div class="admin-err" id="admin-err"></div>
-                        </div>
-
-                        <div id="admin-panel" class="hidden-admin">
-                            <div class="config-row">
-                                <div>
-                                    <strong style="display:block; font-size:1.05em;">Gravar conversas no BD</strong>
-                                    <span style="font-size:0.82em; color:var(--secondary-text-color); opacity:0.85;">Quando desligado, o chat funciona mas nada é salvo.</span>
-                                </div>
-                                <label class="switch"><input type="checkbox" id="admin-t-gravar" onchange="adminSalvar('gravar_no_bd', this.checked)"><span class="slider"></span></label>
-                            </div>
-                            <div class="config-row">
-                                <div>
-                                    <strong style="display:block; font-size:1.05em;">RAG ligado por padrão</strong>
-                                    <span style="font-size:0.82em; color:var(--secondary-text-color); opacity:0.85;">Define, para todos, se o RAG começa ligado.</span>
-                                </div>
-                                <label class="switch"><input type="checkbox" id="admin-t-rag" onchange="adminSalvar('rag_padrao', this.checked)"><span class="slider"></span></label>
-                            </div>
-                            <button class="btn-admin-secondary" onclick="adminAbrirStats()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 9.2h3V19H5V9.2zM10.6 5h2.8v14h-2.8V5zm5.6 8H19v6h-2.8v-6z"/></svg> Estatísticas e conversas</button>
-                            <button class="btn-admin-primary" style="margin-top:20px;" onclick="adminBaixarCSV()">Baixar histórico (CSV)</button>
-                            <button class="btn-admin-danger" onclick="adminApagar()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg> Apagar histórico</button>
-                            <div class="admin-toast" id="admin-toast"></div>
-                        </div>
-
-                        <div id="admin-stats-view" class="hidden-admin">
-                            <div class="admin-stats">
-                                <div class="admin-stat"><div class="n" id="admin-s-sessoes">–</div><div class="l">Sessões</div></div>
-                                <div class="admin-stat"><div class="n" id="admin-s-mensagens">–</div><div class="l">Mensagens</div></div>
-                                <div class="admin-stat"><div class="n" id="admin-s-docs">–</div><div class="l">Docs RAG</div></div>
-                            </div>
-                            <div class="admin-subtitle">Conversas</div>
-                            <div id="admin-sessoes-lista" class="admin-list"></div>
-                        </div>
-
-                        <div id="admin-messages-view" class="hidden-admin">
-                            <div class="admin-subtitle" id="admin-msg-titulo">Mensagens</div>
-                            <div id="admin-mensagens-lista" class="admin-list"></div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -340,7 +276,7 @@
     <script src="js/config.js?v=7"></script>
     <script src="js/db.js?v=8"></script>
     <script src="js/cyborg.js?v=9"></script>
-    <script src="js/app.js?v=15"></script>
+    <script src="js/app.js?v=16"></script>
 
 </body>
 </html>

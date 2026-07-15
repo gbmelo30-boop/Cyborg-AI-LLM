@@ -2,9 +2,187 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="refresh" content="0; url=index.html?admin=1">
-<title>Cyborg AI — Painel</title>
-<script>location.replace('index.html?admin=1');</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Cyborg AI — Painel Administrativo</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css?v=19">
+<style>
+  body { min-height:100vh; margin:0; display:flex; align-items:center; justify-content:center;
+         padding:20px; box-sizing:border-box; background:var(--bg-color, #000000); }
+  .admin-card { width:100%; max-width:520px; background:var(--chat-bg, #0a0a0a);
+                border:1px solid var(--border-color); border-radius:16px; padding:26px 24px;
+                box-shadow:0 12px 48px rgba(0,0,0,0.55); box-sizing:border-box; }
+  .admin-head { display:flex; align-items:center; gap:12px; margin:0 0 22px; }
+  .admin-head h1 { font-family:'Share Tech Mono', monospace; font-size:1.25em; letter-spacing:2px;
+                   margin:0; color:var(--primary-text-color); }
+  .admin-back { background:none; border:none; color:var(--primary-text-color); cursor:pointer;
+                font-size:1.5em; line-height:1; display:none; padding:0 4px; }
+</style>
 </head>
-<body></body>
+<body>
+  <div class="admin-card">
+    <div class="admin-head">
+      <button class="admin-back" id="admin-back" onclick="voltar()" title="Voltar">&#8592;</button>
+      <h1>Cyborg // Painel</h1>
+    </div>
+
+    <div id="admin-gate">
+      <div class="admin-label">Senha de administrador</div>
+      <div class="pw-wrap">
+        <input type="password" id="pw" class="admin-input" placeholder="Digite a senha..." autocomplete="off"
+               onkeydown="if(event.key==='Enter'){event.preventDefault();entrar();}">
+        <button type="button" class="eye" onclick="toggleSenha()" aria-label="Mostrar/ocultar senha" title="Mostrar/ocultar senha">
+          <svg id="eye-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12.5a5 5 0 110-10 5 5 0 010 10zm0-8a3 3 0 100 6 3 3 0 000-6z"/></svg>
+        </button>
+      </div>
+      <button class="btn-admin-primary" onclick="entrar()">ENTRAR</button>
+      <div class="admin-err" id="err"></div>
+    </div>
+
+    <div id="admin-panel" class="hidden-admin">
+      <div class="config-row">
+        <div>
+          <strong style="display:block; font-size:1.05em;">Gravar conversas no BD</strong>
+          <span style="font-size:0.82em; color:var(--secondary-text-color); opacity:0.85;">Quando desligado, o chat funciona mas nada é salvo.</span>
+        </div>
+        <label class="switch"><input type="checkbox" id="t-gravar" onchange="salvar('gravar_no_bd', this.checked)"><span class="slider"></span></label>
+      </div>
+      <div class="config-row">
+        <div>
+          <strong style="display:block; font-size:1.05em;">RAG ligado por padrão</strong>
+          <span style="font-size:0.82em; color:var(--secondary-text-color); opacity:0.85;">Define, para todos, se o RAG começa ligado.</span>
+        </div>
+        <label class="switch"><input type="checkbox" id="t-rag" onchange="salvar('rag_padrao', this.checked)"><span class="slider"></span></label>
+      </div>
+      <button class="btn-admin-secondary" onclick="abrirStats()">Estatísticas e conversas</button>
+      <button class="btn-admin-primary" style="margin-top:20px;" onclick="baixarCSV()">Baixar histórico (CSV)</button>
+      <button class="btn-admin-danger" onclick="apagar()">Apagar histórico</button>
+      <div class="admin-toast" id="toast"></div>
+    </div>
+
+    <div id="admin-stats-view" class="hidden-admin">
+      <div class="admin-stats">
+        <div class="admin-stat"><div class="n" id="s-sessoes">–</div><div class="l">Sessões</div></div>
+        <div class="admin-stat"><div class="n" id="s-mensagens">–</div><div class="l">Mensagens</div></div>
+        <div class="admin-stat"><div class="n" id="s-docs">–</div><div class="l">Docs RAG</div></div>
+      </div>
+      <div class="admin-subtitle">Conversas</div>
+      <div id="sessoes-lista" class="admin-list"></div>
+    </div>
+
+    <div id="admin-messages-view" class="hidden-admin">
+      <div class="admin-subtitle" id="msg-titulo">Mensagens</div>
+      <div id="mensagens-lista" class="admin-list"></div>
+    </div>
+  </div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  let PW = "";
+  const EYE_ON  = '<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12.5a5 5 0 110-10 5 5 0 010 10zm0-8a3 3 0 100 6 3 3 0 000-6z"/>';
+  const EYE_OFF = '<path d="M12 7a5 5 0 015 5c0 .64-.13 1.25-.36 1.82l2.92 2.92c1.51-1.26 2.7-2.89 3.44-4.74C21.27 7.61 17 4.5 12 4.5c-1.4 0-2.74.25-3.98.7l2.16 2.16c.57-.23 1.18-.36 1.82-.36zM2 4.27l2.28 2.28.46.46A11.8 11.8 0 001 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65a3 3 0 003 3c.22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53a5 5 0 01-5-5c0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16a3 3 0 00-3-3l-.17.01z"/>';
+  const show = id => $(id).classList.remove('hidden-admin');
+  const hide = id => $(id).classList.add('hidden-admin');
+  const backBtn = v => { $('admin-back').style.display = v ? 'inline-block' : 'none'; };
+  const api = (path, body) => fetch(path, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const escapeHtml = x => String(x==null?'':x).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const fmtData = iso => { try { return new Date(iso).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); } catch(e){ return iso||''; } };
+  const pintaStats = st => { if(!st) return; $('s-sessoes').innerText=st.sessoes; $('s-mensagens').innerText=st.mensagens; $('s-docs').innerText=st.documentos; };
+  const pintaConfig = d => { $('t-gravar').checked=!!d.config.gravar_no_bd; $('t-rag').checked=!!d.config.rag_padrao; pintaStats(d.stats); };
+
+  async function entrar(){
+    PW = $('pw').value; const err=$('err'); err.innerText="";
+    try {
+      const r = await api('/api/admin/settings', { password: PW });
+      const data = await r.json().catch(()=>({}));
+      if (r.ok) { hide('admin-gate'); show('admin-panel'); pintaConfig(data); }
+      else err.innerText = data.error || "Senha incorreta.";
+    } catch(e){ err.innerText = "Erro de conexão."; }
+  }
+  async function salvar(chave, valor){
+    const t=$('toast'); t.innerText="Salvando...";
+    try {
+      const r = await api('/api/admin/settings', { password: PW, updates: { [chave]: valor } });
+      const data = await r.json().catch(()=>({}));
+      if (r.ok){ pintaConfig(data); t.innerText="Salvo ✓"; setTimeout(()=>t.innerText="",1500); } else t.innerText = data.error || "Falha.";
+    } catch(e){ t.innerText="Erro."; }
+  }
+  async function baixarCSV(){
+    const t=$('toast'); t.innerText="Gerando CSV...";
+    try {
+      const r = await api('/api/admin/export', { password: PW });
+      if (!r.ok){ t.innerText="Falha ao gerar."; return; }
+      const blob = await r.blob(); const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download='historico_cyborg.csv'; a.click(); URL.revokeObjectURL(url);
+      t.innerText="CSV baixado ✓"; setTimeout(()=>t.innerText="",2000);
+    } catch(e){ t.innerText="Erro."; }
+  }
+  async function apagar(){
+    if (!confirm('Apagar TODAS as sessões e mensagens do banco? Esta ação não pode ser desfeita.')) return;
+    const t=$('toast'); t.innerText="Apagando...";
+    try {
+      const r = await api('/api/admin/clear_history', { password: PW });
+      const data = await r.json().catch(()=>({}));
+      if (r.ok){ pintaStats(data.stats); t.innerText="Histórico apagado ✓"; setTimeout(()=>t.innerText="",2000); } else t.innerText = data.error || "Falha.";
+    } catch(e){ t.innerText="Erro."; }
+  }
+  async function abrirStats(){
+    hide('admin-panel'); hide('admin-messages-view'); show('admin-stats-view'); backBtn(true);
+    await carregarSessoes();
+  }
+  async function carregarSessoes(){
+    const lista=$('sessoes-lista'); lista.innerHTML='<div class="admin-empty">Carregando...</div>';
+    try {
+      const r = await api('/api/admin/sessions', { password: PW });
+      const data = await r.json().catch(()=>({}));
+      if (!r.ok){ lista.innerHTML='<div class="admin-empty">Erro ao carregar.</div>'; return; }
+      if (data.stats) pintaStats(data.stats);
+      const sess = data.sessoes || [];
+      if (!sess.length){ lista.innerHTML='<div class="admin-empty">Nenhuma conversa registrada.</div>'; return; }
+      lista.innerHTML='';
+      sess.forEach(sx => {
+        const div = document.createElement('div'); div.className='admin-list-item';
+        div.onclick = () => verMensagens(sx.id, sx);
+        const usuario = sx.user_name || sx.user_id || '—';
+        div.innerHTML =
+          '<div class="ali-top"><span class="ali-user">'+escapeHtml(usuario)+'</span><span class="ali-count">'+sx.n_msgs+' msg</span></div>'+
+          '<div class="ali-sub">'+escapeHtml(sx.grupo||'')+' · '+escapeHtml(sx.tema||'')+' · '+fmtData(sx.created_at)+'</div>'+
+          '<div class="ali-title">'+escapeHtml(sx.title||'')+'</div>';
+        lista.appendChild(div);
+      });
+    } catch(e){ lista.innerHTML='<div class="admin-empty">Erro de conexão.</div>'; }
+  }
+  async function verMensagens(sessionId, sx){
+    hide('admin-stats-view'); show('admin-messages-view'); backBtn(true);
+    const usuario = sx ? (sx.user_name || sx.user_id || '—') : '';
+    $('msg-titulo').innerText = 'Conversa de ' + usuario;
+    const lista=$('mensagens-lista'); lista.innerHTML='<div class="admin-empty">Carregando...</div>';
+    try {
+      const r = await api('/api/admin/messages', { password: PW, session_id: sessionId });
+      const data = await r.json().catch(()=>({}));
+      if (!r.ok){ lista.innerHTML='<div class="admin-empty">Erro ao carregar.</div>'; return; }
+      const msgs = data.mensagens || [];
+      if (!msgs.length){ lista.innerHTML='<div class="admin-empty">Sem mensagens.</div>'; return; }
+      lista.innerHTML='';
+      msgs.forEach(m => {
+        const div = document.createElement('div'); div.className='admin-msg '+(m.role==='user'?'admin-msg-user':'admin-msg-bot');
+        div.innerHTML =
+          '<div class="am-role">'+(m.role==='user'?'Usuário':'Cyborg AI')+' · '+fmtData(m.created_at)+'</div>'+
+          '<div class="am-text">'+escapeHtml(m.content||'')+'</div>';
+        lista.appendChild(div);
+      });
+    } catch(e){ lista.innerHTML='<div class="admin-empty">Erro de conexão.</div>'; }
+  }
+  function voltar(){
+    const msgs=$('admin-messages-view'), stats=$('admin-stats-view');
+    if (!msgs.classList.contains('hidden-admin')){ hide('admin-messages-view'); show('admin-stats-view'); return; }
+    if (!stats.classList.contains('hidden-admin')){ hide('admin-stats-view'); show('admin-panel'); backBtn(false); return; }
+  }
+  function toggleSenha(){
+    const inp=$('pw'); const mostrando = inp.type==='text'; inp.type = mostrando ? 'password' : 'text';
+    $('eye-svg').innerHTML = mostrando ? EYE_ON : EYE_OFF;
+  }
+</script>
+</body>
 </html>
