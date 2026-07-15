@@ -133,7 +133,9 @@ def generate_llm_response(messages, use_rag=True, tema_pesquisa="Geral", user_na
 
         SYSTEM_PROMPT = f"""Você é o Cyborg AI, um assistente que provoca reflexões críticas para revelar aspectos de sistemas que não estão explícitos na fala inicial do usuário.
 
-CONTEXTO ATUAL DE DISCUSSÃO: O usuário selecionou a frente "{tema_pesquisa}". Use esse tema apenas como pano de fundo, quando o usuário trouxer um cenário, ideia ou pergunta concreta. Não force o tema em saudações ou mensagens triviais.{clausula_nome}
+CONTEXTO: Responda sempre e apenas a partir do cenário concreto que o próprio usuário trouxer na conversa. Não existe tema ou "frente" pré-definida. NUNCA introduza assuntos, exemplos, domínios ou áreas (como terapia, saúde, educação, design especulativo etc.) que o usuário não tenha mencionado explicitamente.
+
+PONTO DE PARTIDA: Toda reflexão nasce da premissa de que humano e técnica já são inseparáveis — nós já somos ciborgues. Explore o hibridismo, as fronteiras que se dissolvem, os laços e responsabilidades entre pessoas, dados e máquinas, e o caráter sempre parcial e situado de qualquer solução — sempre a partir do caso concreto do usuário.{clausula_nome}
 
 OBJETIVO:
 
@@ -238,12 +240,15 @@ FECHAMENTO:
         if contexto_rag:
             final_content = (
                 "[MATERIAL DE APOIO — uso interno, NÃO exibir ao usuário]\n"
-                "Use as ideias abaixo como repertório para APROFUNDAR e ENRIQUECER a sua reflexão "
-                "sobre a fala do usuário — elas trazem conceitos e ângulos úteis do referencial da "
-                "pesquisa. Incorpore o que for pertinente de forma natural, com AS SUAS palavras, "
-                "sem citar, sem copiar trechos e sem nomear fontes, mantendo exatamente o seu estilo "
-                "reflexivo, fluido e provocativo. Deixe a resposta mais rica e específica do que "
-                "seria sem esse repertório. Se algum trecho não ajudar, ignore-o.\n\n"
+                "Abaixo há um repertório de CONCEITOS e ângulos de reflexão. Use-os apenas para "
+                "APROFUNDAR a sua reflexão sobre o cenário que o USUÁRIO trouxe, com AS SUAS "
+                "palavras, sem citar, sem copiar trechos e sem nomear fontes.\n"
+                "REGRA CRÍTICA: aproveite somente as ideias e perspectivas; NUNCA traga para a "
+                "resposta temas, domínios, exemplos, áreas, métodos ou estudos de caso presentes "
+                "no repertório que o usuário NÃO tenha mencionado (por exemplo, não fale de terapia, "
+                "saúde, design especulativo ou qualquer outro assunto alheio ao dele). Se o "
+                "repertório tratar de assuntos diferentes do que o usuário disse, ignore-os por "
+                "completo e mantenha o foco total no cenário dele.\n\n"
                 f"REPERTÓRIO:\n{contexto_rag}\n\n"
                 "---\n"
                 f"MENSAGEM DO USUÁRIO (responda a isto, no seu estilo):\n{last_user_msg}"
@@ -256,7 +261,7 @@ FECHAMENTO:
 
         output = llm.create_chat_completion(
             messages=formatted_messages,
-            temperature=0.5,
+            temperature=0.4,
             max_tokens=None,
             stop=["<<FIM>>", "<|eot_id|>"]
         )
