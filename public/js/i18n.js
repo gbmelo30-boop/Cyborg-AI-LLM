@@ -73,7 +73,30 @@ window.I18N = {
     name_required: "Digite seu nome para continuar.",
     greet_morning: "Bom dia", greet_afternoon: "Boa tarde", greet_evening: "Boa noite",
     greet_tail: "Sou o Cyborg AI, como posso ajudá-lo?",
-    slide1: "<h3>1. Quem sou eu?</h3><p>Olá, eu sou o Cyborg AI.</p><p>Não sou um assistente virtual focado em produtividade. Fui criado para explorar as fronteiras entre humanos, animais e máquinas, inspirado pela filosofia ciborgue e pelo Design Especulativo.</p>",
+    greet_pool: {
+      manha: [
+        "Bom dia{nome}. Sou o Cyborg AI — que ideia você quer trazer pra pensarmos juntos?",
+        "Bom dia{nome}. Por qual fronteira entre humano e máquina começamos hoje?",
+        "Bom dia{nome}. Traga um cenário e vamos desdobrar o que ele esconde.",
+        "Bom dia{nome}. Que sistema ou ideia anda ocupando os seus pensamentos?",
+        "Bom dia{nome}. Como posso te ajudar a pensar hoje?"
+      ],
+      tarde: [
+        "Boa tarde{nome}. Sou o Cyborg AI — sobre o que vamos refletir agora?",
+        "Boa tarde{nome}. Me conte uma ideia e vamos investigá-la por dentro.",
+        "Boa tarde{nome}. Que tecnologia ou cenário você quer colocar em questão?",
+        "Boa tarde{nome}. Por onde começamos a pensar?",
+        "Boa tarde{nome}. Qual inquietação te trouxe até aqui?"
+      ],
+      noite: [
+        "Boa noite{nome}. Sou o Cyborg AI — que inquietação você traz esta noite?",
+        "Boa noite{nome}. Traga uma ideia e vamos atravessar suas fronteiras.",
+        "Boa noite{nome}. Sobre qual cenário você quer refletir agora?",
+        "Boa noite{nome}. O que anda te fazendo pensar?",
+        "Boa noite{nome}. Como posso te ajudar esta noite?"
+      ]
+    },
+        slide1: "<h3>1. Quem sou eu?</h3><p>Olá, eu sou o Cyborg AI.</p><p>Não sou um assistente virtual focado em produtividade. Fui criado para explorar as fronteiras entre humanos, animais e máquinas, inspirado pela filosofia ciborgue e pelo Design Especulativo.</p>",
     slide2: "<h3>2. Quando me usar?</h3><p>Use-me quando quiser testar os limites de uma ideia. Se você está pensando em uma nova tecnologia, um projeto, ou simplesmente refletindo sobre os impactos do futuro na sociedade, este é o lugar.</p>",
     slide3: "<h3>3. Como falar comigo?</h3><p>Para que eu possa te ajudar, preciso de contexto. No chat, envie um texto contendo:</p><ul><li><strong>A ideia:</strong> Qual é a tecnologia, projeto ou problema que você quer discutir?</li><li><strong>A intenção:</strong> O que você espera que isso mude no mundo?</li></ul>",
     slide4: "<h3>4. Como eu respondo?</h3><p>Não espere respostas prontas, resumos ou soluções fáceis. Minhas falas serão concisas, diretas e, muitas vezes, provocarão desconforto.</p><p>Meu papel é tensionar a sua visão de mundo.</p>",
@@ -150,7 +173,30 @@ window.I18N = {
     name_required: "Enter your name to continue.",
     greet_morning: "Good morning", greet_afternoon: "Good afternoon", greet_evening: "Good evening",
     greet_tail: "I'm Cyborg AI, how can I help you?",
-    slide1: "<h3>1. Who am I?</h3><p>Hi, I'm Cyborg AI.</p><p>I'm not a productivity assistant. I was created to explore the boundaries between humans, animals and machines, inspired by cyborg philosophy and Speculative Design.</p>",
+    greet_pool: {
+      manha: [
+        "Good morning{nome}. I'm Cyborg AI — what idea shall we think through together?",
+        "Good morning{nome}. Which frontier between human and machine shall we explore today?",
+        "Good morning{nome}. Bring a scenario and let's unfold what it hides.",
+        "Good morning{nome}. What system or idea is on your mind?",
+        "Good morning{nome}. How can I help you think today?"
+      ],
+      tarde: [
+        "Good afternoon{nome}. I'm Cyborg AI — what shall we reflect on now?",
+        "Good afternoon{nome}. Tell me an idea and let's examine it from within.",
+        "Good afternoon{nome}. Which technology or scenario do you want to question?",
+        "Good afternoon{nome}. Where shall we begin thinking?",
+        "Good afternoon{nome}. What brought you here?"
+      ],
+      noite: [
+        "Good evening{nome}. I'm Cyborg AI — what's on your mind tonight?",
+        "Good evening{nome}. Bring an idea and let's cross its boundaries.",
+        "Good evening{nome}. Which scenario would you like to reflect on now?",
+        "Good evening{nome}. What's been making you think?",
+        "Good evening{nome}. How can I help you tonight?"
+      ]
+    },
+        slide1: "<h3>1. Who am I?</h3><p>Hi, I'm Cyborg AI.</p><p>I'm not a productivity assistant. I was created to explore the boundaries between humans, animals and machines, inspired by cyborg philosophy and Speculative Design.</p>",
     slide2: "<h3>2. When to use me?</h3><p>Use me when you want to test the limits of an idea. If you're thinking about a new technology, a project, or simply reflecting on how the future may impact society, this is the place.</p>",
     slide3: "<h3>3. How to talk to me?</h3><p>To help you, I need context. In the chat, send a message containing:</p><ul><li><strong>The idea:</strong> which technology, project or problem do you want to discuss?</li><li><strong>The intention:</strong> what do you hope it will change in the world?</li></ul>",
     slide4: "<h3>4. How do I respond?</h3><p>Don't expect ready-made answers, summaries or easy solutions. My replies will be concise, direct and, often, uncomfortable.</p><p>My role is to tension your worldview.</p>",
@@ -167,9 +213,12 @@ window.T = function(key){
 
 window.saudacao = function(firstName){
   const h = new Date().getHours();
-  const p = (h >= 5 && h < 12) ? window.T('greet_morning') : ((h >= 12 && h < 18) ? window.T('greet_afternoon') : window.T('greet_evening'));
+  const per = (h >= 5 && h < 12) ? 'manha' : ((h >= 12 && h < 18) ? 'tarde' : 'noite');
+  const d = window.I18N[window.currentLang] || window.I18N.pt;
+  const pool = (d.greet_pool && d.greet_pool[per]) || window.I18N.pt.greet_pool[per];
+  const tpl = pool[Math.floor(Math.random() * pool.length)];
   const nome = firstName ? (', ' + firstName) : '';
-  return p + nome + '! ' + window.T('greet_tail');
+  return tpl.replace('{nome}', nome);
 };
 
 window.applyLang = function(lang){
