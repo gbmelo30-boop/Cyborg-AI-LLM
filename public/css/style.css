@@ -112,18 +112,26 @@ main { max-width: 600px; width: 100%; display: flex; flex-direction: column; ali
     height: 90px;
     margin-bottom: 30px;
     flex-shrink: 0;
-    filter: drop-shadow(0 0 8px var(--led-static-blue)) drop-shadow(0 0 20px var(--led-glow));
+    filter: drop-shadow(0 0 6px rgba(30, 64, 175, 0.9)) drop-shadow(0 0 16px rgba(30, 64, 175, 0.45));
     transition: filter 0.4s ease;
 }
 
 .led-ring circle {
-    stroke: var(--led-static-blue);
+    stroke: #1E40AF; /* azul escuro fixo, nao muda com o tema */
     transition: stroke 0.4s ease;
 }
 
+/* Tema claro: sem dispersao de brilho — anel limpo como no tema escuro */
+body.light-theme .led-ring,
+body.light-theme .header-halo,
+body.light-theme .chat-welcome .cw-ring,
+body.light-theme .led-loading.led-done {
+    filter: none;
+}
+
 /* Estados de cor do LED */
-.led-ring.led-yellow circle { stroke: #FFD700; }
-.led-ring.led-yellow { filter: drop-shadow(0 0 8px #FFD700) drop-shadow(0 0 20px rgba(255,215,0,0.6)); }
+.led-ring.led-yellow circle { stroke: #FFB300; }
+.led-ring.led-yellow { filter: drop-shadow(0 0 8px #FFB300) drop-shadow(0 0 20px rgba(255,179,0,0.6)); }
 
 .led-ring.led-red circle { stroke: #FF4444; }
 .led-ring.led-red { filter: drop-shadow(0 0 8px #FF4444) drop-shadow(0 0 20px rgba(255,68,68,0.6)); }
@@ -490,12 +498,12 @@ body.light-theme #view-chat {
     width: 18px;
     height: 18px;
     flex-shrink: 0;
-    filter: drop-shadow(0 0 3px var(--led-static-blue)) drop-shadow(0 0 7px var(--led-glow));
+    filter: drop-shadow(0 0 3px rgba(30, 64, 175, 0.9)) drop-shadow(0 0 7px rgba(30, 64, 175, 0.5));
     transition: filter 0.3s;
 }
 
 .header-halo circle {
-    stroke: var(--led-static-blue);
+    stroke: #1E40AF; /* azul escuro fixo */
     transition: stroke 0.4s ease;
 }
 
@@ -844,19 +852,19 @@ body.light-theme #view-chat {
 .led-loading {
     transform-origin: center;
     animation: ledSpinPulse 1s linear infinite;
-    filter: drop-shadow(0 0 3px #FFD700) drop-shadow(0 0 8px rgba(255,215,0,0.65));
+    filter: drop-shadow(0 0 4px #FFB300) drop-shadow(0 0 10px rgba(255, 179, 0, 0.85));
 }
 .led-loading circle {
-    stroke: #FFD700;
+    stroke: #FFB300; /* amarelo forte */
 }
 .led-loading.led-done {
     animation: none;
     transform: none;
-    filter: drop-shadow(0 0 3px var(--led-static-blue)) drop-shadow(0 0 7px var(--led-glow));
+    filter: drop-shadow(0 0 3px rgba(30, 64, 175, 0.95)) drop-shadow(0 0 7px rgba(30, 64, 175, 0.6));
     transition: filter 0.6s ease;
 }
 .led-loading.led-done circle {
-    stroke: var(--led-static-blue);
+    stroke: #1E40AF;
     transition: stroke 0.6s ease;
 }
 .led-loading.led-error {
@@ -1214,4 +1222,24 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 @keyframes ringAppear {
     0%   { opacity: 0; transform: scale(0.3); }
     100% { opacity: 1; transform: scale(1); }
+}
+
+
+/* ============================================================================== */
+/* Orbe de particulas da tela inicial (azul escuro fixo, canvas)                   */
+/* ============================================================================== */
+#intro-orb-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+    pointer-events: none;
+}
+#view-intro main { position: relative; z-index: 10; }
+.intro-orb-anchor {
+    width: clamp(150px, 34vw, 200px);
+    height: clamp(150px, 34vw, 200px);
+    margin-bottom: 30px;
+    flex-shrink: 0;
 }
