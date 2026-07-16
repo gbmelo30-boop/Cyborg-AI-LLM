@@ -20,8 +20,8 @@ body {
     --primary-text-color: #ffffff;
     --secondary-text-color: #e6edf3;
     --tertiary-text-color: #d0d7de;
-    --led-static-blue: #7DF9FF;
-    --led-glow: rgba(125, 249, 255, 0.7);
+    --led-static-blue: #1E40AF;
+    --led-glow: rgba(30, 64, 175, 0.7);
     --loader-bar-bg: #22272e;
     --border-color: #30363d;
 }
@@ -202,7 +202,7 @@ body.light-theme .p-main { text-shadow: 0 2px 4px rgba(255,255,255,0.9); }
 #loading-sequence.fade-out { opacity: 0; transform: scale(0.95); pointer-events: none; position: absolute; }
 
 .loading-bar-container { width: 100%; height: 8px; border: 1px solid var(--border-color); background-color: var(--loader-bar-bg); border-radius: 4px; padding: 2px; box-sizing: border-box; }
-.loading-bar-progress { width: 0%; height: 100%; background-color: var(--led-static-blue); border-radius: 2px; animation: fill-bar 4s ease-out forwards; box-shadow: 0 0 10px var(--led-glow); }
+.loading-bar-progress { width: 0%; height: 100%; background-color: var(--secondary-text-color); border-radius: 2px; animation: fill-bar 4s ease-out forwards; box-shadow: none; }
 
 @keyframes fill-bar { from { width: 0%; } to { width: 100%; } }
 
@@ -232,11 +232,11 @@ body.light-theme #start-button { text-shadow: none; font-weight: 800; }
 #start-button.fade-in { opacity: 1; pointer-events: auto; position: relative; }
 #start-button:hover {
     color: var(--primary-text-color);
-    text-shadow: 0 0 15px var(--led-glow);
-    background: rgba(125, 249, 255, 0.1);
-    border-color: var(--led-static-blue);
+    text-shadow: none;
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.35);
 }
-body.light-theme #start-button:hover { background: rgba(0, 86, 179, 0.1); }
+body.light-theme #start-button:hover { background: rgba(0, 0, 0, 0.05); border-color: rgba(0,0,0,0.25); }
 
 footer { position: absolute; bottom: 20px; font-size: 0.8em; z-index: 20; padding: 0 20px; }
 footer p { color: var(--tertiary-text-color); font-style: italic; font-family: sans-serif; text-shadow: 0 1px 2px rgba(0,0,0,0.5); margin: 0; }
@@ -255,8 +255,8 @@ body.light-theme footer p { text-shadow: none; font-weight: bold; }
     --icon-fill-dark: #7d8590;
     --button-gradient: linear-gradient(to right, #89CFF0, #0052D4);
     --button-text-color: #ffffff;
-    --led-blue: #7DF9FF;
-    --led-blue-light: #0084ff;
+    --led-blue: #1E40AF;
+    --led-blue-light: #1E40AF;
 }
 
 body.light-theme #view-auth {
@@ -331,16 +331,16 @@ body.light-theme #view-auth {
 .btn-start-research {
     width: 100%;
     padding: 16px;
-    background: var(--button-gradient);
+    background: var(--primary-text-color);
     border: none;
     border-radius: 8px;
-    color: var(--button-text-color);
+    color: var(--bg-color);
     font-size: 1.1em;
     font-weight: 600;
     cursor: pointer;
     margin-top: 10px;
     transition: filter 0.3s, box-shadow 0.3s;
-    box-shadow: 0 0 15px rgba(137, 207, 240, 0.4);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
     font-family: 'Share Tech Mono', monospace;
     letter-spacing: 1px;
 }
@@ -559,8 +559,8 @@ body.light-theme #view-chat {
     transition: border-color 0.3s, box-shadow 0.3s;
 }
 .input-pill:focus-within {
-    border-color: var(--led-static-blue);
-    box-shadow: 0 0 0 2px var(--led-glow), 0 2px 16px rgba(0, 0, 0, 0.25);
+    border-color: var(--secondary-text-color);
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.25);
 }
 .input-area.expanded .input-pill {
     height: 100%;
@@ -775,7 +775,7 @@ body.light-theme #view-chat {
     margin-bottom: 4px;
 }
 .history-item:hover { background-color: var(--component-hover-bg); }
-.history-item.active-chat { background-color: rgba(125, 249, 255, 0.1); border-left: 3px solid var(--led-static-blue); }
+.history-item.active-chat { background-color: rgba(30, 64, 175, 0.1); border-left: 3px solid var(--led-static-blue); }
 
 .history-title {
     flex-grow: 1;
@@ -1009,63 +1009,63 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 /* Painel admin (modal in-app)                                                    */
 /* ============================================================================== */
 .hidden-admin { display: none !important; }
-#modal-admin .admin-label { font-size: 0.85em; color: var(--secondary-text-color); margin-bottom: 8px; }
-#modal-admin .pw-wrap { position: relative; }
-#modal-admin .admin-input {
+.admin-label { font-size: 0.85em; color: var(--secondary-text-color); margin-bottom: 8px; }
+.pw-wrap { position: relative; }
+.admin-input {
     width: 100%; box-sizing: border-box;
     background: var(--chat-bg); color: var(--primary-text-color);
     border: 1px solid var(--border-color); border-radius: 8px;
     padding: 13px 46px 13px 14px; font-family: inherit; font-size: 1em; outline: none;
 }
-#modal-admin .admin-input:focus { border-color: var(--led-static-blue); }
-#modal-admin .eye {
+.admin-input:focus { border-color: var(--led-static-blue); }
+.eye {
     position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
     background: transparent; border: none; color: var(--secondary-text-color);
     cursor: pointer; padding: 6px; display: flex; align-items: center;
 }
-#modal-admin .eye:hover { color: var(--led-static-blue); }
-#modal-admin .btn-admin-primary {
+.eye:hover { color: var(--led-static-blue); }
+.btn-admin-primary {
     width: 100%; margin-top: 16px; padding: 13px; background: var(--led-static-blue);
-    color: #06202b; border: none; border-radius: 8px; font-family: inherit;
+    color: #ffffff; border: none; border-radius: 8px; font-family: inherit;
     font-weight: bold; letter-spacing: 1px; cursor: pointer;
 }
-#modal-admin .btn-admin-primary:hover { filter: brightness(1.1); }
-#modal-admin .btn-admin-danger {
+.btn-admin-primary:hover { filter: brightness(1.1); }
+.btn-admin-danger {
     width: 100%; margin-top: 10px; padding: 12px; background: transparent;
     color: #ff6b6b; border: 1px solid #ff6b6b; border-radius: 8px; font-family: inherit;
     font-weight: bold; letter-spacing: 1px; cursor: pointer;
     display: flex; align-items: center; justify-content: center; gap: 8px;
 }
-#modal-admin .btn-admin-danger:hover { background: rgba(255,107,107,0.12); }
-#modal-admin .btn-admin-danger svg { width: 18px; height: 18px; fill: currentColor; }
-#modal-admin .admin-err { color: #ff6b6b; font-size: 0.85em; margin-top: 12px; min-height: 18px; text-align: center; }
-#modal-admin .admin-toast { text-align: center; font-size: 0.8em; color: var(--secondary-text-color); margin-top: 14px; min-height: 16px; }
-#modal-admin .admin-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 22px; }
-#modal-admin .admin-stat { background: var(--chat-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; text-align: center; }
-#modal-admin .admin-stat .n { font-size: 1.5em; color: var(--led-static-blue); }
-#modal-admin .admin-stat .l { font-size: 0.7em; color: var(--secondary-text-color); text-transform: uppercase; letter-spacing: 1px; }
+.btn-admin-danger:hover { background: rgba(255,107,107,0.12); }
+.btn-admin-danger svg { width: 18px; height: 18px; fill: currentColor; }
+.admin-err { color: #ff6b6b; font-size: 0.85em; margin-top: 12px; min-height: 18px; text-align: center; }
+.admin-toast { text-align: center; font-size: 0.8em; color: var(--secondary-text-color); margin-top: 14px; min-height: 16px; }
+.admin-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 22px; }
+.admin-stat { background: var(--chat-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; text-align: center; }
+.admin-stat .n { font-size: 1.5em; color: var(--led-static-blue); }
+.admin-stat .l { font-size: 0.7em; color: var(--secondary-text-color); text-transform: uppercase; letter-spacing: 1px; }
 
 /* ============================================================================== */
 /* Painel admin — estatísticas e conversas                                        */
 /* ============================================================================== */
-#modal-admin .btn-admin-secondary { width:100%; margin-top:22px; padding:13px; background:transparent; color:var(--led-static-blue); border:1px solid var(--led-static-blue); border-radius:8px; font-family:inherit; font-weight:bold; letter-spacing:1px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
-#modal-admin .btn-admin-secondary:hover { background:rgba(125,249,255,0.1); }
-#modal-admin .btn-admin-secondary svg { width:18px; height:18px; fill:currentColor; }
-#modal-admin .admin-subtitle { margin:20px 0 10px; font-size:0.85em; color:var(--secondary-text-color); text-transform:uppercase; letter-spacing:1px; }
-#modal-admin .admin-list { max-height:320px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding-right:4px; }
-#modal-admin .admin-list-item { background:var(--chat-bg); border:1px solid var(--border-color); border-radius:8px; padding:12px; cursor:pointer; transition:border-color .2s; }
-#modal-admin .admin-list-item:hover { border-color:var(--led-static-blue); }
-#modal-admin .ali-top { display:flex; justify-content:space-between; align-items:center; gap:8px; }
-#modal-admin .ali-user { font-weight:bold; color:var(--primary-text-color); }
-#modal-admin .ali-count { font-size:0.72em; color:var(--led-static-blue); flex-shrink:0; }
-#modal-admin .ali-sub { font-size:0.72em; color:var(--secondary-text-color); margin-top:3px; }
-#modal-admin .ali-title { font-size:0.85em; color:var(--secondary-text-color); margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-#modal-admin .admin-empty { text-align:center; color:var(--secondary-text-color); padding:18px; font-size:0.85em; }
-#modal-admin .admin-msg { border-radius:8px; padding:10px 12px; border:1px solid var(--border-color); }
-#modal-admin .admin-msg-user { background:var(--user-message-bg); }
-#modal-admin .admin-msg-bot { background:var(--bot-message-bg); }
-#modal-admin .am-role { font-size:0.72em; color:var(--secondary-text-color); margin-bottom:4px; }
-#modal-admin .am-text { font-size:0.9em; color:var(--primary-text-color); white-space:pre-wrap; word-break:break-word; }
+.btn-admin-secondary { width:100%; margin-top:22px; padding:13px; background:transparent; color:var(--led-static-blue); border:1px solid var(--led-static-blue); border-radius:8px; font-family:inherit; font-weight:bold; letter-spacing:1px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
+.btn-admin-secondary:hover { background:rgba(30,64,175,0.1); }
+.btn-admin-secondary svg { width:18px; height:18px; fill:currentColor; }
+.admin-subtitle { margin:20px 0 10px; font-size:0.85em; color:var(--secondary-text-color); text-transform:uppercase; letter-spacing:1px; }
+.admin-list { max-height:320px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding-right:4px; }
+.admin-list-item { background:var(--chat-bg); border:1px solid var(--border-color); border-radius:8px; padding:12px; cursor:pointer; transition:border-color .2s; }
+.admin-list-item:hover { border-color:var(--led-static-blue); }
+.ali-top { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+.ali-user { font-weight:bold; color:var(--primary-text-color); }
+.ali-count { font-size:0.72em; color:var(--led-static-blue); flex-shrink:0; }
+.ali-sub { font-size:0.72em; color:var(--secondary-text-color); margin-top:3px; }
+.ali-title { font-size:0.85em; color:var(--secondary-text-color); margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.admin-empty { text-align:center; color:var(--secondary-text-color); padding:18px; font-size:0.85em; }
+.admin-msg { border-radius:8px; padding:10px 12px; border:1px solid var(--border-color); }
+.admin-msg-user { background:var(--user-message-bg); }
+.admin-msg-bot { background:var(--bot-message-bg); }
+.am-role { font-size:0.72em; color:var(--secondary-text-color); margin-bottom:4px; }
+.am-text { font-size:0.9em; color:var(--primary-text-color); white-space:pre-wrap; word-break:break-word; }
 
 /* ============================================================================== */
 /* Tela de boas-vindas do chat (mensagem central, anel à esquerda)                */
