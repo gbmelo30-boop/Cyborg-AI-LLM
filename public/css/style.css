@@ -122,12 +122,7 @@ main { max-width: 600px; width: 100%; display: flex; flex-direction: column; ali
 }
 
 /* Tema claro: sem dispersao de brilho — anel limpo como no tema escuro */
-body.light-theme .led-ring,
-body.light-theme .header-halo,
-body.light-theme .chat-welcome .cw-ring,
-body.light-theme .led-loading.led-done {
-    filter: none;
-}
+/* (brilho/dispersao do anel agora tambem no tema claro) */
 
 /* Estados de cor do LED */
 .led-ring.led-yellow circle { stroke: #FFB300; }
@@ -1249,3 +1244,11 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 .loader-ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; }
 .loader-ring-wrap .led-loading { position: relative; z-index: 2; }
 .loader-parts { position: absolute; left: 50%; top: 50%; width: 54px; height: 54px; transform: translate(-50%, -50%); pointer-events: none; z-index: 1; }
+
+
+/* ==== Pulso lento e sutil do anel (login/chat) ==== */
+@keyframes ringPulse {
+    0%, 100% { transform: scale(1);     opacity: 1;   }
+    50%      { transform: scale(1.035); opacity: 0.9; }
+}
+.led-ring { animation: ringPulse 5.5s ease-in-out infinite; transform-origin: center; }
