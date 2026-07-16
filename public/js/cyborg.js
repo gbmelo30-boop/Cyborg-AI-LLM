@@ -54,6 +54,7 @@ const CYBORG = {
                     use_rag: window.useRag,
                     idioma: window.currentLang || 'pt',
                     session_id: currentSessionId,
+                    userName: (contextData.userName || ''),
                     user_id: DB.user.id
                 })
             });

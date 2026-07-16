@@ -75,25 +75,19 @@ window.I18N = {
     greet_tail: "Sou o Cyborg AI, como posso ajudá-lo?",
     greet_pool: {
       manha: [
-        "Bom dia{nome}. Sou o Cyborg AI — que ideia você quer trazer pra pensarmos juntos?",
-        "Bom dia{nome}. Por qual fronteira entre humano e máquina começamos hoje?",
-        "Bom dia{nome}. Traga um cenário e vamos desdobrar o que ele esconde.",
-        "Bom dia{nome}. Que sistema ou ideia anda ocupando os seus pensamentos?",
-        "Bom dia{nome}. Como posso te ajudar a pensar hoje?"
+        "Bom dia{nome}. Sou o Cyborg AI, como posso te ajudar?",
+        "Bom dia{nome}. Sou o Cyborg AI. Em que posso te ajudar hoje?",
+        "Olá{nome}, bom dia. Sou o Cyborg AI, como posso te ajudar?"
       ],
       tarde: [
-        "Boa tarde{nome}. Sou o Cyborg AI — sobre o que vamos refletir agora?",
-        "Boa tarde{nome}. Me conte uma ideia e vamos investigá-la por dentro.",
-        "Boa tarde{nome}. Que tecnologia ou cenário você quer colocar em questão?",
-        "Boa tarde{nome}. Por onde começamos a pensar?",
-        "Boa tarde{nome}. Qual inquietação te trouxe até aqui?"
+        "Boa tarde{nome}. Sou o Cyborg AI, como posso te ajudar?",
+        "Boa tarde{nome}. Sou o Cyborg AI. Em que posso te ajudar?",
+        "Olá{nome}, boa tarde. Sou o Cyborg AI, como posso te ajudar?"
       ],
       noite: [
-        "Boa noite{nome}. Sou o Cyborg AI — que inquietação você traz esta noite?",
-        "Boa noite{nome}. Traga uma ideia e vamos atravessar suas fronteiras.",
-        "Boa noite{nome}. Sobre qual cenário você quer refletir agora?",
-        "Boa noite{nome}. O que anda te fazendo pensar?",
-        "Boa noite{nome}. Como posso te ajudar esta noite?"
+        "Boa noite{nome}. Sou o Cyborg AI, como posso te ajudar?",
+        "Boa noite{nome}. Sou o Cyborg AI. Em que posso te ajudar agora?",
+        "Olá{nome}, boa noite. Sou o Cyborg AI, como posso te ajudar?"
       ]
     },
         slide1: "<h3>1. Quem sou eu?</h3><p>Olá, eu sou o Cyborg AI.</p><p>Não sou um assistente virtual focado em produtividade. Fui criado para explorar as fronteiras entre humanos, animais e máquinas, inspirado pela filosofia ciborgue e pelo Design Especulativo.</p>",
@@ -175,25 +169,19 @@ window.I18N = {
     greet_tail: "I'm Cyborg AI, how can I help you?",
     greet_pool: {
       manha: [
-        "Good morning{nome}. I'm Cyborg AI — what idea shall we think through together?",
-        "Good morning{nome}. Which frontier between human and machine shall we explore today?",
-        "Good morning{nome}. Bring a scenario and let's unfold what it hides.",
-        "Good morning{nome}. What system or idea is on your mind?",
-        "Good morning{nome}. How can I help you think today?"
+        "Good morning{nome}. I'm Cyborg AI, how can I help you?",
+        "Good morning{nome}. I'm Cyborg AI. How can I help you today?",
+        "Hello{nome}, good morning. I'm Cyborg AI, how can I help you?"
       ],
       tarde: [
-        "Good afternoon{nome}. I'm Cyborg AI — what shall we reflect on now?",
-        "Good afternoon{nome}. Tell me an idea and let's examine it from within.",
-        "Good afternoon{nome}. Which technology or scenario do you want to question?",
-        "Good afternoon{nome}. Where shall we begin thinking?",
-        "Good afternoon{nome}. What brought you here?"
+        "Good afternoon{nome}. I'm Cyborg AI, how can I help you?",
+        "Good afternoon{nome}. I'm Cyborg AI. How can I help you?",
+        "Hello{nome}, good afternoon. I'm Cyborg AI, how can I help you?"
       ],
       noite: [
-        "Good evening{nome}. I'm Cyborg AI — what's on your mind tonight?",
-        "Good evening{nome}. Bring an idea and let's cross its boundaries.",
-        "Good evening{nome}. Which scenario would you like to reflect on now?",
-        "Good evening{nome}. What's been making you think?",
-        "Good evening{nome}. How can I help you tonight?"
+        "Good evening{nome}. I'm Cyborg AI, how can I help you?",
+        "Good evening{nome}. I'm Cyborg AI. How can I help you now?",
+        "Hello{nome}, good evening. I'm Cyborg AI, how can I help you?"
       ]
     },
         slide1: "<h3>1. Who am I?</h3><p>Hi, I'm Cyborg AI.</p><p>I'm not a productivity assistant. I was created to explore the boundaries between humans, animals and machines, inspired by cyborg philosophy and Speculative Design.</p>",

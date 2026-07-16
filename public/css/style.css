@@ -1243,3 +1243,9 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
     margin-bottom: 30px;
     flex-shrink: 0;
 }
+
+
+/* ==== Rastro de particulas no anel de carregamento do chat ==== */
+.loader-ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; }
+.loader-ring-wrap .led-loading { position: relative; z-index: 2; }
+.loader-parts { position: absolute; left: 50%; top: 50%; width: 54px; height: 54px; transform: translate(-50%, -50%); pointer-events: none; z-index: 1; }

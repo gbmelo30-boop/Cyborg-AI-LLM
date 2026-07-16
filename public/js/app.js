@@ -395,17 +395,21 @@ window.handleChatSubmit = async (e) => {
     loaderDiv.className = 'message-container bot-container';
     loaderDiv.innerHTML = `
         <div class="message-meta">
-            <svg class="header-halo led-loading" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="10" cy="10" r="8" fill="none" stroke-width="2.2"
-                    stroke-linecap="round"
-                    transform="rotate(-90 10 10)"/>
-            </svg>
+            <span class="loader-ring-wrap">
+                <canvas class="loader-parts" aria-hidden="true"></canvas>
+                <svg class="header-halo led-loading" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="10" cy="10" r="8" fill="none" stroke-width="2.2"
+                        stroke-linecap="round"
+                        transform="rotate(-90 10 10)"/>
+                </svg>
+            </span>
             <span>${BOT_NAME}</span>
         </div>
         <div class="message-bubble fade-in" id="${loaderId}-bubble" style="padding:8px 16px; min-height:10px;"></div>
     `;
     historyDiv.appendChild(loaderDiv);
     historyDiv.scrollTop = historyDiv.scrollHeight;
+    if (window.iniciarRastroLoader) window.iniciarRastroLoader(loaderDiv);
 
     if(typeof CYBORG !== 'undefined') {
         const resultado = await CYBORG.enviarMensagem(text, currentSessionId);
@@ -414,6 +418,7 @@ window.handleChatSubmit = async (e) => {
         sendBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>';
 
         const loaderEl = document.getElementById(loaderId);
+        if (window.pararRastroLoader) window.pararRastroLoader(loaderEl);
         const bubbleEl = document.getElementById(`${loaderId}-bubble`);
         const ledEl    = loaderEl ? loaderEl.querySelector('.led-loading') : null;
 
@@ -608,3 +613,39 @@ window.iniciarFrasesIntro = function() {
     window.__introPhraseTimer = setInterval(trocar, 5200);
 };
 document.addEventListener('DOMContentLoaded', () => { window.iniciarFrasesIntro(); });
+
+
+// ==============================================================================
+// Rastro de particulas no anel de carregamento do chat (para ao chegar a resposta)
+// ==============================================================================
+window.iniciarRastroLoader = function(loaderEl) {
+    if (!loaderEl) return;
+    const canvas = loaderEl.querySelector('.loader-parts');
+    if (!canvas || !canvas.getContext) return;
+    const ctx = canvas.getContext('2d');
+    const COR = '30, 64, 175'; // azul escuro, igual ao anel da marca
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const S = 54;
+    canvas.width = S * dpr; canvas.height = S * dpr;
+    const cx = S / 2, cy = S / 2, R = 9;
+    let ang = 0;
+    loaderEl.__rastro = true;
+    const passo = () => {
+        if (!loaderEl.__rastro) { ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,S,S); return; }
+        requestAnimationFrame(passo);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.fillStyle = 'rgba(0,0,0,0.12)';
+        ctx.fillRect(0, 0, S, S);
+        ctx.globalCompositeOperation = 'source-over';
+        ang += 0.19;
+        const x = cx + Math.cos(ang) * R, y = cy + Math.sin(ang) * R;
+        const g = ctx.createRadialGradient(x, y, 0, x, y, 2.8);
+        g.addColorStop(0, 'rgba(' + COR + ', 0.95)');
+        g.addColorStop(1, 'rgba(' + COR + ', 0)');
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(x, y, 2.8, 0, Math.PI * 2); ctx.fill();
+    };
+    requestAnimationFrame(passo);
+};
+window.pararRastroLoader = function(loaderEl) { if (loaderEl) loaderEl.__rastro = false; };

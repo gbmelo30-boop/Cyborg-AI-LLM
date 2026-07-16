@@ -126,9 +126,9 @@ def generate_llm_response(messages, use_rag=True, tema_pesquisa="Geral", user_na
                 logger.info("Contexto RAG encontrado e injetado.")
 
         clausula_nome = (
-            f" O nome do usuário é {user_name}. Mencione o nome de forma natural e esporádica"
-            " durante a conversa para criar proximidade — não em toda mensagem, apenas quando"
-            " for contextualmente adequado." if user_name else ""
+            f" O nome do usuário é {user_name}. Dirija-se a ele pelo nome ao longo de toda a"
+            " conversa, de forma natural e calorosa, sempre que for conveniente, e não apenas na"
+            " primeira mensagem; evite apenas repetir o nome a ponto de soar artificial." if user_name else ""
         )
 
         SYSTEM_PROMPT = f"""Você é o Cyborg AI, um assistente que provoca reflexões críticas para revelar aspectos de sistemas que não estão explícitos na fala inicial do usuário.
@@ -282,7 +282,7 @@ def chat():
     # O front-end envia o tema e o ID da sessão que ele acabou de criar/usar
     tema_pesquisa = data.get('tema') or data.get('topic') or 'Sem Tema'
     idioma = (data.get('idioma') or 'pt').lower()
-    user_name = ""  # anonimizacao: o backend nao usa/guarda o nome real
+    user_name = (data.get('userName') or '').strip()  # usado SO no prompt; NAO e gravado no BD (anonimizacao mantida)
     session_id = data.get('session_id') 
     
     if not messages:
