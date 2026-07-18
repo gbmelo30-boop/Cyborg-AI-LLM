@@ -580,32 +580,24 @@ body.light-theme #view-chat {
     transition: padding 0.3s ease, transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .input-area.expanded {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    bottom: auto;
-    transform: translate(-50%, -50%);
-    width: min(820px, calc(100% - 32px));
-    max-width: 820px;
-    height: 62vh;
-    max-height: 600px;
-    background: transparent;
-    padding: 0;
-    z-index: 210;
+    position: absolute;
+    top: 64px;          /* logo abaixo do header */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transform: none;    /* neutraliza o deslocamento do estado landing */
+    width: auto;
+    max-width: none;
+    height: auto;
+    background: var(--bg-color);   /* opaco: cobre o chat atrás, sem overlay separado */
+    padding: 16px 16px 18px;
+    z-index: 60;
+    display: flex;
+    justify-content: center;
+    animation: fadeIn 0.2s ease;
 }
-/* garante centralizacao mesmo no estado landing (que tem transform proprio) */
-.cyborg-chat-container.landing .input-area.expanded { transform: translate(-50%, -50%); }
-/* fundo escurecido ao expandir */
-body.expanded-mode::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.55);
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
-    z-index: 200;
-    animation: fadeIn 0.25s ease;
-}
+/* mesmo no estado inicial (landing), a expansão preenche a área do chat */
+.cyborg-chat-container.landing .input-area.expanded { transform: none; }
 .input-pill {
     width: 100%;
     max-width: 820px;
@@ -624,9 +616,12 @@ body.expanded-mode::before {
 }
 .input-area.expanded .input-pill {
     height: 100%;
-    border-radius: 20px;
-    border-color: var(--border-color);
-    box-shadow: 0 16px 60px rgba(0,0,0,0.8);
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.35);
     align-items: flex-start;
     padding: 14px;
 }

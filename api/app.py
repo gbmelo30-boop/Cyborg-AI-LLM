@@ -352,7 +352,7 @@ def chat():
         if user_id and prefs and prefs.get("memory_enabled"):
             try:
                 n = db_local.bump_msgs_since(user_id)
-                memory_should_refresh = (n >= 6)
+                memory_should_refresh = (n >= 10)  # frequencia mais leve: recura a cada 10 mensagens
             except Exception:
                 pass
 
