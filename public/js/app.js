@@ -920,27 +920,78 @@ function __marcarSeg(segId, attr, val){
     seg.querySelectorAll('.cfg-seg-btn').forEach(b => b.classList.toggle('active', b.getAttribute('data-'+attr) === val));
 }
 
+function __cfgRowVals() {
+    const isLight = document.body.classList.contains('light-theme');
+    const tv = document.getElementById('cfg-row-tema-val');
+    if (tv) tv.textContent = window.T ? window.T(isLight ? 'cfg_theme_light' : 'cfg_theme_dark') : '';
+    const lv = document.getElementById('cfg-row-lang-val');
+    if (lv) { const L = { pt: 'Português', en: 'English', es: 'Español' }; lv.textContent = L[window.currentLang || 'pt'] || 'Português'; }
+}
+
+function __showCfgPanel(id, dir) {
+    document.querySelectorAll('#modal-config .cfg-panel').forEach(el => el.classList.remove('active', 'from-right', 'from-left'));
+    const panel = document.getElementById('cfg-panel-' + id);
+    if (!panel) return;
+    void panel.offsetWidth;
+    panel.classList.add('active', dir < 0 ? 'from-left' : 'from-right');
+    const back = document.getElementById('cfg-back-btn');
+    const title = document.getElementById('cfg-title');
+    const isMain = (id === 'main');
+    if (back) back.style.display = isMain ? 'none' : 'flex';
+    if (title) {
+        const key = panel.getAttribute('data-title') || 'settings_title';
+        title.setAttribute('data-i18n', key);
+        title.textContent = window.T ? window.T(key) : title.textContent;
+    }
+}
+
+window.abrirCfgPanel = (id) => {
+    window.__cfgStack = window.__cfgStack || ['main'];
+    window.__cfgStack.push(id);
+    if (id === 'conta') __preencherConta();
+    __showCfgPanel(id, 1);
+};
+window.voltarCfgPanel = () => {
+    window.__cfgStack = window.__cfgStack || ['main'];
+    if (window.__cfgStack.length <= 1) return;
+    window.__cfgStack.pop();
+    const prev = window.__cfgStack[window.__cfgStack.length - 1];
+    __showCfgPanel(prev, -1);
+};
+
+function __preencherConta() {
+    const ctx = JSON.parse(localStorage.getItem('cyborg_current_session') || '{}');
+    const vn = document.getElementById('acc-view-name'); if (vn) vn.textContent = ctx.userName || '—';
+    const ve = document.getElementById('acc-view-email'); if (ve) ve.textContent = ctx.email || '—';
+    const nEl = document.getElementById('acc-edit-name'); if (nEl) nEl.value = ctx.userName || '';
+    const eEl = document.getElementById('acc-edit-email'); if (eEl) eEl.value = ctx.email || '';
+    const npEl = document.getElementById('acc-edit-newpass'); if (npEl) npEl.value = '';
+    const cpEl = document.getElementById('acc-edit-curpass'); if (cpEl) cpEl.value = '';
+    const mEl = document.getElementById('acc-edit-msg'); if (mEl) { mEl.textContent = ''; mEl.className = 'cfg-acc-msg'; }
+}
+
 window.initConfigModal = async () => {
+    // volta sempre para o menu principal ao abrir
+    window.__cfgStack = ['main'];
+    __showCfgPanel('main', -1);
+
     const isLight = document.body.classList.contains('light-theme');
     __marcarSeg('cfg-theme-seg', 'theme', isLight ? 'light' : 'dark');
     __marcarSeg('cfg-lang-seg', 'lang', window.currentLang || 'pt');
     __marcarSeg('cfg-style-seg', 'estilo', localStorage.getItem('cyborg_estilo') || 'equilibrado');
+    __cfgRowVals();
 
     const ctx = JSON.parse(localStorage.getItem('cyborg_current_session') || '{}');
-    const memSec = document.getElementById('cfg-memory-section');
-    const accSec = document.getElementById('cfg-account-section');
+    const rowMem = document.getElementById('cfg-row-memory');
+    const rowAcc = document.getElementById('cfg-row-account');
     if (ctx.registered) {
-        if (memSec) memSec.classList.remove('hidden');
-        if (accSec) accSec.classList.remove('hidden');
-        const nEl = document.getElementById('acc-edit-name'); if (nEl) nEl.value = ctx.userName || '';
-        const eEl = document.getElementById('acc-edit-email'); if (eEl) eEl.value = ctx.email || '';
-        const npEl = document.getElementById('acc-edit-newpass'); if (npEl) npEl.value = '';
-        const cpEl = document.getElementById('acc-edit-curpass'); if (cpEl) cpEl.value = '';
-        const mEl = document.getElementById('acc-edit-msg'); if (mEl) { mEl.textContent = ''; mEl.className = 'cfg-acc-msg'; }
+        if (rowMem) rowMem.classList.remove('hidden');
+        if (rowAcc) rowAcc.classList.remove('hidden');
+        __preencherConta();
         if (DB.obterPrefs) { const prefs = await DB.obterPrefs(); __aplicarPrefsUI(prefs); }
     } else {
-        if (memSec) memSec.classList.add('hidden');
-        if (accSec) accSec.classList.add('hidden');
+        if (rowMem) rowMem.classList.add('hidden');
+        if (rowAcc) rowAcc.classList.add('hidden');
     }
 };
 
@@ -951,11 +1002,13 @@ window.setTemaConfig = (mode) => {
         localStorage.setItem('cyborgTheme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
     }
     __marcarSeg('cfg-theme-seg', 'theme', mode);
+    if (typeof __cfgRowVals === 'function') __cfgRowVals();
 };
 
 window.setIdiomaConfig = (lang) => {
     if (window.applyLang) window.applyLang(lang);
     __marcarSeg('cfg-lang-seg', 'lang', lang);
+    if (typeof __cfgRowVals === 'function') __cfgRowVals();
 };
 
 window.setEstiloConfig = (estilo) => {
@@ -966,12 +1019,10 @@ window.setEstiloConfig = (estilo) => {
 function __aplicarPrefsUI(prefs){
     prefs = prefs || {};
     const tgl = document.getElementById('memory-toggle');
-    const body = document.getElementById('memory-body');
     const txt = document.getElementById('memory-text');
     const badge = document.getElementById('memory-state-badge');
     if (tgl) tgl.checked = !!prefs.memory_enabled;
     if (txt) txt.value = prefs.memory_text || '';
-    if (body) body.style.display = prefs.memory_enabled ? 'block' : 'none';
     if (badge){
         const ready = !!prefs.memory_ready;
         badge.textContent = ready ? (window.T ? window.T('mem_ready') : 'pronta') : (window.T ? window.T('mem_collecting') : 'coletando');
@@ -980,8 +1031,6 @@ function __aplicarPrefsUI(prefs){
 }
 
 window.toggleMemoria = async (chk) => {
-    const body = document.getElementById('memory-body');
-    if (body) body.style.display = chk.checked ? 'block' : 'none';
     if (DB.salvarPrefs) await DB.salvarPrefs({ memory_enabled: chk.checked });
 };
 
