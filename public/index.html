@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Cyborg AI</title>
 
-    <link rel="stylesheet" href="css/style.css?v=32">
+    <link rel="stylesheet" href="css/style.css?v=33">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -79,7 +79,7 @@
                     <div id="auth-account" class="hidden">
                         <input type="text" id="acc-name-input" class="name-input" placeholder="Seu nome" data-i18n-ph="acc_name_ph" maxlength="60" autocomplete="off" autocapitalize="words" style="display:none;" />
                         <input type="email" id="acc-email-input" class="name-input" placeholder="E-mail" data-i18n-ph="email_ph" autocomplete="email" spellcheck="false" />
-                        <input type="password" id="acc-pass-input" class="name-input" placeholder="Senha" data-i18n-ph="pass_ph" autocomplete="current-password" onkeydown="if(event.key==='Enter'){event.preventDefault();window.handleAccountSubmit();}" />
+                        <div class="pw-wrap"><input type="password" id="acc-pass-input" class="name-input" placeholder="Senha" data-i18n-ph="pass_ph" autocomplete="current-password" onkeydown="if(event.key==='Enter'){event.preventDefault();window.handleAccountSubmit();}" /><button type="button" class="pw-eye" tabindex="-1" onclick="togglePw(this)" aria-label="Mostrar senha"><svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12a5 5 0 110-10 5 5 0 010 10zm0-8a3 3 0 100 6 3 3 0 000-6z"/></svg><svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M2 4.27L3.28 3 21 20.72 19.73 22l-3.13-3.13A11.6 11.6 0 0112 19C5 19 2 12 2 12a19 19 0 014.7-5.32L2 4.27zM12 7a5 5 0 015 5c0 .64-.12 1.25-.34 1.8l-2.46-2.46A3 3 0 0012 9c-.1 0-.2 0-.3.02L9.24 6.56A6 6 0 0112 7zm-6.66 2.6l2.2 2.2A3 3 0 0012 15c.34 0 .67-.06.98-.16l1.55 1.55A5 5 0 017 12c0-.83.2-1.6.55-2.28-.07-.04-.14-.08-.21-.12z"/></svg></button></div>
                         <p class="auth-switch"><span id="auth-switch-text" data-i18n="auth_no_account">Ainda nao tem conta?</span> <a href="#" id="auth-switch-link" onclick="window.toggleRegister(event)" data-i18n="auth_do_register">Cadastre-se</a></p>
                     </div>
 
@@ -128,17 +128,6 @@
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.58 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
                         <span data-i18n="nav_settings">Configurações</span>
                     </button>
-                    <button class="menu-item" id="lang-switcher" title="Idioma / Language" onclick="abrirIdioma()">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm6.93 6h-2.95a15.65 15.65 0 00-1.38-3.56A8.03 8.03 0 0118.92 8zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14a7.82 7.82 0 010-4h3.38a16.5 16.5 0 000 4H4.26zm.81 2h2.95c.32 1.25.78 2.45 1.38 3.56A7.99 7.99 0 015.07 16zm2.95-8H5.07a7.99 7.99 0 014.33-3.56A15.65 15.65 0 008.02 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66a14.6 14.6 0 010-4h4.68a14.6 14.6 0 010 4zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95a8.03 8.03 0 01-4.33 3.56zM16.36 14a16.5 16.5 0 000-4h3.38a7.82 7.82 0 010 4h-3.38z"/></svg>
-                        <span data-i18n="nav_lang">Idioma</span>
-                    </button>
-                    <button class="menu-item" id="sidebar-theme-switcher" title="Alternar Tema" onclick="alternarTemaGlobal()">
-                        <div style="width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;">
-                            <svg class="dark-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 2c-1.82 0-3.53.5-5 1.35 2.99 1.73 5 4.95 5 8.65s-2.01 6.92-5 8.65C6.02 21.49 7.74 22 9.5 22c5.52 0 10-4.48 10-10S15.02 2 9.5 2z"/></svg>
-                            <svg class="light-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.06 1.06c.39.39 1.02.39 1.41 0s.39-1.02 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.06 1.06c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.02 0 1.41s1.02.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.02 0 1.41s1.02.39 1.41 0l1.06-1.06z"/></svg>
-                        </div>
-                        <span data-i18n="nav_theme">Alternar Tema</span>
-                    </button>
                     <button class="menu-item" id="logout-button" title="Sair" onclick="handleLogout()">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
                         <span data-i18n="nav_logout">Sair</span>
@@ -177,7 +166,8 @@
                                 <svg id="icon-expand" width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15 3l2.3 2.3-2.89 2.87 1.42 1.42L18.7 6.7 21 9V3zM3 9l2.3-2.3 2.87 2.89 1.42-1.42L6.7 5.3 9 3H3zM9 21l-2.3-2.3 2.89-2.87-1.42-1.42L5.3 17.3 3 15v6zM21 15l-2.3 2.3-2.87-2.89-1.42 1.42L17.3 18.7 15 21h6z"/></svg>
                             </button>
                             <button type="submit" id="send-button" title="Enviar">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                                <span class="ico-send"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" transform="rotate(-90 12 12)"/></svg></span>
+                                <span class="ico-stop"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg></span>
                             </button>
                         </div>
                     </div>
@@ -268,9 +258,9 @@
                         <div class="cfg-section">
                             <div class="config-row">
                                 <div>
-                                    <strong style="display:block;" data-i18n="rag_label">Contexto (RAG)</strong>
+                                    <strong style="display:block;" data-i18n="rag_label">Respostas aprimoradas</strong>
                                     <span style="font-size:0.82em; color:var(--secondary-text-color); opacity:0.8;">
-                                        <span data-i18n="rag_desc">Permitir que a IA leia a biblioteca de PDFs.</span>
+                                        <span data-i18n="rag_desc">Deixa as respostas mais completas e aprofundadas.</span>
                                         <span data-i18n="status_label">Status:</span> <span id="rag-status" style="font-weight:bold;">DESATIVADO</span>
                                     </span>
                                 </div>
@@ -285,7 +275,7 @@
                         <div class="cfg-section hidden" id="cfg-memory-section">
                             <div class="config-row">
                                 <div>
-                                    <strong style="display:block;" data-i18n="cfg_memory">O que o Cyborg AI sabe sobre você</strong>
+                                    <strong style="display:flex; align-items:center; gap:7px;"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" style="color:var(--led-static-blue); flex-shrink:0"><path d="M12 2a7 7 0 00-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 001 1h6a1 1 0 001-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 00-7-7zm-3 19a1 1 0 001 1h4a1 1 0 001-1v-1H9v1z"/></svg><span data-i18n="cfg_memory">O que o Cyborg AI sabe sobre você</span></strong>
                                     <span style="font-size:0.82em; color:var(--secondary-text-color); opacity:0.8;" data-i18n="cfg_memory_desc">Ele monta um pequeno quadro a partir do que você conta sobre si, e usa com leveza nas respostas. Você controla tudo.</span>
                                 </div>
                                 <label class="switch">
@@ -311,8 +301,8 @@
                             <h4 class="cfg-h" data-i18n="cfg_account">Sua conta</h4>
                             <input type="text" id="acc-edit-name" class="cfg-input" data-i18n-ph="acc_name_ph" placeholder="Seu nome" maxlength="60" autocomplete="off">
                             <input type="email" id="acc-edit-email" class="cfg-input" data-i18n-ph="email_ph" placeholder="E-mail" autocomplete="off" spellcheck="false">
-                            <input type="password" id="acc-edit-newpass" class="cfg-input" data-i18n-ph="cfg_new_pass_ph" placeholder="Nova senha (deixe em branco para manter)" autocomplete="new-password">
-                            <input type="password" id="acc-edit-curpass" class="cfg-input" data-i18n-ph="cfg_cur_pass_ph" placeholder="Senha atual (para confirmar)" autocomplete="current-password">
+                            <div class="pw-wrap"><input type="password" id="acc-edit-newpass" class="cfg-input" data-i18n-ph="cfg_new_pass_ph" placeholder="Nova senha (deixe em branco para manter)" autocomplete="new-password"><button type="button" class="pw-eye" tabindex="-1" onclick="togglePw(this)" aria-label="Mostrar senha"><svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12a5 5 0 110-10 5 5 0 010 10zm0-8a3 3 0 100 6 3 3 0 000-6z"/></svg><svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M2 4.27L3.28 3 21 20.72 19.73 22l-3.13-3.13A11.6 11.6 0 0112 19C5 19 2 12 2 12a19 19 0 014.7-5.32L2 4.27zM12 7a5 5 0 015 5c0 .64-.12 1.25-.34 1.8l-2.46-2.46A3 3 0 0012 9c-.1 0-.2 0-.3.02L9.24 6.56A6 6 0 0112 7zm-6.66 2.6l2.2 2.2A3 3 0 0012 15c.34 0 .67-.06.98-.16l1.55 1.55A5 5 0 017 12c0-.83.2-1.6.55-2.28-.07-.04-.14-.08-.21-.12z"/></svg></button></div>
+                            <div class="pw-wrap"><input type="password" id="acc-edit-curpass" class="cfg-input" data-i18n-ph="cfg_cur_pass_ph" placeholder="Senha atual (para confirmar)" autocomplete="current-password"><button type="button" class="pw-eye" tabindex="-1" onclick="togglePw(this)" aria-label="Mostrar senha"><svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12a5 5 0 110-10 5 5 0 010 10zm0-8a3 3 0 100 6 3 3 0 000-6z"/></svg><svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M2 4.27L3.28 3 21 20.72 19.73 22l-3.13-3.13A11.6 11.6 0 0112 19C5 19 2 12 2 12a19 19 0 014.7-5.32L2 4.27zM12 7a5 5 0 015 5c0 .64-.12 1.25-.34 1.8l-2.46-2.46A3 3 0 0012 9c-.1 0-.2 0-.3.02L9.24 6.56A6 6 0 0112 7zm-6.66 2.6l2.2 2.2A3 3 0 0012 15c.34 0 .67-.06.98-.16l1.55 1.55A5 5 0 017 12c0-.83.2-1.6.55-2.28-.07-.04-.14-.08-.21-.12z"/></svg></button></div>
                             <div id="acc-edit-msg" class="cfg-acc-msg"></div>
                             <button type="button" class="cfg-btn" onclick="salvarConta(this)" data-i18n="cfg_account_save">Salvar alterações</button>
                         </div>
@@ -356,12 +346,12 @@
         </div>
     </section>
 
-    <script src="js/i18n.js?v=11"></script>
+    <script src="js/i18n.js?v=12"></script>
     <script src="js/config.js?v=7"></script>
-    <script src="js/db.js?v=10"></script>
-    <script src="js/cyborg.js?v=10"></script>
+    <script src="js/db.js?v=11"></script>
+    <script src="js/cyborg.js?v=11"></script>
     <script src="js/orb.js?v=8"></script>
-    <script src="js/app.js?v=23"></script>
+    <script src="js/app.js?v=24"></script>
 
 </body>
 </html>

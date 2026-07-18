@@ -624,6 +624,8 @@ window.handleChatSubmit = async (e) => {
     if (!text) return;
 
     userInput.value = '';
+    userInput.style.height = 'auto';
+    { const _p = userInput.closest('.input-pill'); if (_p) _p.classList.remove('has-scroll'); }
     if(chatForm.classList.contains('expanded')) window.toggleInputSize();
 
     if (window.__welcomeActive) window.encerrarBoasVindas();
@@ -631,7 +633,9 @@ window.handleChatSubmit = async (e) => {
     addMessage("Você", text, false);
 
     isProcessing = true;
-    sendBtn.innerHTML = '<span style="font-size:18px; animation:spin 1s linear infinite; display:inline-block;">↻</span>';
+    window.__chatAbort = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    sendBtn.classList.add('is-stop');
+    sendBtn.title = window.T ? window.T('stop_btn') : 'Interromper';
 
     const loaderId = 'loader-' + Date.now();
     const loaderDiv = document.createElement('div');
@@ -656,17 +660,21 @@ window.handleChatSubmit = async (e) => {
     if (window.iniciarRastroLoader) window.iniciarRastroLoader(loaderDiv);
 
     if(typeof CYBORG !== 'undefined') {
-        const resultado = await CYBORG.enviarMensagem(text, currentSessionId);
+        const resultado = await CYBORG.enviarMensagem(text, currentSessionId, window.__chatAbort ? window.__chatAbort.signal : null);
 
         isProcessing = false;
-        sendBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>';
+        sendBtn.classList.remove('is-stop');
+        sendBtn.title = window.T ? window.T('send_btn') : 'Enviar';
+        window.__chatAbort = null;
 
         const loaderEl = document.getElementById(loaderId);
         if (window.pararRastroLoader) window.pararRastroLoader(loaderEl);
         const bubbleEl = document.getElementById(`${loaderId}-bubble`);
         const ledEl    = loaderEl ? loaderEl.querySelector('.led-loading') : null;
 
-        if (resultado && resultado.response && !resultado.error) {
+        if (resultado && resultado.aborted) {
+            if (loaderEl) loaderEl.remove();
+        } else if (resultado && resultado.response && !resultado.error) {
             if (resultado.sessionId) currentSessionId = resultado.sessionId;
 
             const rawText   = resultado.response;
@@ -741,8 +749,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const ini = el.selectionStart, fim = el.selectionEnd;
                 el.value = el.value.slice(0, ini) + '\n' + el.value.slice(fim);
                 el.selectionStart = el.selectionEnd = ini + 1;
-                el.style.height = 'auto';
-                el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+                if (window.__autoGrow) window.__autoGrow();
                 el.scrollTop = el.scrollHeight;
             } else {
                 // Enter puro -> enviar (desktop e celular)
@@ -756,7 +763,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.body.scrollTop = 0;
             }, 300);
         });
+        // auto-grow: cresce ate um limite, depois rola por dentro (com fade)
+        const autoGrow = () => {
+            userInput.style.height = 'auto';
+            const max = 200;
+            userInput.style.height = Math.min(userInput.scrollHeight, max) + 'px';
+            const pill = userInput.closest('.input-pill');
+            const form = document.getElementById('chat-form');
+            if (pill && !(form && form.classList.contains('expanded'))) {
+                pill.classList.toggle('has-scroll', userInput.scrollHeight > max + 1);
+            }
+        };
+        userInput.addEventListener('input', autoGrow);
+        window.__autoGrow = autoGrow;
     }
+    // botao enviar vira interromper durante a geracao
+    const __sb = document.getElementById('send-button');
+    if (__sb) __sb.addEventListener('click', (e) => {
+        if (isProcessing) { e.preventDefault(); window.interromperGeracao(); }
+    });
 });
 
 if (window.visualViewport) {
@@ -997,4 +1022,21 @@ window.salvarConta = async (btn) => {
     document.getElementById('acc-edit-newpass').value = '';
     document.getElementById('acc-edit-curpass').value = '';
     msg.textContent = window.T ? window.T('cfg_account_ok') : 'Dados atualizados!'; msg.classList.add('ok');
+};
+
+
+// Mostrar/ocultar senha
+window.togglePw = (btn) => {
+    const inp = btn.parentNode.querySelector('input');
+    if (!inp) return;
+    const show = inp.type === 'password';
+    inp.type = show ? 'text' : 'password';
+    const eo = btn.querySelector('.eye-open'), ec = btn.querySelector('.eye-closed');
+    if (eo) eo.style.display = show ? 'none' : 'block';
+    if (ec) ec.style.display = show ? 'block' : 'none';
+};
+
+// Interrompe a geracao em andamento (aborta a requisicao no cliente)
+window.interromperGeracao = () => {
+    if (window.__chatAbort) { try { window.__chatAbort.abort(); } catch (e) {} }
 };

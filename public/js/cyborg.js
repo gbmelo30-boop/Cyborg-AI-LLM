@@ -6,7 +6,7 @@ const CYBORG = {
 
     delay: (ms) => new Promise(resolve => setTimeout(resolve, ms)),
 
-    enviarMensagem: async (textoUsuario, sessionId = null) => {
+    enviarMensagem: async (textoUsuario, sessionId = null, signal = null) => {
         if (!DB.user) {
             window.systemLog("Usuário não identificado", "ERRO");
             return { response: "Erro: Você precisa estar identificado para conversar.", error: true };
@@ -46,6 +46,7 @@ const CYBORG = {
 
             const response = await fetch(`${API_BASE_URL}/api/chat`, {
                 method: 'POST',
+                signal: signal || undefined,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     messages: historyForAI,
@@ -75,13 +76,18 @@ const CYBORG = {
 
             const text = (result.response || "").replace("<<FIM>>", "").trim();
 
-            // 3. Salva a resposta da IA
-            await DB.salvarMensagem(currentSessionId, "assistant", text);
+            // 3. Salva a resposta da IA (registrando se o RAG foi usado e qual estilo)
+            const estiloUsado = (localStorage.getItem('cyborg_estilo') || 'equilibrado');
+            await DB.salvarMensagem(currentSessionId, "assistant", text, !!result.used_rag, estiloUsado);
             window.systemLog("Resposta salva.");
 
             return { response: text, sessionId: currentSessionId };
 
         } catch (e) {
+            if (e && (e.name === 'AbortError' || (signal && signal.aborted))) {
+                window.systemLog("Geração interrompida pelo usuário.");
+                return { aborted: true };
+            }
             console.error("ERRO GERAL:", e);
             return {
                 response: "**Erro de Conexão:** Não foi possível alcançar o servidor do Cyborg AI. " + e.message,

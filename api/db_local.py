@@ -106,6 +106,13 @@ def init_db():
                 c.execute("ALTER TABLE chat_sessions ADD COLUMN folder_id TEXT")
         except Exception:
             pass
+        # Migracao leve: coluna estilo em chat_messages (registro do estilo de resposta)
+        try:
+            mcols = [r[1] for r in c.execute("PRAGMA table_info(chat_messages)").fetchall()]
+            if "estilo" not in mcols:
+                c.execute("ALTER TABLE chat_messages ADD COLUMN estilo TEXT")
+        except Exception:
+            pass
         # Anonimizacao: garante que nenhum nome real fique guardado no banco.
         c.execute("UPDATE chat_sessions SET user_name=NULL WHERE user_name IS NOT NULL")
 
@@ -425,7 +432,7 @@ def set_session_folder(session_id, folder_id):
 
 
 # ----------------------------------------------------------------- Mensagens
-def add_message(session_id, role, content, used_rag=False):
+def add_message(session_id, role, content, used_rag=False, estilo=None):
     if role not in ("user", "assistant"):
         role = "assistant"
     mid = str(uuid.uuid4())
@@ -434,9 +441,9 @@ def add_message(session_id, role, content, used_rag=False):
         return {"id": mid, "created_at": ts, "gravado": False}
     with _lock, _conn() as c:
         c.execute(
-            "INSERT INTO chat_messages (id,session_id,role,content,used_rag,created_at)"
-            " VALUES (?,?,?,?,?,?)",
-            (mid, session_id, role, content, 1 if used_rag else 0, ts),
+            "INSERT INTO chat_messages (id,session_id,role,content,used_rag,estilo,created_at)"
+            " VALUES (?,?,?,?,?,?,?)",
+            (mid, session_id, role, content, 1 if used_rag else 0, estilo, ts),
         )
     return {"id": mid, "created_at": ts}
 
@@ -474,13 +481,13 @@ def export_rows(user_id=None):
     if user_id:
         q += " WHERE user_id=?"; params.append(user_id)
     q += " ORDER BY created_at ASC"
-    rows = [["session_id", "participante", "grupo", "tema", "pergunta", "resposta", "data_hora"]]
+    rows = [["session_id", "participante", "grupo", "tema", "pergunta", "resposta", "rag", "estilo", "data_hora"]]
     with _conn() as c:
         sessions = c.execute(q, params).fetchall()
         for s in sessions:
             participante = s["user_name"] or anon_label(s["user_id"])
             msgs = c.execute(
-                "SELECT role,content,created_at FROM chat_messages WHERE session_id=? ORDER BY created_at ASC",
+                "SELECT role,content,used_rag,estilo,created_at FROM chat_messages WHERE session_id=? ORDER BY created_at ASC",
                 (s["id"],),
             ).fetchall()
             i = 0
@@ -489,12 +496,16 @@ def export_rows(user_id=None):
                     pergunta = msgs[i]["content"]
                     data_hora = _fmt_dt(msgs[i]["created_at"])
                     resposta = ""
+                    rag_flag = ""
+                    estilo_v = ""
                     if i + 1 < len(msgs) and msgs[i + 1]["role"] == "assistant":
                         resposta = msgs[i + 1]["content"]
+                        rag_flag = "sim" if msgs[i + 1]["used_rag"] else "nao"
+                        estilo_v = msgs[i + 1]["estilo"] or "equilibrado"
                         i += 2
                     else:
                         i += 1
-                    rows.append([s["id"], participante, s["grupo"], s["tema"], pergunta, resposta, data_hora])
+                    rows.append([s["id"], participante, s["grupo"], s["tema"], pergunta, resposta, rag_flag, estilo_v, data_hora])
                 else:
                     i += 1
     return rows

@@ -565,7 +565,7 @@ def salvar_mensagem():
     d = request.json or {}
     if not d.get('session_id') or not d.get('role'):
         return jsonify({"error": "session_id e role são obrigatórios"}), 400
-    m = db_local.add_message(d['session_id'], d['role'], d.get('content', ''), d.get('used_rag', False))
+    m = db_local.add_message(d['session_id'], d['role'], d.get('content', ''), d.get('used_rag', False), d.get('estilo'))
     return jsonify(m)
 
 
