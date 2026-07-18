@@ -1404,8 +1404,14 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 
 /* ==== Telas grandes: layout centralizado (mensagem + campo no meio) ==== */
 @media (min-width: 900px) {
-    .cyborg-chat-container.landing .chat-landing { text-align: center; padding: 0 20px 20px; transform: translateY(-40vh); }
+    /* saudacao FIXA no meio-superior: nao se move quando o campo cresce */
+    .cyborg-chat-container.landing .chat-landing {
+        position: absolute; left: 0; right: 0; top: 34vh;
+        text-align: center; padding: 0 20px; transform: none; z-index: 5;
+    }
     .cyborg-chat-container.landing .input-area { transform: translateY(-40vh); }
+    /* no estado inicial (campo no meio) o icone de expandir nao aparece */
+    .cyborg-chat-container.landing #expand-button { display: none; }
     .chat-history { padding-left: max(6%, calc((100% - 780px) / 2)); padding-right: max(6%, calc((100% - 780px) / 2)); }
 }
 
@@ -1574,7 +1580,7 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
     content: ''; position: absolute; left: 44px; right: 10px; bottom: 0;
     height: 1px; background: var(--border-color); opacity: 0.4; pointer-events: none;
 }
-.cfg-ic { flex-shrink: 0; color: var(--led-static-blue); }
+.cfg-ic { flex-shrink: 0; color: var(--secondary-text-color); opacity: 0.8; }
 .cfg-row-label { flex: 1; }
 .cfg-row-val { color: var(--secondary-text-color); opacity: 0.7; font-size: 0.85rem; margin-right: 4px; }
 .cfg-chev { color: var(--secondary-text-color); opacity: 0.5; flex-shrink: 0; }
