@@ -551,33 +551,26 @@ document.addEventListener('DOMContentLoaded', aplicarConfigServidor);
 // ===================== Tela de boas-vindas do chat (mensagem central) =====================
 window.__welcomeActive = false;
 window.__welcomeGreeting = '';
+function __chatCont(){ return document.querySelector('.cyborg-chat-container'); }
 window.mostrarBoasVindas = function(texto) {
-    const el = document.getElementById('chat-welcome');
-    const txt = document.getElementById('chat-welcome-text');
-    if (!el || !txt) { if (typeof addMessage === 'function') addMessage(BOT_NAME, texto); return; }
+    const cont = __chatCont();
+    const txt = document.getElementById('chat-landing-text');
+    if (!cont || !txt) { if (typeof addMessage === 'function') addMessage(BOT_NAME, texto, false); return; }
     window.__welcomeGreeting = texto;
     txt.textContent = texto;
-    el.classList.add('active');
+    cont.classList.add('landing');
     window.__welcomeActive = true;
-    if (typeof gsap !== 'undefined') {
-        gsap.fromTo(el, { opacity: 0, scale: 0.96 }, { opacity: 1, scale: 1, duration: 0.5, ease: 'power2.out' });
-    }
 };
 window.encerrarBoasVindas = function() {
     if (!window.__welcomeActive) return;
     window.__welcomeActive = false;
-    const el = document.getElementById('chat-welcome');
-    if (window.__welcomeGreeting) addMessage(BOT_NAME, window.__welcomeGreeting, false);
-    if (el) {
-        if (typeof gsap !== 'undefined') {
-            gsap.to(el, { opacity: 0, y: -16, duration: 0.35, ease: 'power2.in', onComplete: () => { el.classList.remove('active'); gsap.set(el, { clearProps: 'all' }); } });
-        } else { el.classList.remove('active'); }
-    }
+    const cont = __chatCont();
+    if (cont) cont.classList.remove('landing');
 };
 window.esconderBoasVindas = function() {
     window.__welcomeActive = false;
-    const el = document.getElementById('chat-welcome');
-    if (el) { el.classList.remove('active'); if (typeof gsap !== 'undefined') gsap.set(el, { clearProps: 'all' }); }
+    const cont = __chatCont();
+    if (cont) cont.classList.remove('landing');
 };
 
 
