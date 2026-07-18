@@ -671,41 +671,41 @@ body.light-theme #view-chat {
 
 .side-panel {
     position: absolute; top: 0; left: 0;
-    width: 280px; height: 100%;
-    background-color: var(--chat-bg);
+    width: 300px; height: 100%;
+    background-color: var(--chat-header-bg);
     border-right: 1px solid var(--border-color);
     z-index: 2000;
     transform: translateX(-100%);
-    transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1);
     display: flex; flex-direction: column;
 }
 .side-panel.is-open { transform: translateX(0); }
 
 .side-panel-header {
-    height: 60px;
+    height: 58px;
     border-bottom: 1px solid var(--border-color);
     display: flex; align-items: center; justify-content: space-between;
-    padding: 0 20px;
+    padding: 0 14px;
     color: var(--primary-text-color);
-    font-weight: bold;
 }
-.side-panel-body { padding: 20px; overflow-y: auto; }
+.side-panel-header .sp-brand { display: flex; align-items: center; gap: 10px; }
+.side-panel-header .cyborg-brand { font-size: 1.02em; }
+.side-panel-header .header-halo { width: 20px; height: 20px; }
+.side-panel-body { padding: 10px 8px; overflow-y: auto; }
 
     .menu-item {
         width: 100%; background: transparent; border: none;
-        color: var(--primary-text-color); padding: 15px;
+        color: var(--primary-text-color); padding: 11px 12px;
         text-align: left; cursor: pointer;
-        display: flex; align-items: center; gap: 15px;
-        border-radius: 8px; margin-bottom: 5px;
-        font-family: inherit; font-size: 1rem;
+        display: flex; align-items: center; gap: 12px;
+        border-radius: 8px; margin-bottom: 2px;
+        font-family: inherit; font-size: 0.95rem; font-weight: 500;
+        transition: background-color 0.15s ease;
     }
     .menu-item:hover { background-color: var(--component-hover-bg); }
-    .menu-item svg { 
-        width: 24px; 
-        height: 24px; 
-        min-width: 24px; 
-        flex-shrink: 0;
-        fill: currentColor; 
+    .menu-item svg {
+        width: 20px; height: 20px; min-width: 20px;
+        flex-shrink: 0; fill: currentColor; opacity: 0.85;
     }
 
 #sidebar-close-button { background: transparent; border: none; color: var(--icon-fill); cursor: pointer; }
@@ -1296,4 +1296,9 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 /* telas grandes: conversa numa coluna centralizada (texto mais ao centro) */
 @media (min-width: 900px) {
     .chat-history { padding-left: max(6%, calc((100% - 780px) / 2)); padding-right: max(6%, calc((100% - 780px) / 2)); }
+}
+
+/* ==== Sidebar full-width no celular (estilo ChatGPT) ==== */
+@media (max-width: 768px) {
+    .side-panel { width: 100%; max-width: 100%; border-right: none; }
 }
