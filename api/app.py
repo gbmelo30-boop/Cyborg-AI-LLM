@@ -431,6 +431,42 @@ def admin_export():
     )
 
 
+@app.route('/api/admin/export_xlsx', methods=['POST'])
+def admin_export_xlsx():
+    """Baixa o histórico completo em XLSX (protegido pela senha de admin)."""
+    d = request.json or {}
+    if not ADMIN_PASSWORD:
+        return jsonify({"error": "Admin não configurado no servidor (defina ADMIN_PASSWORD no api/.env)."}), 503
+    if not _admin_ok(d.get("password")):
+        return jsonify({"error": "Senha incorreta."}), 401
+    try:
+        from openpyxl import Workbook
+        from openpyxl.styles import Font, PatternFill, Alignment
+        from openpyxl.utils import get_column_letter
+    except Exception:
+        return jsonify({"error": "openpyxl não instalado no servidor. Rode: pip install openpyxl"}), 500
+    import io as _io
+    wb = Workbook(); ws = wb.active; ws.title = "Historico"
+    for r in db_local.export_rows():
+        ws.append([("" if v is None else str(v)) for v in r])
+    fill = PatternFill("solid", fgColor="1E40AF")
+    for cell in ws[1]:
+        cell.font = Font(bold=True, color="FFFFFF"); cell.fill = fill
+        cell.alignment = Alignment(vertical="center")
+    for i, wdt in enumerate([16, 16, 16, 14, 60, 60, 20], start=1):
+        ws.column_dimensions[get_column_letter(i)].width = wdt
+    for row in ws.iter_rows(min_row=2):
+        for cell in row:
+            cell.alignment = Alignment(vertical="top", wrap_text=True)
+    ws.freeze_panes = "A2"
+    out = _io.BytesIO(); wb.save(out); out.seek(0)
+    return Response(
+        out.getvalue(),
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=historico_cyborg.xlsx"},
+    )
+
+
 @app.route('/api/admin/clear_history', methods=['POST'])
 def admin_clear_history():
     """Apaga todo o histórico (sessões + mensagens). Protegido pela senha admin."""

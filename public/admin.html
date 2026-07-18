@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Cyborg AI — Painel Administrativo</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=25">
+<link rel="stylesheet" href="css/style.css?v=26">
 <style>
   body { min-height:100vh; margin:0; display:flex; align-items:center; justify-content:center;
          padding:20px; box-sizing:border-box; background:var(--bg-color, #000000); }
@@ -60,6 +60,7 @@
       </div>
       <button class="btn-admin-secondary" onclick="abrirStats()">Estatísticas e conversas</button>
       <button class="btn-admin-primary" style="margin-top:20px;" onclick="baixarCSV()">Baixar histórico (CSV)</button>
+      <button class="btn-admin-secondary" style="margin-top:10px;" onclick="baixarXLSX()">Baixar histórico (XLSX)</button>
       <button class="btn-admin-danger" onclick="apagar()">Apagar histórico</button>
       <div class="admin-toast" id="toast"></div>
     </div>
@@ -109,6 +110,16 @@
       const r = await api('/api/admin/settings', { password: PW, updates: { [chave]: valor } });
       const data = await r.json().catch(()=>({}));
       if (r.ok){ pintaConfig(data); t.innerText="Salvo ✓"; setTimeout(()=>t.innerText="",1500); } else t.innerText = data.error || "Falha.";
+    } catch(e){ t.innerText="Erro."; }
+  }
+  async function baixarXLSX(){
+    const t=$('toast'); t.innerText="Gerando XLSX...";
+    try {
+      const r = await api('/api/admin/export_xlsx', { password: PW });
+      if (!r.ok){ const e = await r.json().catch(()=>({})); t.innerText = e.error || "Falha ao gerar."; return; }
+      const blob = await r.blob(); const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download='historico_cyborg.xlsx'; a.click(); URL.revokeObjectURL(url);
+      t.innerText="XLSX baixado \u2713"; setTimeout(()=>t.innerText="",2000);
     } catch(e){ t.innerText="Erro."; }
   }
   async function baixarCSV(){

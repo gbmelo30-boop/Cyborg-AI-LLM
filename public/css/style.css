@@ -1164,13 +1164,22 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
     color: var(--secondary-text-color); font-style: italic;
 }
 .message-bubble table {
-    border-collapse: collapse; margin: 12px 0; width: 100%;
-    font-size: 0.88em; display: block; overflow-x: auto; white-space: nowrap;
+    border-collapse: separate; margin: 12px 0; width: 100%;
+    font-size: 0.9em; display: block; overflow-x: auto;
+    border: 1px solid var(--border-color); border-radius: 10px; border-spacing: 0;
 }
 .message-bubble th, .message-bubble td {
-    border: 1px solid var(--border-color); padding: 6px 10px; text-align: left;
+    padding: 9px 13px; text-align: left; border-bottom: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color); white-space: nowrap;
 }
-.message-bubble th { background: var(--bot-message-bg); font-weight: 600; }
+.message-bubble tr td:last-child, .message-bubble tr th:last-child { border-right: none; }
+.message-bubble tbody tr:last-child td { border-bottom: none; }
+.message-bubble thead th {
+    background: rgba(30, 64, 175, 0.14); color: var(--primary-text-color);
+    font-weight: 700; border-bottom: 2px solid var(--led-static-blue);
+    text-transform: uppercase; font-size: 0.82em; letter-spacing: 0.4px;
+}
+.message-bubble tbody tr:nth-child(even) { background: rgba(127,127,127,0.06); }
 .message-bubble code {
     background: var(--bot-message-bg); padding: 1px 5px; border-radius: 4px;
     font-family: 'Share Tech Mono', monospace; font-size: 0.9em;
@@ -1265,3 +1274,6 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
     pointer-events: none;
 }
 .input-area.expanded::before { display: none; }
+
+/* horario nao aparece na bolha (continua no banco/CSV) */
+.message-time { display: none !important; }

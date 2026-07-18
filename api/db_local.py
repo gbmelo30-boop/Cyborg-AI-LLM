@@ -243,20 +243,15 @@ def _fmt_dt(iso_str):
         return iso_str or ""
 
 
-def export_csv(user_id=None, delimiter=";"):
-    """Gera CSV pareando cada pergunta (usuario) com a resposta (chatbot) seguinte,
-    por sessao - mesma logica do 'Codigo 3' do Supabase. Colunas bem separadas:
-    session_id, usuario, grupo, tema, pergunta, resposta, data_hora.
-    Delimitador ';' (padrao do Excel em pt-BR -> abre em colunas)."""
+def export_rows(user_id=None):
+    """Retorna [cabecalho] + linhas, pareando cada pergunta com a resposta seguinte.
+    Colunas: session_id, participante, grupo, tema, pergunta, resposta, data_hora."""
     q = "SELECT id,user_id,user_name,grupo,tema,created_at FROM chat_sessions"
     params = []
     if user_id:
         q += " WHERE user_id=?"; params.append(user_id)
     q += " ORDER BY created_at ASC"
-
-    buf = io.StringIO()
-    w = csv.writer(buf, delimiter=delimiter)
-    w.writerow(["session_id", "participante", "grupo", "tema", "pergunta", "resposta", "data_hora"])
+    rows = [["session_id", "participante", "grupo", "tema", "pergunta", "resposta", "data_hora"]]
     with _conn() as c:
         sessions = c.execute(q, params).fetchall()
         for s in sessions:
@@ -276,9 +271,18 @@ def export_csv(user_id=None, delimiter=";"):
                         i += 2
                     else:
                         i += 1
-                    w.writerow([s["id"], participante, s["grupo"], s["tema"], pergunta, resposta, data_hora])
+                    rows.append([s["id"], participante, s["grupo"], s["tema"], pergunta, resposta, data_hora])
                 else:
                     i += 1
+    return rows
+
+
+def export_csv(user_id=None, delimiter=";"):
+    """Gera CSV a partir de export_rows (delimitador ';', padrao Excel pt-BR)."""
+    buf = io.StringIO()
+    w = csv.writer(buf, delimiter=delimiter)
+    for r in export_rows(user_id):
+        w.writerow(r)
     return buf.getvalue()
 
 
