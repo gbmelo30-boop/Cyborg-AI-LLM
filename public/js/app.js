@@ -635,10 +635,10 @@ window.iniciarRastroLoader = function(loaderEl) {
         requestAnimationFrame(passo);
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.globalCompositeOperation = 'destination-out';
-        ctx.fillStyle = 'rgba(0,0,0,0.12)';
+        ctx.fillStyle = 'rgba(0,0,0,0.085)';
         ctx.fillRect(0, 0, S, S);
         ctx.globalCompositeOperation = 'source-over';
-        ang += 0.19;
+        ang += 0.09;
         const x = cx + Math.cos(ang) * R, y = cy + Math.sin(ang) * R;
         const g = ctx.createRadialGradient(x, y, 0, x, y, 2.8);
         g.addColorStop(0, 'rgba(' + COR + ', 0.95)');

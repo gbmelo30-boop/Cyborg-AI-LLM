@@ -52,7 +52,7 @@ function iniciarAnelIntro() {
                 desvio: (Math.random() - 0.5),
                 giro: (Math.random() - 0.5) * 2.0,   // redemoinho na chegada
                 delay: Math.random() * DELAYS,
-                tam:  0.8 + Math.random() * 1.2,
+                tam:  0.9 + Math.random() * 1.5,
                 alfa: 0.4 + Math.random() * 0.6,
                 x0: 0, y0: 0, cxp: 0, cyp: 0
             });
@@ -91,7 +91,7 @@ function iniciarAnelIntro() {
         const escuro = !document.body.classList.contains('light-theme');
         const meiaEsp = R * 0.20 * 0.5;
         const fA = Math.max(0, Math.min(1, (tE - INI_FUSAO) / FUSAO));
-        const pulso = 1 + Math.sin(tE / 1100) * 0.03;   // pulso lento e sutil
+        const pulso = 1 + Math.sin(tE / 1400) * 0.014;  // pulso lento e bem sutil
         if (fA > 0) desenharAnelSolido(easeOutCubic(fA), fA >= 1 ? pulso : 1);
 
         const alfaPart = 1 - fA;
@@ -108,7 +108,9 @@ function iniciarAnelIntro() {
                 const y = mt * mt * p.y0 + 2 * mt * e * p.cyp + e * e * alvoY;
                 const a = p.alfa * (0.3 + 0.7 * e) * alfaPart;
                 ctx.fillStyle = 'rgba(' + COR + ', ' + a.toFixed(3) + ')';
-                ctx.fillRect(x, y, p.tam, p.tam);
+                ctx.beginPath();
+                ctx.arc(x, y, p.tam * 0.62, 0, Math.PI * 2);
+                ctx.fill();
             }
             ctx.globalCompositeOperation = 'source-over';
         }

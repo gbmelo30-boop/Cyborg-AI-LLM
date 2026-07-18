@@ -163,6 +163,10 @@ body.light-theme h1 {
     color: var(--secondary-text-color);
     line-height: 1.6;
     margin-bottom: 25px;
+    min-height: 3.4em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: color 0.3s;
     text-shadow: 0 2px 4px rgba(0,0,0,0.9);
     padding: 0 20px;
@@ -836,17 +840,17 @@ body.light-theme #view-chat {
 }
 
 @keyframes ledSpinPulse {
-    0%   { transform: rotate(0deg)   scale(1);   opacity: 1;    }
-    50%  { transform: rotate(180deg) scale(1.1); opacity: 0.72; }
-    100% { transform: rotate(360deg) scale(1);   opacity: 1;    }
+    0%   { transform: rotate(0deg);   }
+    100% { transform: rotate(360deg); }
 }
 .led-loading {
     transform-origin: center;
-    animation: ledSpinPulse 1s linear infinite;
+    animation: ledSpinPulse 1.2s linear infinite;
     filter: drop-shadow(0 0 4px #FFB300) drop-shadow(0 0 10px rgba(255, 179, 0, 0.85));
 }
 .led-loading circle {
     stroke: #FFB300; /* amarelo forte */
+    stroke-dasharray: 32 20; /* anel aberto: arco com lacuna, tipo cometa */
 }
 .led-loading.led-done {
     animation: none;
@@ -1244,10 +1248,10 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 
 /* ==== Pulso lento e sutil do anel (login/chat) ==== */
 @keyframes ringPulse {
-    0%, 100% { transform: scale(1);     opacity: 1;   }
-    50%      { transform: scale(1.035); opacity: 0.9; }
+    0%, 100% { transform: scale(1);     opacity: 1;    }
+    50%      { transform: scale(1.014); opacity: 0.96; }
 }
-.led-ring { animation: ringPulse 5.5s ease-in-out infinite; transform-origin: center; }
+.led-ring { animation: ringPulse 6.5s ease-in-out infinite; transform-origin: center; }
 
 
 /* ==== Fade do rodape do chat: degrade fixo acima do campo (robusto, sem cortar a barra) ==== */
