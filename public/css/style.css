@@ -27,6 +27,7 @@ body {
     --input-fill: #161616;
     --input-border: rgba(255,255,255,0.09);
     --send-bg: #2a2a2a;
+    --ring-color: #8b949e;
 }
 
 body.light-theme {
@@ -41,6 +42,7 @@ body.light-theme {
     --input-fill: #f2f3f5;
     --input-border: rgba(0,0,0,0.10);
     --send-bg: #d9d9dd;
+    --ring-color: #6b7280;
 }
 
 html, body {
@@ -553,12 +555,12 @@ body.light-theme #view-chat {
     width: 18px;
     height: 18px;
     flex-shrink: 0;
-    filter: drop-shadow(0 0 3px rgba(30, 64, 175, 0.9)) drop-shadow(0 0 7px rgba(30, 64, 175, 0.5));
+    filter: drop-shadow(0 0 2px rgba(139, 148, 158, 0.5));
     transition: filter 0.3s;
 }
 
 .header-halo circle {
-    stroke: #1E40AF; /* azul escuro fixo */
+    stroke: var(--ring-color); /* neutro */
     transition: stroke 0.4s ease;
 }
 
@@ -966,11 +968,11 @@ body.light-theme #view-chat {
 .led-loading.led-done {
     animation: none;
     transform: none;
-    filter: drop-shadow(0 0 3px rgba(30, 64, 175, 0.95)) drop-shadow(0 0 7px rgba(30, 64, 175, 0.6));
+    filter: drop-shadow(0 0 2px rgba(139, 148, 158, 0.6));
     transition: filter 0.6s ease;
 }
 .led-loading.led-done circle {
-    stroke: #1E40AF;
+    stroke: var(--ring-color);
     stroke-dasharray: none;   /* anel volta a ser INTEIRO ao terminar a resposta */
     transition: stroke 0.6s ease, stroke-dasharray 0.4s ease;
 }
@@ -1547,7 +1549,13 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 .modal-box { max-height: 88vh; display: flex; flex-direction: column; }
 .modal-box .modal-content { overflow-y: auto; }
 @media (max-width: 640px) {
-    .modal-box { width: 96%; max-width: 96%; padding: 18px 16px; max-height: 90vh; border-radius: 12px; }
+    .modal-overlay { align-items: flex-end; }
+    .modal-box {
+        width: 100%; max-width: 100%; padding: 16px 16px 26px; max-height: 88vh;
+        border-radius: 18px 18px 0 0; border-left: none; border-right: none; border-bottom: none;
+    }
+    .modal-title { font-size: 0.95em; }
+    .cfg-row { font-size: 0.9rem; padding: 15px 8px; }
     .cfg-field { flex-direction: column; align-items: stretch; gap: 6px; }
     .cfg-seg { width: 100%; }
     .cfg-seg .cfg-seg-btn { flex: 1; }
@@ -1596,5 +1604,5 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 .cfg-btn-full { width: 100%; margin-top: 16px; padding: 12px; }
 
 @media (max-width: 640px) {
-    .modal-box-hub { width: 96%; max-width: 96%; }
+    .modal-box-hub { width: 100%; max-width: 100%; }
 }
