@@ -56,6 +56,7 @@ window.openModal = (id) => {
         modal.classList.add('active'); 
         if(id === 'modal-historico') carregarListaSessoes(); 
         if(id === 'modal-instrucoes') showSlides(1); 
+        if(id === 'modal-config' && window.initConfigModal) initConfigModal(); 
     }
 };
 window.closeModal = (id) => { document.getElementById(id).classList.remove('active'); };
@@ -183,7 +184,8 @@ function mapAuthError(code) {
         'email_ja_cadastrado': _authT('email_taken', 'Este e-mail ja esta cadastrado.'),
         'credenciais_invalidas': _authT('bad_creds', 'E-mail ou senha incorretos.'),
         'email_invalido': _authT('email_invalid', 'E-mail invalido.'),
-        'senha_curta': _authT('pass_short', 'A senha precisa de ao menos 6 caracteres.')
+        'senha_curta': _authT('pass_short', 'A senha precisa de ao menos 6 caracteres.'),
+        'senha_atual_incorreta': _authT('cfg_bad_curpass', 'Senha atual incorreta.')
     };
     return m[code] || _authT('generic_err', 'Nao foi possivel concluir. Tente novamente.');
 }
@@ -366,40 +368,112 @@ window.handleLogout = async () => {
 
 window.abrirHistorico = function() { window.openModal('modal-historico'); };
 
+window.__openFolders = window.__openFolders || {};
+function __escHtml(str){ return String(str||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function __escAttr(str){ return String(str||'').replace(/'/g, "\\'").replace(/"/g,'&quot;'); }
+
+function __folderSelectHtml(sess, folders){
+    let opts = `<option value="">` + (window.T ? window.T('folder_none') : 'Sem pasta') + `</option>`;
+    folders.forEach(f => {
+        const sel = (sess.folder_id === f.id) ? ' selected' : '';
+        opts += `<option value="${f.id}"${sel}>${__escHtml(f.name)}</option>`;
+    });
+    return `<select class="hist-folder-select" title="${window.T ? window.T('move_to') : 'Mover para'}" onclick="event.stopPropagation()" onchange="moverSessao('${sess.id}', this.value)">${opts}</select>`;
+}
+
+function __sessionRowHtml(sess){
+    const pinIcon = sess.is_pinned
+        ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5v6l1 1 1-1v-6h5v-2l-2-2z"/></svg>'
+        : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5v6l1 1 1-1v-6h5v-2l-2-2z"/></svg>';
+    return `
+        <span class="history-title" onclick="carregarSessao('${sess.id}')" title="${__escAttr(sess.title)}">${__escHtml(sess.title)}</span>
+        <div class="history-actions">
+            <button class="btn-icon-hist btn-pin ${sess.is_pinned ? 'pinned' : ''}" onclick="togglePin('${sess.id}', ${sess.is_pinned})" title="Fixar">${pinIcon}</button>
+            <button class="btn-icon-hist" onclick="renomearConversa('${sess.id}', '${__escAttr(sess.title)}')" title="Renomear">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="btn-icon-hist btn-delete" onclick="deletarSessao('${sess.id}')" title="Excluir">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+        </div>`;
+}
+
+function __appendSessionItem(container, sess, folders){
+    const item = document.createElement('div');
+    item.className = `history-item ${sess.id === currentSessionId ? 'active-chat' : ''}`;
+    item.innerHTML = __sessionRowHtml(sess);
+    const actions = item.querySelector('.history-actions');
+    const sel = document.createElement('span');
+    sel.innerHTML = __folderSelectHtml(sess, folders);
+    actions.insertBefore(sel.firstChild, actions.firstChild);
+    container.appendChild(item);
+}
+
 window.carregarListaSessoes = async () => {
     if(typeof DB === 'undefined') return;
     const listDiv = document.getElementById('history-list');
     listDiv.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">' + (window.T ? window.T("loading_word") : "Carregando...") + '</div>';
-    const sessoes = await DB.listarSessoes();
+    const [sessoes, folders] = await Promise.all([DB.listarSessoes(), DB.listarPastas ? DB.listarPastas() : []]);
     listDiv.innerHTML = '';
-    if (!sessoes || sessoes.length === 0) {
+    const termoBusca = (document.getElementById('history-search').value || '').toLowerCase();
+    const visiveis = (sessoes || []).filter(sc => !termoBusca || (sc.title || '').toLowerCase().includes(termoBusca));
+
+    if ((!sessoes || sessoes.length === 0) && (!folders || folders.length === 0)) {
         listDiv.innerHTML = '<div style="padding:20px; text-align:center; opacity:0.5; font-size:0.8em;">' + (window.T ? window.T("hist_empty") : "Nenhuma conversa salva.") + '</div>';
         return;
     }
-    const termoBusca = document.getElementById('history-search').value.toLowerCase();
-    sessoes.forEach(sess => {
-        if(termoBusca && !sess.title.toLowerCase().includes(termoBusca)) return;
-        const item = document.createElement('div');
-        item.className = `history-item ${sess.id === currentSessionId ? 'active-chat' : ''}`;
-        const pinIcon = sess.is_pinned
-            ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5v6l1 1 1-1v-6h5v-2l-2-2z"/></svg>'
-            : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5v6l1 1 1-1v-6h5v-2l-2-2z"/></svg>';
-        item.innerHTML = `
-            <span class="history-title" onclick="carregarSessao('${sess.id}')" title="${sess.title}">${sess.title}</span>
-            <div class="history-actions">
-                <button class="btn-icon-hist btn-pin ${sess.is_pinned ? 'pinned' : ''}" onclick="togglePin('${sess.id}', ${sess.is_pinned})" title="Fixar">
-                    ${pinIcon}
-                </button>
-                <button class="btn-icon-hist" onclick="renomearConversa('${sess.id}', '${sess.title}')" title="Renomear">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                </button>
-                <button class="btn-icon-hist btn-delete" onclick="deletarSessao('${sess.id}')" title="Excluir">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                </button>
-            </div>
-        `;
-        listDiv.appendChild(item);
+
+    // agrupa por pasta
+    const porPasta = {};
+    (visiveis || []).forEach(sc => {
+        const key = sc.folder_id || '__none__';
+        (porPasta[key] = porPasta[key] || []).push(sc);
     });
+
+    // pastas (mesmo vazias aparecem)
+    (folders || []).forEach(f => {
+        const itens = porPasta[f.id] || [];
+        if (termoBusca && itens.length === 0) return; // durante busca, esconde pastas sem match
+        const isOpen = window.__openFolders[f.id] !== false; // aberto por padrao
+        const block = document.createElement('div');
+        block.className = 'hist-folder';
+        block.innerHTML = `
+            <div class="hist-folder-head" onclick="toggleFolder('${f.id}')">
+                <svg class="folder-caret ${isOpen ? 'open' : ''}" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M10 17l5-5-5-5v10z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="opacity:.8"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+                <span class="hist-folder-name">${__escHtml(f.name)}</span>
+                <span class="hist-folder-count">${itens.length}</span>
+                <span class="hist-folder-actions">
+                    <button class="btn-icon-hist" title="Renomear pasta" onclick="event.stopPropagation(); renomearPastaUI('${f.id}', '${__escAttr(f.name)}')">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                    <button class="btn-icon-hist btn-delete" title="Excluir pasta" onclick="event.stopPropagation(); deletarPastaUI('${f.id}')">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
+                </span>
+            </div>`;
+        const body = document.createElement('div');
+        body.className = 'hist-folder-body' + (isOpen ? '' : ' collapsed');
+        if (itens.length === 0) {
+            body.innerHTML = '<div class="hist-folder-empty">' + (window.T ? window.T('folder_empty') : 'Pasta vazia. Use o seletor de uma conversa para movê-la para cá.') + '</div>';
+        } else {
+            itens.forEach(sc => __appendSessionItem(body, sc, folders));
+        }
+        block.appendChild(body);
+        listDiv.appendChild(block);
+    });
+
+    // conversas sem pasta
+    const soltas = porPasta['__none__'] || [];
+    if (soltas.length > 0) {
+        if ((folders || []).length > 0) {
+            const lbl = document.createElement('div');
+            lbl.className = 'hist-unfiled-label';
+            lbl.textContent = window.T ? window.T('folder_none') : 'Sem pasta';
+            listDiv.appendChild(lbl);
+        }
+        soltas.forEach(sc => __appendSessionItem(listDiv, sc, folders));
+    }
 };
 
 window.carregarSessao = async (id) => {
@@ -437,6 +511,31 @@ window.renomearConversa = async (id, atual) => {
 };
 window.deletarSessao = async (id) => {
     if(confirm(window.T ? window.T("confirm_delete") : "Excluir conversa?")) { await DB.deletarSessao(id); if(currentSessionId === id) novaConversa(); carregarListaSessoes(); }
+};
+
+// ----- Pastas do histórico -----
+window.toggleFolder = (fid) => {
+    window.__openFolders[fid] = !(window.__openFolders[fid] !== false);
+    carregarListaSessoes();
+};
+window.moverSessao = async (sessionId, folderId) => {
+    if (DB.moverSessaoParaPasta) { await DB.moverSessaoParaPasta(sessionId, folderId || null); carregarListaSessoes(); }
+};
+window.criarPastaUI = async () => {
+    const nome = prompt(window.T ? window.T("folder_prompt_name") : "Nome da pasta:", "");
+    if (nome && nome.trim() !== "" && DB.criarPasta) {
+        const f = await DB.criarPasta(nome.trim());
+        if (f && f.id) window.__openFolders[f.id] = true;
+        carregarListaSessoes();
+    }
+};
+window.renomearPastaUI = async (fid, atual) => {
+    const novo = prompt(window.T ? window.T("folder_prompt_name") : "Nome da pasta:", atual);
+    if (novo && novo.trim() !== "" && DB.renomearPasta) { await DB.renomearPasta(fid, novo.trim()); carregarListaSessoes(); }
+};
+window.deletarPastaUI = async (fid) => {
+    const msg = window.T ? window.T("folder_delete_confirm") : "Excluir esta pasta? As conversas dentro dela não serão apagadas, apenas soltas.";
+    if (confirm(msg) && DB.deletarPasta) { await DB.deletarPasta(fid); carregarListaSessoes(); }
 };
 
 // --- INTERFACE DO CHAT ---
@@ -787,3 +886,115 @@ window.iniciarRastroLoader = function(loaderEl) {
     requestAnimationFrame(passo);
 };
 window.pararRastroLoader = function(loaderEl) { if (loaderEl) loaderEl.__rastro = false; };
+
+
+// ================= CONFIGURAÇÕES AVANÇADAS (versão LLM) =================
+function __marcarSeg(segId, attr, val){
+    const seg = document.getElementById(segId);
+    if(!seg) return;
+    seg.querySelectorAll('.cfg-seg-btn').forEach(b => b.classList.toggle('active', b.getAttribute('data-'+attr) === val));
+}
+
+window.initConfigModal = async () => {
+    const isLight = document.body.classList.contains('light-theme');
+    __marcarSeg('cfg-theme-seg', 'theme', isLight ? 'light' : 'dark');
+    __marcarSeg('cfg-lang-seg', 'lang', window.currentLang || 'pt');
+    __marcarSeg('cfg-style-seg', 'estilo', localStorage.getItem('cyborg_estilo') || 'equilibrado');
+
+    const ctx = JSON.parse(localStorage.getItem('cyborg_current_session') || '{}');
+    const memSec = document.getElementById('cfg-memory-section');
+    const accSec = document.getElementById('cfg-account-section');
+    if (ctx.registered) {
+        if (memSec) memSec.classList.remove('hidden');
+        if (accSec) accSec.classList.remove('hidden');
+        const nEl = document.getElementById('acc-edit-name'); if (nEl) nEl.value = ctx.userName || '';
+        const eEl = document.getElementById('acc-edit-email'); if (eEl) eEl.value = ctx.email || '';
+        const npEl = document.getElementById('acc-edit-newpass'); if (npEl) npEl.value = '';
+        const cpEl = document.getElementById('acc-edit-curpass'); if (cpEl) cpEl.value = '';
+        const mEl = document.getElementById('acc-edit-msg'); if (mEl) { mEl.textContent = ''; mEl.className = 'cfg-acc-msg'; }
+        if (DB.obterPrefs) { const prefs = await DB.obterPrefs(); __aplicarPrefsUI(prefs); }
+    } else {
+        if (memSec) memSec.classList.add('hidden');
+        if (accSec) accSec.classList.add('hidden');
+    }
+};
+
+window.setTemaConfig = (mode) => {
+    const isLight = document.body.classList.contains('light-theme');
+    if ((mode === 'light') !== isLight) {
+        document.body.classList.toggle('light-theme');
+        localStorage.setItem('cyborgTheme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
+    }
+    __marcarSeg('cfg-theme-seg', 'theme', mode);
+};
+
+window.setIdiomaConfig = (lang) => {
+    if (window.applyLang) window.applyLang(lang);
+    __marcarSeg('cfg-lang-seg', 'lang', lang);
+};
+
+window.setEstiloConfig = (estilo) => {
+    localStorage.setItem('cyborg_estilo', estilo);
+    __marcarSeg('cfg-style-seg', 'estilo', estilo);
+};
+
+function __aplicarPrefsUI(prefs){
+    prefs = prefs || {};
+    const tgl = document.getElementById('memory-toggle');
+    const body = document.getElementById('memory-body');
+    const txt = document.getElementById('memory-text');
+    const badge = document.getElementById('memory-state-badge');
+    if (tgl) tgl.checked = !!prefs.memory_enabled;
+    if (txt) txt.value = prefs.memory_text || '';
+    if (body) body.style.display = prefs.memory_enabled ? 'block' : 'none';
+    if (badge){
+        const ready = !!prefs.memory_ready;
+        badge.textContent = ready ? (window.T ? window.T('mem_ready') : 'pronta') : (window.T ? window.T('mem_collecting') : 'coletando');
+        badge.className = 'mem-badge ' + (ready ? 'ready' : 'collecting');
+    }
+}
+
+window.toggleMemoria = async (chk) => {
+    const body = document.getElementById('memory-body');
+    if (body) body.style.display = chk.checked ? 'block' : 'none';
+    if (DB.salvarPrefs) await DB.salvarPrefs({ memory_enabled: chk.checked });
+};
+
+window.salvarMemoria = async (btn) => {
+    const txt = (document.getElementById('memory-text').value || '');
+    const orig = btn.innerText; btn.innerText = '...';
+    const prefs = (DB.salvarPrefs ? await DB.salvarPrefs({ memory_text: txt }) : null) || (DB.obterPrefs ? await DB.obterPrefs() : null);
+    __aplicarPrefsUI(prefs);
+    btn.innerText = window.T ? window.T('cfg_saved') : 'Salvo!';
+    setTimeout(() => { btn.innerText = orig; }, 1500);
+};
+
+window.atualizarMemoriaAgora = async (btn) => {
+    const orig = btn.innerText;
+    btn.innerText = window.T ? window.T('cfg_updating') : 'Atualizando...'; btn.disabled = true;
+    const prefs = (DB.atualizarMemoria ? await DB.atualizarMemoria() : null) || (DB.obterPrefs ? await DB.obterPrefs() : null);
+    __aplicarPrefsUI(prefs);
+    btn.disabled = false; btn.innerText = orig;
+};
+
+window.salvarConta = async (btn) => {
+    const msg = document.getElementById('acc-edit-msg');
+    const name = (document.getElementById('acc-edit-name').value || '').trim();
+    const email = (document.getElementById('acc-edit-email').value || '').trim();
+    const newpass = document.getElementById('acc-edit-newpass').value || '';
+    const curpass = document.getElementById('acc-edit-curpass').value || '';
+    msg.className = 'cfg-acc-msg';
+    if (!curpass) { msg.textContent = window.T ? window.T('cfg_need_curpass') : 'Digite sua senha atual para confirmar.'; msg.classList.add('err'); return; }
+    const orig = btn.innerText; btn.innerText = '...';
+    const res = (DB.atualizarConta ? await DB.atualizarConta({ name, email, password: newpass, current_password: curpass }) : { error: 'indisponivel' });
+    btn.innerText = orig;
+    if (res && res.error) { msg.textContent = (typeof mapAuthError === 'function' ? mapAuthError(res.error) : 'Não foi possível salvar.'); msg.classList.add('err'); return; }
+    const ctx = JSON.parse(localStorage.getItem('cyborg_current_session') || '{}');
+    if (res.name) ctx.userName = capitalizeName((res.name).split(/\s+/)[0]);
+    if (res.email) ctx.email = res.email;
+    localStorage.setItem('cyborg_current_session', JSON.stringify(ctx));
+    if (typeof DB !== 'undefined' && DB.user && res.email) DB.user.email = res.email;
+    document.getElementById('acc-edit-newpass').value = '';
+    document.getElementById('acc-edit-curpass').value = '';
+    msg.textContent = window.T ? window.T('cfg_account_ok') : 'Dados atualizados!'; msg.classList.add('ok');
+};

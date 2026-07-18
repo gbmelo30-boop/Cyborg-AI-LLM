@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Cyborg AI</title>
 
-    <link rel="stylesheet" href="css/style.css?v=30">
+    <link rel="stylesheet" href="css/style.css?v=31">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -234,21 +234,88 @@
                         <button class="close-modal" onclick="closeModal('modal-config')">&times;</button>
                     </div>
                     <div class="modal-content">
-                        <div class="config-row">
-                            <div>
-                                <strong style="display:block; font-size:1.1em;" data-i18n="rag_label">Contexto (RAG)</strong>
-                                <span style="font-size:0.85em; color:var(--secondary-text-color); opacity:0.8;">
-                                    <span data-i18n="rag_desc">Permitir que a IA leia a biblioteca de PDFs.</span>
-                                </span>
+                        <!-- Aparencia -->
+                        <div class="cfg-section">
+                            <h4 class="cfg-h" data-i18n="cfg_appearance">Aparência</h4>
+                            <div class="cfg-field">
+                                <label class="cfg-lbl" data-i18n="cfg_theme">Tema</label>
+                                <div class="cfg-seg" id="cfg-theme-seg">
+                                    <button type="button" class="cfg-seg-btn" data-theme="dark" onclick="setTemaConfig('dark')" data-i18n="cfg_theme_dark">Escuro</button>
+                                    <button type="button" class="cfg-seg-btn" data-theme="light" onclick="setTemaConfig('light')" data-i18n="cfg_theme_light">Claro</button>
+                                </div>
                             </div>
-                            <label class="switch">
-                                <input type="checkbox" id="rag-toggle" onchange="window.toggleRag(this)">
-                                <span class="slider"></span>
-                            </label>
+                            <div class="cfg-field">
+                                <label class="cfg-lbl" data-i18n="cfg_language">Idioma</label>
+                                <div class="cfg-seg" id="cfg-lang-seg">
+                                    <button type="button" class="cfg-seg-btn" data-lang="pt" onclick="setIdiomaConfig('pt')">Português</button>
+                                    <button type="button" class="cfg-seg-btn" data-lang="en" onclick="setIdiomaConfig('en')">English</button>
+                                    <button type="button" class="cfg-seg-btn" data-lang="es" onclick="setIdiomaConfig('es')">Español</button>
+                                </div>
+                            </div>
                         </div>
-                        <p style="margin-top:20px; font-size:0.8em; color:var(--secondary-text-color); text-align:center;">
-                            <span data-i18n="status_label">Status:</span> <span id="rag-status" style="color: #ff4444; font-weight:bold;">DESATIVADO</span>
-                        </p>
+
+                        <!-- Estilo de resposta -->
+                        <div class="cfg-section">
+                            <h4 class="cfg-h" data-i18n="cfg_style">Como o Cyborg AI responde</h4>
+                            <div class="cfg-seg cfg-seg-col" id="cfg-style-seg">
+                                <button type="button" class="cfg-seg-btn" data-estilo="mais_filosofico" onclick="setEstiloConfig('mais_filosofico')" data-i18n="cfg_style_more">Mais filosófico e denso</button>
+                                <button type="button" class="cfg-seg-btn" data-estilo="equilibrado" onclick="setEstiloConfig('equilibrado')" data-i18n="cfg_style_balanced">Equilibrado (padrão)</button>
+                                <button type="button" class="cfg-seg-btn" data-estilo="menos_filosofico" onclick="setEstiloConfig('menos_filosofico')" data-i18n="cfg_style_less">Mais direto e acessível</button>
+                            </div>
+                        </div>
+
+                        <!-- Contexto (RAG) -->
+                        <div class="cfg-section">
+                            <div class="config-row">
+                                <div>
+                                    <strong style="display:block;" data-i18n="rag_label">Contexto (RAG)</strong>
+                                    <span style="font-size:0.82em; color:var(--secondary-text-color); opacity:0.8;">
+                                        <span data-i18n="rag_desc">Permitir que a IA leia a biblioteca de PDFs.</span>
+                                        <span data-i18n="status_label">Status:</span> <span id="rag-status" style="font-weight:bold;">DESATIVADO</span>
+                                    </span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="rag-toggle" onchange="window.toggleRag(this)">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Personalizacao / memoria (so para quem tem conta) -->
+                        <div class="cfg-section hidden" id="cfg-memory-section">
+                            <div class="config-row">
+                                <div>
+                                    <strong style="display:block;" data-i18n="cfg_memory">O que o Cyborg AI sabe sobre você</strong>
+                                    <span style="font-size:0.82em; color:var(--secondary-text-color); opacity:0.8;" data-i18n="cfg_memory_desc">Ele monta um pequeno quadro a partir do que você conta sobre si, e usa com leveza nas respostas. Você controla tudo.</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="memory-toggle" onchange="toggleMemoria(this)">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div id="memory-body" class="cfg-memory-body">
+                                <div class="cfg-memory-status">
+                                    <span data-i18n="cfg_memory_state">Estado:</span>
+                                    <span id="memory-state-badge" class="mem-badge">—</span>
+                                </div>
+                                <textarea id="memory-text" class="cfg-textarea" rows="6" data-i18n-ph="cfg_memory_ph" placeholder="Ainda não há nada aqui. Conte coisas sobre você durante as conversas, ou escreva livremente."></textarea>
+                                <div class="cfg-memory-actions">
+                                    <button type="button" class="cfg-btn-ghost" onclick="atualizarMemoriaAgora(this)" data-i18n="cfg_memory_refresh">Atualizar agora</button>
+                                    <button type="button" class="cfg-btn" onclick="salvarMemoria(this)" data-i18n="cfg_memory_save">Salvar</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Conta (so para quem tem conta) -->
+                        <div class="cfg-section hidden" id="cfg-account-section">
+                            <h4 class="cfg-h" data-i18n="cfg_account">Sua conta</h4>
+                            <input type="text" id="acc-edit-name" class="cfg-input" data-i18n-ph="acc_name_ph" placeholder="Seu nome" maxlength="60" autocomplete="off">
+                            <input type="email" id="acc-edit-email" class="cfg-input" data-i18n-ph="email_ph" placeholder="E-mail" autocomplete="off" spellcheck="false">
+                            <input type="password" id="acc-edit-newpass" class="cfg-input" data-i18n-ph="cfg_new_pass_ph" placeholder="Nova senha (deixe em branco para manter)" autocomplete="new-password">
+                            <input type="password" id="acc-edit-curpass" class="cfg-input" data-i18n-ph="cfg_cur_pass_ph" placeholder="Senha atual (para confirmar)" autocomplete="current-password">
+                            <div id="acc-edit-msg" class="cfg-acc-msg"></div>
+                            <button type="button" class="cfg-btn" onclick="salvarConta(this)" data-i18n="cfg_account_save">Salvar alterações</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -273,7 +340,13 @@
                         <button class="close-modal" onclick="closeModal('modal-historico')">&times;</button>
                     </div>
                     <div class="modal-content">
-                        <input type="text" id="history-search" class="history-search" placeholder="Buscar conversa..." data-i18n-ph="hist_search_ph" oninput="filtrarHistorico()">
+                        <div class="hist-toolbar">
+                            <input type="text" id="history-search" class="history-search" placeholder="Buscar conversa..." data-i18n-ph="hist_search_ph" oninput="filtrarHistorico()">
+                            <button type="button" class="btn-new-folder" onclick="criarPastaUI()" title="Nova pasta">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2zm8 9h-3v3h-2v-3h-3v-2h3V8h2v3h3v2z"/></svg>
+                                <span data-i18n="hist_new_folder">Nova pasta</span>
+                            </button>
+                        </div>
                         <div id="history-list" class="history-list-container">
                             <div style="text-align:center; color: #666; margin-top: 20px;">Carregando...</div>
                         </div>
@@ -283,12 +356,12 @@
         </div>
     </section>
 
-    <script src="js/i18n.js?v=10"></script>
+    <script src="js/i18n.js?v=11"></script>
     <script src="js/config.js?v=7"></script>
-    <script src="js/db.js?v=9"></script>
-    <script src="js/cyborg.js?v=9"></script>
+    <script src="js/db.js?v=10"></script>
+    <script src="js/cyborg.js?v=10"></script>
     <script src="js/orb.js?v=8"></script>
-    <script src="js/app.js?v=22"></script>
+    <script src="js/app.js?v=23"></script>
 
 </body>
 </html>

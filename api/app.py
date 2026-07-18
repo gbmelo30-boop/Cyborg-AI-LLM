@@ -3,6 +3,7 @@ import hmac
 import logging
 import uuid
 import time
+import re
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 from dotenv import load_dotenv
@@ -128,7 +129,7 @@ def buscar_contexto(pergunta):
         return "", False
 
 
-def generate_llm_response(messages, use_rag=True, tema_pesquisa="Geral", user_name="", idioma="pt"):
+def generate_llm_response(messages, use_rag=True, tema_pesquisa="Geral", user_name="", idioma="pt", estilo="equilibrado", memoria=""):
     try:
         last_user_msg = (messages[-1].get('content') or '')[:8000]  # limite anti-abuso
         contexto_rag = ""
@@ -243,10 +244,29 @@ FECHAMENTO:
 """
 
         system_content = SYSTEM_PROMPT
+
+        if estilo == "mais_filosofico":
+            system_content += ("\n\nAJUSTE DE ESTILO: aprofunde a densidade filosófica e conceitual da "
+                               "reflexão, explorando com mais vagar as fronteiras híbridas e as implicações "
+                               "mais amplas — sem jamais perder o vínculo com o caso concreto do usuário.")
+        elif estilo == "menos_filosofico":
+            system_content += ("\n\nAJUSTE DE ESTILO: seja mais direto, concreto e acessível, com menos "
+                               "densidade filosófica e linguagem mais simples, mantendo ainda assim o olhar "
+                               "crítico e as boas perguntas ao final.")
+
+        if memoria:
+            system_content += ("\n\nPERFIL DO USUÁRIO (uso interno; incorpore com muita leveza e só quando "
+                               "for realmente pertinente ao que ele trouxe; NUNCA mencione que existe um perfil "
+                               "nem repita esses dados de forma mecânica):\n" + memoria)
+
         if idioma == "en":
             system_content += ("\n\nLANGUAGE: From now on, respond ONLY in English, no matter which "
                                "language the user writes in. Keep exactly the same reflective, fluid and "
                                "provocative style defined above.")
+        elif idioma == "es":
+            system_content += ("\n\nIDIOMA: De ahora en adelante, responde SOLO en español, sin importar "
+                               "en qué idioma escriba el usuario. Mantén exactamente el mismo estilo "
+                               "reflexivo, fluido y provocador definido arriba.")
         formatted_messages = [{"role": "system", "content": system_content}]
 
         for msg in messages[-4:-1]: 
@@ -299,27 +319,49 @@ def chat():
     tema_pesquisa = data.get('tema') or data.get('topic') or 'Sem Tema'
     idioma = (data.get('idioma') or 'pt').lower()
     user_name = (data.get('userName') or '').strip()  # usado SO no prompt; NAO e gravado no BD (anonimizacao mantida)
-    session_id = data.get('session_id') 
-    
+    session_id = data.get('session_id')
+    user_id = (data.get('user_id') or '').strip()
+    estilo = (data.get('estilo') or 'equilibrado').strip()
+
     if not messages:
         return jsonify({"error": "Nenhuma mensagem enviada"}), 400
+
+    # Memoria de personalizacao: so entra no prompt se estiver LIGADA e PRONTA
+    memoria = ""
+    prefs = None
+    if user_id:
+        try:
+            prefs = db_local.get_prefs(user_id)
+            if prefs.get("memory_enabled") and prefs.get("memory_ready"):
+                memoria = prefs.get("memory_text") or ""
+        except Exception as e:
+            logger.error(f"Erro ao ler prefs: {e}")
 
     # LOG para depuração no terminal do servidor
     logger.info(f"Gerando resposta Llama para Sessão: {session_id} | Tema: {tema_pesquisa}")
 
     try:
         # 1. Chama a função que você já tem para rodar o Llama local e RAG
-        response_text, rag_foi_usado = generate_llm_response(messages, use_rag, tema_pesquisa, user_name, idioma)
-        
+        response_text, rag_foi_usado = generate_llm_response(messages, use_rag, tema_pesquisa, user_name, idioma, estilo, memoria)
+
         # 2. Limpa a tag de parada caso o modelo gere
         response_text = response_text.replace("<<FIM>>", "").strip()
 
-        # 3. Retorna apenas os dados para o Front-end. 
-        # O salvamento no banco será feito pelo public/js/cyborg.js assim que ele receber isso aqui.
+        # 3. Memoria automatica: conta as mensagens e sinaliza quando vale recurar
+        memory_should_refresh = False
+        if user_id and prefs and prefs.get("memory_enabled"):
+            try:
+                n = db_local.bump_msgs_since(user_id)
+                memory_should_refresh = (n >= 6)
+            except Exception:
+                pass
+
+        # 4. Retorna apenas os dados para o Front-end.
         return jsonify({
             "response": response_text,
             "session_id": session_id,
-            "used_rag": rag_foi_usado
+            "used_rag": rag_foi_usado,
+            "memory_should_refresh": memory_should_refresh
         })
 
     except Exception as e:
@@ -356,6 +398,101 @@ def login_usuario():
     return jsonify(u)
 
 
+@app.route('/api/account/update', methods=['POST'])
+def atualizar_conta():
+    d = request.json or {}
+    uid = (d.get('user_id') or '').strip()
+    atual = d.get('current_password') or ''
+    if not uid or not db_local.verify_user_by_id(uid, atual):
+        return jsonify({"error": "senha_atual_incorreta"}), 401
+    novo_email = (d.get('email') or '').strip().lower()
+    if novo_email and ('@' not in novo_email or '.' not in novo_email.split('@')[-1]):
+        return jsonify({"error": "email_invalido"}), 400
+    nova_senha = d.get('password') or ''
+    if nova_senha and len(nova_senha) < 6:
+        return jsonify({"error": "senha_curta"}), 400
+    res = db_local.update_user(uid, name=d.get('name'), email=(novo_email or None), password=(nova_senha or None))
+    if res.get('error'):
+        return jsonify(res), 409
+    return jsonify(res)
+
+
+@app.route('/api/prefs', methods=['GET'])
+def obter_prefs():
+    uid = request.args.get('user_id')
+    if not uid:
+        return jsonify({"memory_enabled": False, "memory_ready": False, "memory_text": ""})
+    return jsonify(db_local.get_prefs(uid))
+
+
+@app.route('/api/prefs', methods=['POST'])
+def salvar_prefs():
+    d = request.json or {}
+    uid = (d.get('user_id') or '').strip()
+    if not uid:
+        return jsonify({"error": "user_id obrigatório"}), 400
+    if 'memory_enabled' in d:
+        db_local.set_memory_enabled(uid, bool(d.get('memory_enabled')))
+    if 'memory_text' in d:
+        db_local.set_memory_text(uid, d.get('memory_text') or '')
+    return jsonify(db_local.get_prefs(uid))
+
+
+def _curar_memoria(user_id):
+    """Le as mensagens do proprio usuario e monta/atualiza um perfil conciso.
+    So marca como 'pronta' quando ha, de fato, algo que a pessoa revelou sobre si."""
+    msgs = db_local.get_user_messages(user_id, 40)
+    if not msgs or not llm:
+        db_local.save_curated_memory(user_id, db_local.get_prefs(user_id).get("memory_text", ""), False)
+        return db_local.get_prefs(user_id)
+    corpus = "\n".join("- " + (m or "")[:400] for m in msgs)[:6000]
+    anterior = db_local.get_prefs(user_id).get("memory_text", "")
+    sys_p = (
+        "Você é um assistente que monta, em português, um PERFIL curto e factual do usuário, "
+        "a partir APENAS do que ELE MESMO revelou sobre si (quem é, contexto, área de estudo/trabalho, "
+        "objetivos, preferências de conversa, o que já contou de sua vida). "
+        "Regras rígidas: (1) inclua somente fatos que o usuário afirmou sobre si mesmo; "
+        "(2) NUNCA invente nem deduza além do dito; (3) ignore o conteúdo intelectual das perguntas "
+        "que não fale do próprio usuário; (4) se ele NÃO revelou nada pessoal, devolva o perfil vazio. "
+        "Escreva no máximo 6 linhas, em tópicos curtos.\n\n"
+        "Responda EXATAMENTE neste formato:\nPRONTO: sim|nao\nPERFIL:\n<texto ou vazio>"
+    )
+    usr_p = (
+        (f"Perfil atual (atualize/refine se fizer sentido):\n{anterior}\n\n" if anterior else "")
+        + f"Mensagens do usuário:\n{corpus}"
+    )
+    try:
+        out = llm.create_chat_completion(
+            messages=[{"role": "system", "content": sys_p}, {"role": "user", "content": usr_p}],
+            temperature=0.2, max_tokens=350, stop=["<|eot_id|>"]
+        )
+        raw = (out['choices'][0]['message']['content'] or "").strip()
+    except Exception as e:
+        logger.error(f"Erro na curadoria de memoria: {e}")
+        return db_local.get_prefs(user_id)
+
+    low = raw.lower()
+    mp = re.search(r'pronto\s*:\s*(sim|n[aã]o|yes|no)', low)
+    ready = bool(mp and mp.group(1) in ('sim', 'yes'))
+    mperf = re.search(r'perfil\s*:', low)
+    perfil = raw[mperf.end():].strip() if mperf else raw
+    # limpa marcadores de vazio
+    if perfil.lower() in ('', 'vazio', 'nenhum', 'n/a', 'nada', '-'):
+        perfil = ""
+        ready = False
+    db_local.save_curated_memory(user_id, perfil, ready)
+    return db_local.get_prefs(user_id)
+
+
+@app.route('/api/memory/refresh', methods=['POST'])
+def atualizar_memoria():
+    d = request.json or {}
+    uid = (d.get('user_id') or '').strip()
+    if not uid:
+        return jsonify({"error": "user_id obrigatório"}), 400
+    return jsonify(_curar_memoria(uid))
+
+
 @app.route('/api/sessions', methods=['POST'])
 def criar_sessao():
     d = request.json or {}
@@ -366,6 +503,35 @@ def criar_sessao():
         d.get('grupo', 'Uso Individual'), d.get('tema', 'Geral'), d.get('user_name')
     )
     return jsonify(sessao)
+
+
+@app.route('/api/folders', methods=['GET'])
+def listar_pastas():
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify([])
+    return jsonify(db_local.list_folders(user_id))
+
+
+@app.route('/api/folders', methods=['POST'])
+def criar_pasta():
+    d = request.json or {}
+    if not d.get('user_id'):
+        return jsonify({"error": "user_id obrigatório"}), 400
+    return jsonify(db_local.create_folder(d['user_id'], d.get('name', '')))
+
+
+@app.route('/api/folders/<folder_id>', methods=['PATCH'])
+def renomear_pasta(folder_id):
+    d = request.json or {}
+    db_local.rename_folder(folder_id, d.get('name', ''))
+    return jsonify({"ok": True})
+
+
+@app.route('/api/folders/<folder_id>', methods=['DELETE'])
+def apagar_pasta(folder_id):
+    db_local.delete_folder(folder_id)
+    return jsonify({"ok": True})
 
 
 @app.route('/api/sessions', methods=['GET'])
@@ -389,6 +555,7 @@ def atualizar_sessao(session_id):
         title=d.get('title'),
         is_pinned=d.get('is_pinned'),
         oculta=d.get('oculta_para_usuario'),
+        folder_id=d.get('folder_id', Ellipsis),
     )
     return jsonify({"ok": True})
 

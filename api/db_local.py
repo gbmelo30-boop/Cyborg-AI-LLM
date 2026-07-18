@@ -79,11 +79,33 @@ def init_db():
                 name TEXT,
                 created_at TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS folders (
+                id TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL,
+                name TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_folders_user ON folders(user_id);
+            CREATE TABLE IF NOT EXISTS user_prefs (
+                user_id TEXT PRIMARY KEY,
+                memory_enabled INTEGER DEFAULT 0,
+                memory_ready INTEGER DEFAULT 0,
+                memory_text TEXT DEFAULT '',
+                msgs_since INTEGER DEFAULT 0,
+                updated_at TEXT
+            );
             """
         )
         # Valores padrão do painel admin (só inserem se ainda não existirem)
         c.execute("INSERT OR IGNORE INTO config (chave,valor) VALUES ('gravar_no_bd','true')")
         c.execute("INSERT OR IGNORE INTO config (chave,valor) VALUES ('rag_padrao','false')")
+        # Migracao leve: coluna folder_id em chat_sessions (pastas do historico)
+        try:
+            cols = [r[1] for r in c.execute("PRAGMA table_info(chat_sessions)").fetchall()]
+            if "folder_id" not in cols:
+                c.execute("ALTER TABLE chat_sessions ADD COLUMN folder_id TEXT")
+        except Exception:
+            pass
         # Anonimizacao: garante que nenhum nome real fique guardado no banco.
         c.execute("UPDATE chat_sessions SET user_name=NULL WHERE user_name IS NOT NULL")
 
@@ -198,6 +220,111 @@ def verify_user(email, password):
     return {"id": row["id"], "email": row["email"], "name": row["name"]}
 
 
+def get_user_by_id(user_id):
+    with _conn() as c:
+        row = c.execute("SELECT id,email,pass_hash,name FROM users WHERE id=?", (user_id,)).fetchone()
+    return dict(row) if row else None
+
+
+def verify_user_by_id(user_id, password):
+    u = get_user_by_id(user_id)
+    if not u:
+        return False
+    try:
+        salt, ph = u["pass_hash"].split("$", 1)
+    except ValueError:
+        return False
+    return _hash_pw(password, salt) == ph
+
+
+def update_user(user_id, name=None, email=None, password=None):
+    sets, vals = [], []
+    if name is not None and name.strip():
+        sets.append("name=?"); vals.append(name.strip()[:60])
+    if email is not None and email.strip():
+        sets.append("email=?"); vals.append(email.strip().lower())
+    if password:
+        salt = os.urandom(16).hex()
+        sets.append("pass_hash=?"); vals.append(salt + "$" + _hash_pw(password, salt))
+    if not sets:
+        return {"ok": True, "nada": True}
+    vals.append(user_id)
+    try:
+        with _lock, _conn() as c:
+            c.execute(f"UPDATE users SET {', '.join(sets)} WHERE id=?", vals)
+    except sqlite3.IntegrityError:
+        return {"error": "email_ja_cadastrado"}
+    u = get_user_by_id(user_id)
+    return {"ok": True, "id": u["id"], "email": u["email"], "name": u["name"]}
+
+
+# ------------------------------------------------------------ Preferencias/memoria
+def get_prefs(user_id):
+    with _conn() as c:
+        row = c.execute(
+            "SELECT memory_enabled,memory_ready,memory_text,msgs_since FROM user_prefs WHERE user_id=?",
+            (user_id,),
+        ).fetchone()
+    if not row:
+        return {"memory_enabled": False, "memory_ready": False, "memory_text": "", "msgs_since": 0}
+    return {
+        "memory_enabled": bool(row["memory_enabled"]),
+        "memory_ready": bool(row["memory_ready"]),
+        "memory_text": row["memory_text"] or "",
+        "msgs_since": row["msgs_since"] or 0,
+    }
+
+
+def _ensure_prefs(c, user_id):
+    c.execute("INSERT OR IGNORE INTO user_prefs (user_id,updated_at) VALUES (?,?)", (user_id, now_iso()))
+
+
+def set_memory_enabled(user_id, enabled):
+    with _lock, _conn() as c:
+        _ensure_prefs(c, user_id)
+        c.execute("UPDATE user_prefs SET memory_enabled=?, updated_at=? WHERE user_id=?",
+                  (1 if enabled else 0, now_iso(), user_id))
+
+
+def set_memory_text(user_id, text):
+    txt = (text or "").strip()[:2000]
+    with _lock, _conn() as c:
+        _ensure_prefs(c, user_id)
+        # edicao manual: se tem texto, considera pronta; se vazio, nao
+        c.execute("UPDATE user_prefs SET memory_text=?, memory_ready=?, updated_at=? WHERE user_id=?",
+                  (txt, 1 if txt else 0, now_iso(), user_id))
+
+
+def save_curated_memory(user_id, text, ready):
+    txt = (text or "").strip()[:2000]
+    with _lock, _conn() as c:
+        _ensure_prefs(c, user_id)
+        c.execute("UPDATE user_prefs SET memory_text=?, memory_ready=?, msgs_since=0, updated_at=? WHERE user_id=?",
+                  (txt, 1 if (ready and txt) else 0, now_iso(), user_id))
+
+
+def bump_msgs_since(user_id):
+    """Incrementa o contador de mensagens desde a ultima curadoria. Retorna o novo valor."""
+    with _lock, _conn() as c:
+        _ensure_prefs(c, user_id)
+        c.execute("UPDATE user_prefs SET msgs_since=msgs_since+1 WHERE user_id=?", (user_id,))
+        row = c.execute("SELECT msgs_since FROM user_prefs WHERE user_id=?", (user_id,)).fetchone()
+    return row["msgs_since"] if row else 0
+
+
+def get_user_messages(user_id, limit=40):
+    """Ultimas mensagens do proprio usuario (role=user), das sessoes dele."""
+    with _conn() as c:
+        rows = c.execute(
+            "SELECT m.content FROM chat_messages m "
+            "JOIN chat_sessions s ON s.id=m.session_id "
+            "WHERE s.user_id=? AND m.role='user' "
+            "ORDER BY m.created_at DESC LIMIT ?",
+            (user_id, limit),
+        ).fetchall()
+    return [r["content"] for r in rows][::-1]
+
+
 def create_session(user_id, title, grupo="Uso Individual", tema="Geral", user_name=None):
     sid = str(uuid.uuid4())
     ts = now_iso()
@@ -224,7 +351,7 @@ def create_session(user_id, title, grupo="Uso Individual", tema="Geral", user_na
 def list_sessions(user_id):
     with _conn() as c:
         rows = c.execute(
-            "SELECT id,title,grupo,tema,is_pinned,created_at FROM chat_sessions"
+            "SELECT id,title,grupo,tema,is_pinned,folder_id,created_at FROM chat_sessions"
             " WHERE user_id=? AND oculta_para_usuario=0"
             " ORDER BY is_pinned DESC, created_at DESC",
             (user_id,),
@@ -237,7 +364,7 @@ def list_sessions(user_id):
     return out
 
 
-def update_session(session_id, title=None, is_pinned=None, oculta=None):
+def update_session(session_id, title=None, is_pinned=None, oculta=None, folder_id=Ellipsis):
     sets, vals = [], []
     if title is not None:
         sets.append("title=?"); vals.append(str(title)[:60])
@@ -245,11 +372,56 @@ def update_session(session_id, title=None, is_pinned=None, oculta=None):
         sets.append("is_pinned=?"); vals.append(1 if is_pinned else 0)
     if oculta is not None:
         sets.append("oculta_para_usuario=?"); vals.append(1 if oculta else 0)
+    if folder_id is not Ellipsis:
+        sets.append("folder_id=?"); vals.append(folder_id or None)
     if not sets:
         return
     vals.append(session_id)
     with _lock, _conn() as c:
         c.execute(f"UPDATE chat_sessions SET {', '.join(sets)} WHERE id=?", vals)
+
+
+# ------------------------------------------------------------------ Pastas
+def create_folder(user_id, name):
+    if not user_id:
+        return {"error": "sem_usuario"}
+    nome = (name or "").strip()[:60] or "Nova pasta"
+    fid = str(uuid.uuid4())
+    with _lock, _conn() as c:
+        c.execute(
+            "INSERT INTO folders (id,user_id,name,created_at) VALUES (?,?,?,?)",
+            (fid, user_id, nome, now_iso()),
+        )
+    return {"id": fid, "user_id": user_id, "name": nome}
+
+
+def list_folders(user_id):
+    with _conn() as c:
+        rows = c.execute(
+            "SELECT id,name,created_at FROM folders WHERE user_id=? ORDER BY name COLLATE NOCASE ASC",
+            (user_id,),
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def rename_folder(folder_id, name):
+    nome = (name or "").strip()[:60]
+    if not nome:
+        return
+    with _lock, _conn() as c:
+        c.execute("UPDATE folders SET name=? WHERE id=?", (nome, folder_id))
+
+
+def delete_folder(folder_id):
+    # remove a pasta e solta as conversas (nao apaga as conversas)
+    with _lock, _conn() as c:
+        c.execute("UPDATE chat_sessions SET folder_id=NULL WHERE folder_id=?", (folder_id,))
+        c.execute("DELETE FROM folders WHERE id=?", (folder_id,))
+
+
+def set_session_folder(session_id, folder_id):
+    with _lock, _conn() as c:
+        c.execute("UPDATE chat_sessions SET folder_id=? WHERE id=?", (folder_id or None, session_id))
 
 
 # ----------------------------------------------------------------- Mensagens

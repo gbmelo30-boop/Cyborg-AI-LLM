@@ -55,7 +55,8 @@ const CYBORG = {
                     idioma: window.currentLang || 'pt',
                     session_id: currentSessionId,
                     userName: (contextData.userName || ''),
-                    user_id: DB.user.id
+                    user_id: DB.user.id,
+                    estilo: (localStorage.getItem('cyborg_estilo') || 'equilibrado')
                 })
             });
 
@@ -66,6 +67,11 @@ const CYBORG = {
 
             const result = await response.json();
             if (result.error) throw new Error(result.error);
+
+            // Memoria automatica: quando o backend sinaliza, atualiza o perfil em segundo plano
+            if (result.memory_should_refresh && DB.atualizarMemoria && DB.user) {
+                DB.atualizarMemoria().catch(() => {});
+            }
 
             const text = (result.response || "").replace("<<FIM>>", "").trim();
 

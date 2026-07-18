@@ -94,7 +94,82 @@ const DB = {
     // Soft delete (mantém no banco para pesquisa, some da lista do usuário)
     deletarSessao: async (sessionId) => DB._patchSessao(sessionId, { oculta_para_usuario: true }),
     renomearSessao: async (sessionId, novoTitulo) => DB._patchSessao(sessionId, { title: novoTitulo }),
-    fixarSessao: async (sessionId, statusAtual) => DB._patchSessao(sessionId, { is_pinned: !statusAtual })
+    fixarSessao: async (sessionId, statusAtual) => DB._patchSessao(sessionId, { is_pinned: !statusAtual }),
+    moverSessaoParaPasta: async (sessionId, folderId) => DB._patchSessao(sessionId, { folder_id: folderId || null }),
+
+    // ----- Pastas do histórico -----
+    listarPastas: async () => {
+        if (!DB.user) return [];
+        try {
+            const r = await fetch(`${API_BASE_URL}/api/folders?user_id=${encodeURIComponent(DB.user.id)}`);
+            if (!r.ok) return [];
+            return await r.json();
+        } catch (e) { return []; }
+    },
+    criarPasta: async (nome) => {
+        if (!DB.user) return null;
+        try {
+            const r = await fetch(`${API_BASE_URL}/api/folders`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: DB.user.id, name: nome })
+            });
+            if (!r.ok) return null;
+            return await r.json();
+        } catch (e) { return null; }
+    },
+    renomearPasta: async (folderId, nome) => {
+        try {
+            await fetch(`${API_BASE_URL}/api/folders/${folderId}`, {
+                method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: nome })
+            });
+        } catch (e) {}
+    },
+    deletarPasta: async (folderId) => {
+        try { await fetch(`${API_BASE_URL}/api/folders/${folderId}`, { method: 'DELETE' }); } catch (e) {}
+    },
+
+    // ----- Preferências / memória de personalização -----
+    obterPrefs: async () => {
+        if (!DB.user) return { memory_enabled: false, memory_ready: false, memory_text: '' };
+        try {
+            const r = await fetch(`${API_BASE_URL}/api/prefs?user_id=${encodeURIComponent(DB.user.id)}`);
+            if (!r.ok) return { memory_enabled: false, memory_ready: false, memory_text: '' };
+            return await r.json();
+        } catch (e) { return { memory_enabled: false, memory_ready: false, memory_text: '' }; }
+    },
+    salvarPrefs: async (campos) => {
+        if (!DB.user) return null;
+        try {
+            const r = await fetch(`${API_BASE_URL}/api/prefs`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(Object.assign({ user_id: DB.user.id }, campos))
+            });
+            if (!r.ok) return null;
+            return await r.json();
+        } catch (e) { return null; }
+    },
+    atualizarMemoria: async () => {
+        if (!DB.user) return null;
+        try {
+            const r = await fetch(`${API_BASE_URL}/api/memory/refresh`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: DB.user.id })
+            });
+            if (!r.ok) return null;
+            return await r.json();
+        } catch (e) { return null; }
+    },
+    atualizarConta: async (campos) => {
+        if (!DB.user) return { error: 'sem_usuario' };
+        try {
+            const r = await fetch(`${API_BASE_URL}/api/account/update`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(Object.assign({ user_id: DB.user.id }, campos))
+            });
+            return await r.json();
+        } catch (e) { return { error: 'conexao' }; }
+    }
 };
 
 window.DB = DB;
