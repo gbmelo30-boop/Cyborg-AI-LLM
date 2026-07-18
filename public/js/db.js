@@ -31,7 +31,10 @@ const DB = {
                     user_id: DB.user.id,
                     title: primeiraMensagem,
                     grupo: ctx.group || 'Uso Individual',
-                    tema: ctx.topic || 'Geral'
+                    tema: ctx.topic || 'Geral',
+                    // Nome real so vai ao banco quando o usuario esta logado (conta).
+                    // Visitante fica anonimo (user_name = null -> rotulo "Participante XXXX").
+                    user_name: ctx.registered ? (ctx.userName || null) : null
                 })
             });
             if (!r.ok) throw new Error('HTTP ' + r.status);

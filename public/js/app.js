@@ -165,6 +165,136 @@ async function typewriterEffect(element, text) {
     });
 }
 
+// ---- Modo de acesso: visitante (anonimo) x conta (email/senha) ----
+window.authMode = 'guest';
+window.registerMode = false;
+
+function _authT(key, fb) { return window.T ? window.T(key) : fb; }
+function showAuthError(msg) {
+    const e = document.getElementById('error-message');
+    if (e) { e.innerText = msg; e.style.display = 'block'; }
+}
+function mapAuthError(code) {
+    const m = {
+        'email_ja_cadastrado': _authT('email_taken', 'Este e-mail ja esta cadastrado.'),
+        'credenciais_invalidas': _authT('bad_creds', 'E-mail ou senha incorretos.'),
+        'email_invalido': _authT('email_invalid', 'E-mail invalido.'),
+        'senha_curta': _authT('pass_short', 'A senha precisa de ao menos 6 caracteres.')
+    };
+    return m[code] || _authT('generic_err', 'Nao foi possivel concluir. Tente novamente.');
+}
+
+function syncRegisterUI() {
+    const nameField = document.getElementById('acc-name-input');
+    const btn = document.getElementById('auth-submit-btn');
+    const swt = document.getElementById('auth-switch-text');
+    const swl = document.getElementById('auth-switch-link');
+    if (nameField) nameField.style.display = window.registerMode ? 'block' : 'none';
+    if (btn) btn.innerText = window.registerMode ? _authT('register_btn', 'CADASTRAR') : _authT('login_btn', 'ENTRAR');
+    if (swt) swt.innerText = window.registerMode ? _authT('auth_have_account', 'Ja tem conta?') : _authT('auth_no_account', 'Ainda nao tem conta?');
+    if (swl) swl.innerText = window.registerMode ? _authT('auth_do_login', 'Entrar') : _authT('auth_do_register', 'Cadastre-se');
+}
+
+window.setAuthMode = (mode) => {
+    window.authMode = mode;
+    const tg = document.getElementById('tab-guest');
+    const ta = document.getElementById('tab-account');
+    if (tg) tg.classList.toggle('active', mode === 'guest');
+    if (ta) ta.classList.toggle('active', mode === 'account');
+    const g = document.getElementById('auth-guest');
+    const a = document.getElementById('auth-account');
+    if (g) g.classList.toggle('hidden', mode !== 'guest');
+    if (a) a.classList.toggle('hidden', mode !== 'account');
+    const err = document.getElementById('error-message');
+    if (err) err.style.display = 'none';
+    const sub = document.getElementById('auth-sub-text');
+    const btn = document.getElementById('auth-submit-btn');
+    if (mode === 'account') {
+        window.registerMode = false;
+        if (sub) sub.innerText = _authT('auth_sub_account', 'Entre com seu e-mail e senha.');
+        syncRegisterUI();
+        const em = document.getElementById('acc-email-input');
+        if (em) setTimeout(() => em.focus(), 60);
+    } else {
+        if (sub) sub.innerText = _authT('auth_sub', 'Como prefere ser chamado?');
+        if (btn) btn.innerText = _authT('enter_btn', 'ENTRAR');
+        const ni = document.getElementById('user-name-input');
+        if (ni) setTimeout(() => ni.focus(), 60);
+    }
+};
+
+window.toggleRegister = (e) => {
+    if (e) e.preventDefault();
+    window.registerMode = !window.registerMode;
+    const err = document.getElementById('error-message');
+    if (err) err.style.display = 'none';
+    syncRegisterUI();
+};
+
+window.handleAuthSubmit = () => {
+    if (window.authMode === 'account') window.handleAccountSubmit();
+    else window.handleStartResearch();
+};
+
+window.handleAccountSubmit = async () => {
+    const errorDiv = document.getElementById('error-message');
+    const email = (document.getElementById('acc-email-input').value || '').trim().toLowerCase();
+    const pass  = document.getElementById('acc-pass-input').value || '';
+    const nome  = (document.getElementById('acc-name-input').value || '').trim();
+    if (errorDiv) errorDiv.style.display = 'none';
+
+    if (!email || !email.includes('@')) { showAuthError(_authT('email_invalid', 'E-mail invalido.')); return; }
+    if (pass.length < 6) { showAuthError(_authT('pass_short', 'A senha precisa de ao menos 6 caracteres.')); return; }
+    if (window.registerMode && !nome) { showAuthError(_authT('name_required', 'Digite seu nome para continuar.')); return; }
+
+    const btn = document.getElementById('auth-submit-btn');
+    const orig = btn ? btn.innerText : '';
+    if (btn) btn.innerText = '...';
+
+    try {
+        if (window.registerMode) {
+            const rr = await fetch(`${API_BASE_URL}/api/register`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password: pass, name: nome })
+            });
+            const rd = await rr.json().catch(() => ({}));
+            if (!rr.ok) { showAuthError(mapAuthError(rd.error)); if (btn) btn.innerText = orig; return; }
+        }
+        const lr = await fetch(`${API_BASE_URL}/api/login`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password: pass })
+        });
+        const ld = await lr.json().catch(() => ({}));
+        if (!lr.ok) { showAuthError(mapAuthError(ld.error)); if (btn) btn.innerText = orig; return; }
+
+        const firstName = capitalizeName((ld.name || email.split('@')[0]).split(/\s+/)[0]);
+        const sessionData = {
+            userId:   ld.id,
+            userName: firstName,
+            group:    'Registrado',
+            topic:    'Geral',
+            email:    ld.email,
+            registered: true
+        };
+        localStorage.setItem('cyborg_current_session', JSON.stringify(sessionData));
+
+        if (typeof DB !== 'undefined') {
+            DB.user    = { id: ld.id, email: ld.email };
+            DB.isGuest = false;
+            window.currentResearchContext = {
+                group:    'Registrado',
+                topic:    'Geral',
+                userName: firstName
+            };
+        }
+        window.systemLog(`Login: ${firstName}`);
+        if (window.irParaChat) window.irParaChat();
+    } catch (e) {
+        showAuthError(_authT('generic_err', 'Nao foi possivel concluir. Tente novamente.') + ' (' + e.message + ')');
+        if (btn) btn.innerText = orig;
+    }
+};
+
 window.handleStartResearch = async () => {
     const nameInput = document.getElementById('user-name-input');
     const errorDiv  = document.getElementById('error-message');
@@ -191,7 +321,8 @@ window.handleStartResearch = async () => {
             userName: firstName,
             group:    'Individual/Visitante',
             topic:    'Geral',
-            email:    anonEmail
+            email:    anonEmail,
+            registered: false
         };
         localStorage.setItem('cyborg_current_session', JSON.stringify(sessionData));
 

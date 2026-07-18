@@ -72,6 +72,13 @@ def init_db():
                 chave TEXT PRIMARY KEY,
                 valor TEXT
             );
+            CREATE TABLE IF NOT EXISTS users (
+                id TEXT PRIMARY KEY,
+                email TEXT UNIQUE NOT NULL,
+                pass_hash TEXT NOT NULL,
+                name TEXT,
+                created_at TEXT NOT NULL
+            );
             """
         )
         # Valores padrão do painel admin (só inserem se ainda não existirem)
@@ -147,10 +154,54 @@ def anon_label(user_id):
     return "Participante " + codigo
 
 
+# ------------------------------------------------------------------ contas
+def _hash_pw(password, salt_hex):
+    return hashlib.pbkdf2_hmac(
+        "sha256", (password or "").encode("utf-8"),
+        bytes.fromhex(salt_hex), 120000
+    ).hex()
+
+
+def create_user(email, password, name=None):
+    email = (email or "").strip().lower()
+    if not email or not password:
+        return {"error": "dados_incompletos"}
+    salt = os.urandom(16).hex()
+    stored = salt + "$" + _hash_pw(password, salt)
+    uid = str(uuid.uuid4())
+    nome = (name or "").strip() or email.split("@")[0]
+    try:
+        with _lock, _conn() as c:
+            c.execute(
+                "INSERT INTO users (id,email,pass_hash,name,created_at) VALUES (?,?,?,?,?)",
+                (uid, email, stored, nome, now_iso()),
+            )
+    except sqlite3.IntegrityError:
+        return {"error": "email_ja_cadastrado"}
+    return {"id": uid, "email": email, "name": nome}
+
+
+def verify_user(email, password):
+    email = (email or "").strip().lower()
+    with _conn() as c:
+        row = c.execute(
+            "SELECT id,email,pass_hash,name FROM users WHERE email=?", (email,)
+        ).fetchone()
+    if not row:
+        return None
+    try:
+        salt, ph = row["pass_hash"].split("$", 1)
+    except ValueError:
+        return None
+    if _hash_pw(password, salt) != ph:
+        return None
+    return {"id": row["id"], "email": row["email"], "name": row["name"]}
+
+
 def create_session(user_id, title, grupo="Uso Individual", tema="Geral", user_name=None):
     sid = str(uuid.uuid4())
     ts = now_iso()
-    user_name = None  # anonimizacao: o nome real nunca e gravado
+    user_name = (user_name or "").strip() or None  # visitante fica None (anonimo); usuario logado guarda o nome
     raw = (title or "").strip()
     titulo = (raw[:30] + "...") if len(raw) > 30 else (raw or "Nova conversa")
     if not get_bool("gravar_no_bd", True):
@@ -255,7 +306,7 @@ def export_rows(user_id=None):
     with _conn() as c:
         sessions = c.execute(q, params).fetchall()
         for s in sessions:
-            participante = anon_label(s["user_id"])
+            participante = s["user_name"] or anon_label(s["user_id"])
             msgs = c.execute(
                 "SELECT role,content,created_at FROM chat_messages WHERE session_id=? ORDER BY created_at ASC",
                 (s["id"],),

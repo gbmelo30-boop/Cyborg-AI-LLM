@@ -329,6 +329,33 @@ def chat():
 # ============================================================================
 # ENDPOINTS DE HISTÓRICO (SQLite local) — usados pelo front-end (public/js/db.js)
 # ============================================================================
+@app.route('/api/register', methods=['POST'])
+def registrar_usuario():
+    d = request.json or {}
+    email = (d.get('email') or '').strip().lower()
+    senha = d.get('password') or ''
+    nome  = (d.get('name') or '').strip()
+    if '@' not in email or '.' not in email.split('@')[-1]:
+        return jsonify({"error": "email_invalido"}), 400
+    if len(senha) < 6:
+        return jsonify({"error": "senha_curta"}), 400
+    res = db_local.create_user(email, senha, nome)
+    if res.get('error'):
+        code = 409 if res['error'] == 'email_ja_cadastrado' else 400
+        return jsonify(res), code
+    return jsonify(res)
+
+
+@app.route('/api/login', methods=['POST'])
+def login_usuario():
+    d = request.json or {}
+    time.sleep(0.3)  # leve atraso: dificulta forca bruta
+    u = db_local.verify_user(d.get('email'), d.get('password'))
+    if not u:
+        return jsonify({"error": "credenciais_invalidas"}), 401
+    return jsonify(u)
+
+
 @app.route('/api/sessions', methods=['POST'])
 def criar_sessao():
     d = request.json or {}
