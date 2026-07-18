@@ -24,8 +24,9 @@ window.toggleRag = (checkbox) => {
 
 // --- CARROSSEL E MODAIS ---
 let slideIndex = 1;
-window.changeSlide = function(n) { showSlides(slideIndex += n); };
-window.currentSlide = function(n) { showSlides(slideIndex = n); };
+let slideDir = 1;
+window.changeSlide = function(n) { slideDir = n < 0 ? -1 : 1; showSlides(slideIndex += n); };
+window.currentSlide = function(n) { slideDir = n >= slideIndex ? 1 : -1; showSlides(slideIndex = n); };
 
 function showSlides(n) {
     let i;
@@ -36,8 +37,11 @@ function showSlides(n) {
     if(!slides.length) return;
     if (n > slides.length) {slideIndex = 1}
     if (n < 1) {slideIndex = slides.length}
-    for (i = 0; i < slides.length; i++) { slides[i].classList.remove("active"); }
-    slides[slideIndex-1].classList.add("active");
+    for (i = 0; i < slides.length; i++) { slides[i].classList.remove("active", "from-left", "from-right"); }
+    const __active = slides[slideIndex-1];
+    __active.classList.add("active");
+    void __active.offsetWidth; // reinicia a animacao
+    __active.classList.add(slideDir < 0 ? "from-left" : "from-right");
     if(indicator) indicator.innerText = slideIndex + " / " + slides.length;
     if(btnPrev) btnPrev.disabled = (slideIndex === 1);
     if(btnNext) {
@@ -442,7 +446,17 @@ window.toggleInputSize = () => {
     const btn   = document.getElementById('expand-button');
     const input = document.getElementById('user-input');
     const isExpanded = form.classList.toggle('expanded');
+    document.body.classList.toggle('expanded-mode', isExpanded);
     if (isExpanded) {
+        if (!window.__expandEscBound) {
+            window.__expandEscBound = true;
+            document.addEventListener('keydown', (ev) => {
+                if (ev.key === 'Escape') {
+                    const f = document.getElementById('chat-form');
+                    if (f && f.classList.contains('expanded')) window.toggleInputSize();
+                }
+            });
+        }
         btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-14v3h3v2h-5V5h2z"/></svg>';
         input.style.minHeight = 'calc(100% - 20px)';
         input.style.maxHeight = 'none';

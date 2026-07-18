@@ -102,6 +102,7 @@ window.I18N = {
     name_required: "Digite seu nome para continuar.",
     greet_morning: "Bom dia", greet_afternoon: "Boa tarde", greet_evening: "Boa noite",
     greet_tail: "Sou o Cyborg AI, como posso ajudá-lo?",
+    greet_hi: "Olá", greet_ask: "Sou o Cyborg AI. Em que posso ajudar?",
     greet_pool: {
       manha: [
         "Bom dia{nome}. Sou o Cyborg AI, como posso te ajudar?",
@@ -119,11 +120,11 @@ window.I18N = {
         "Olá{nome}, boa noite. Sou o Cyborg AI, como posso te ajudar?"
       ]
     },
-        slide1: "<h3>1. Quem sou eu?</h3><p>Olá, eu sou o Cyborg AI.</p><p>Não sou um assistente virtual focado em produtividade. Fui criado para explorar as fronteiras entre humanos, animais e máquinas, inspirado pela filosofia ciborgue e pelo Design Especulativo.</p>",
-    slide2: "<h3>2. Quando me usar?</h3><p>Use-me quando quiser testar os limites de uma ideia. Se você está pensando em uma nova tecnologia, um projeto, ou simplesmente refletindo sobre os impactos do futuro na sociedade, este é o lugar.</p>",
-    slide3: "<h3>3. Como falar comigo?</h3><p>Para que eu possa te ajudar, preciso de contexto. No chat, envie um texto contendo:</p><ul><li><strong>A ideia:</strong> Qual é a tecnologia, projeto ou problema que você quer discutir?</li><li><strong>A intenção:</strong> O que você espera que isso mude no mundo?</li></ul>",
-    slide4: "<h3>4. Como eu respondo?</h3><p>Não espere respostas prontas, resumos ou soluções fáceis. Minhas falas serão concisas, diretas e, muitas vezes, provocarão desconforto.</p><p>Meu papel é tensionar a sua visão de mundo.</p>",
-    slide5: "<h3>5. O que fazer com a resposta?</h3><p>Toda interação comigo terminará com uma pergunta. Use essa pergunta para investigar os pontos cegos éticos e sociais das suas próprias ideias.</p><p>A reflexão final nunca é minha, é sempre sua.</p>"
+        slide1: "<h3>1. Quem sou eu?</h3><p>Olá, eu sou o Cyborg AI. Existo para pensar <em>com</em> você nas fronteiras entre humanos, animais e máquinas.</p><p>Minha inspiração vem da filosofia ciborgue e do Design Especulativo: em vez de respostas fechadas, ofereço perguntas que abrem caminhos.</p>",
+    slide2: "<h3>2. Quando me procurar?</h3><p>Me procure quando quiser testar os limites de uma ideia. Uma nova tecnologia, um projeto ou uma dúvida sobre os rumos do futuro ganham outra profundidade quando olhamos para seus efeitos sociais, éticos e políticos.</p>",
+    slide3: "<h3>3. Como falar comigo?</h3><p>Quanto mais contexto, mais longe chegamos. Ao me escrever, tente trazer:</p><ul><li><strong>A ideia:</strong> qual tecnologia, projeto ou problema você quer discutir?</li><li><strong>A intenção:</strong> o que você espera transformar no mundo com ela?</li></ul>",
+    slide4: "<h3>4. Como eu respondo?</h3><p>Não espere resumos ou soluções fáceis. Minhas falas são curtas, diretas e, às vezes, incômodas — de propósito.</p><p>Meu papel é tensionar a sua visão de mundo, não confirmá-la.</p>",
+    slide5: "<h3>5. E depois da resposta?</h3><p>Toda conversa comigo termina com uma pergunta. Ela é um convite para você investigar os pontos cegos das suas próprias ideias.</p><p>A reflexão final nunca é minha: é sempre sua.</p>"
   },
   en: {
     intro_sub: "A journey across the frontier between human and machine",
@@ -225,6 +226,7 @@ window.I18N = {
     name_required: "Enter your name to continue.",
     greet_morning: "Good morning", greet_afternoon: "Good afternoon", greet_evening: "Good evening",
     greet_tail: "I'm Cyborg AI, how can I help you?",
+    greet_hi: "Hello", greet_ask: "I'm Cyborg AI. How can I help?",
     greet_pool: {
       manha: [
         "Good morning{nome}. I'm Cyborg AI, how can I help you?",
@@ -242,11 +244,11 @@ window.I18N = {
         "Hello{nome}, good evening. I'm Cyborg AI, how can I help you?"
       ]
     },
-        slide1: "<h3>1. Who am I?</h3><p>Hi, I'm Cyborg AI.</p><p>I'm not a productivity assistant. I was created to explore the boundaries between humans, animals and machines, inspired by cyborg philosophy and Speculative Design.</p>",
-    slide2: "<h3>2. When to use me?</h3><p>Use me when you want to test the limits of an idea. If you're thinking about a new technology, a project, or simply reflecting on how the future may impact society, this is the place.</p>",
-    slide3: "<h3>3. How to talk to me?</h3><p>To help you, I need context. In the chat, send a message containing:</p><ul><li><strong>The idea:</strong> which technology, project or problem do you want to discuss?</li><li><strong>The intention:</strong> what do you hope it will change in the world?</li></ul>",
-    slide4: "<h3>4. How do I respond?</h3><p>Don't expect ready-made answers, summaries or easy solutions. My replies will be concise, direct and, often, uncomfortable.</p><p>My role is to tension your worldview.</p>",
-    slide5: "<h3>5. What to do with the answer?</h3><p>Every interaction with me ends with a question. Use that question to investigate the ethical and social blind spots of your own ideas.</p><p>The final reflection is never mine, it's always yours.</p>"
+        slide1: "<h3>1. Who am I?</h3><p>Hi, I am Cyborg AI. I exist to think <em>with</em> you at the boundaries between humans, animals and machines.</p><p>My inspiration comes from cyborg philosophy and Speculative Design: instead of closed answers, I offer questions that open paths.</p>",
+    slide2: "<h3>2. When to reach for me?</h3><p>Reach for me when you want to test the limits of an idea. A new technology, a project or a doubt about where the future is heading gain another depth when we look at their social, ethical and political effects.</p>",
+    slide3: "<h3>3. How to talk to me?</h3><p>The more context, the further we go. When you write to me, try to bring:</p><ul><li><strong>The idea:</strong> which technology, project or problem do you want to discuss?</li><li><strong>The intention:</strong> what do you hope to transform in the world with it?</li></ul>",
+    slide4: "<h3>4. How do I respond?</h3><p>Do not expect summaries or easy solutions. My replies are short, direct and, at times, uncomfortable — on purpose.</p><p>My role is to tension your worldview, not to confirm it.</p>",
+    slide5: "<h3>5. And after the answer?</h3><p>Every conversation with me ends with a question. It is an invitation for you to investigate the blind spots of your own ideas.</p><p>The final reflection is never mine: it is always yours.</p>"
   }
 };
 
@@ -259,12 +261,16 @@ window.T = function(key){
 
 window.saudacao = function(firstName){
   const h = new Date().getHours();
-  const per = (h >= 5 && h < 12) ? 'manha' : ((h >= 12 && h < 18) ? 'tarde' : 'noite');
   const d = window.I18N[window.currentLang] || window.I18N.pt;
-  const pool = (d.greet_pool && d.greet_pool[per]) || window.I18N.pt.greet_pool[per];
-  const tpl = pool[Math.floor(Math.random() * pool.length)];
-  const nome = firstName ? (', ' + firstName) : '';
-  return tpl.replace('{nome}', nome);
+  const per = (h >= 5 && h < 12) ? (d.greet_morning || 'Bom dia')
+            : ((h >= 12 && h < 18) ? (d.greet_afternoon || 'Boa tarde')
+            : (d.greet_evening || 'Boa noite'));
+  const hi  = d.greet_hi  || 'Olá';
+  const ask = d.greet_ask || 'Sou o Cyborg AI. Em que posso ajudar?';
+  // apenas o primeiro nome, mesmo que o usuario tenha digitado o nome completo
+  const first = (firstName || '').trim().split(/\s+/)[0] || '';
+  const nome = first ? (', ' + first) : '';
+  return hi + ', ' + per.toLowerCase() + nome + '. ' + ask;
 };
 
 window.applyLang = function(lang){
