@@ -440,9 +440,10 @@ window.applyLang = function(lang){
 };
 
 window.marcarIdioma = function(){
-  var pt = document.getElementById('lang-opt-pt'), en = document.getElementById('lang-opt-en');
+  var pt = document.getElementById('lang-opt-pt'), en = document.getElementById('lang-opt-en'), es = document.getElementById('lang-opt-es');
   if (pt) pt.classList.toggle('active', window.currentLang === 'pt');
   if (en) en.classList.toggle('active', window.currentLang === 'en');
+  if (es) es.classList.toggle('active', window.currentLang === 'es');
 };
 window.selecionarIdioma = function(lang){ window.applyLang(lang); };
 window.abrirIdioma = function(){
