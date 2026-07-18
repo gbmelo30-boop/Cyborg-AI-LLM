@@ -1419,12 +1419,12 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 
 /* ==== Telas pequenas: sem centralizar; saudacao no topo a esquerda, campo embaixo ==== */
 @media (max-width: 899px) {
+    /* celular: sem layout centralizado. Saudacao no topo (fluxo normal), campo colado embaixo */
+    .cyborg-chat-container.landing .chat-history { flex: 0 0 auto; }
     .cyborg-chat-container.landing .chat-landing {
-        position: absolute; top: 10px; left: 0; right: 0;
-        text-align: left; padding: 12px 16px; transform: none;
-        z-index: 1;
+        transform: none; text-align: left; padding: 14px 16px;
     }
-    .cyborg-chat-container.landing .input-area { transform: none; }
+    .cyborg-chat-container.landing .input-area { transform: none; margin-top: auto; }
     #chat-landing-text { text-shadow: none; font-size: 1rem; max-width: 100%; }
 }
 
