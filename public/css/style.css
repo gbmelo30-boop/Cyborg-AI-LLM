@@ -2,7 +2,7 @@
 /* CONFIGURAÇÕES GERAIS                                                           */
 /* ============================================================================== */
 body {
-    font-family: 'Share Tech Mono', monospace;
+    font-family: 'Poppins', sans-serif;
     margin: 0;
     padding: 0;
     overflow: hidden;
@@ -62,7 +62,7 @@ html, body {
 
 body {
     color: var(--primary-text-color);
-    font-family: 'Share Tech Mono', monospace;
+    font-family: 'Poppins', sans-serif;
     transition: background-color 0.3s, color 0.3s;
     position: relative;
 }
@@ -270,7 +270,7 @@ body.light-theme #start-button { text-shadow: none; font-weight: 800; }
 body.light-theme #start-button:hover { background: rgba(0, 0, 0, 0.05); border-color: rgba(0,0,0,0.25); }
 
 footer { position: absolute; bottom: 20px; font-size: 0.8em; z-index: 20; padding: 0 20px; }
-footer p { color: var(--tertiary-text-color); font-style: italic; font-family: sans-serif; text-shadow: 0 1px 2px rgba(0,0,0,0.5); margin: 0; }
+footer p { color: var(--tertiary-text-color); font-style: italic; font-family: 'Poppins', sans-serif; text-shadow: 0 1px 2px rgba(0,0,0,0.5); margin: 0; }
 body.light-theme footer p { text-shadow: none; font-weight: bold; }
 
 /* ============================================================================== */
@@ -339,7 +339,7 @@ body.light-theme #view-auth {
     color: var(--secondary-text-dark);
     font-size: 0.85em;
     margin-bottom: 8px;
-    font-family: sans-serif;
+    font-family: 'Poppins', sans-serif;
     text-align: left;
 }
 
@@ -372,7 +372,7 @@ body.light-theme #view-auth {
     margin-top: 10px;
     transition: filter 0.3s, box-shadow 0.3s;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
-    font-family: 'Share Tech Mono', monospace;
+    font-family: 'Poppins', sans-serif;
     letter-spacing: 1px;
 }
 .btn-start-research:hover { filter: brightness(1.2); box-shadow: 0 0 25px rgba(137, 207, 240, 0.7); }
@@ -417,7 +417,7 @@ body.light-theme #view-auth {
     font-size: 0.82rem;
     color: var(--secondary-text-color, #888);
     margin: 4px 0 2px;
-    font-family: sans-serif;
+    font-family: 'Poppins', sans-serif;
 }
 .auth-switch a {
     color: var(--neutral-line);
@@ -427,10 +427,10 @@ body.light-theme #view-auth {
 .auth-switch a:hover { text-decoration: underline; }
 
 
-.error-message { color: #d93025; text-align: center; margin-top: 15px; display: none; font-size: 0.9em; font-family: sans-serif; }
+.error-message { color: #d93025; text-align: center; margin-top: 15px; display: none; font-size: 0.9em; font-family: 'Poppins', sans-serif; }
 
 .brand-main-content { display: flex; flex-direction: column; align-items: center; gap: 20px; margin-bottom: auto; padding-top: 50px; }
-.cyborg-title { color: var(--primary-text-dark); font-family: 'Share Tech Mono', monospace; font-size: 2.2em; letter-spacing: 4px; text-align: center; }
+.cyborg-title { color: var(--primary-text-dark); font-family: 'Poppins', sans-serif; font-size: 2.2em; letter-spacing: 4px; text-align: center; }
 
 @media (max-width: 880px) {
     .login-card {
@@ -567,7 +567,7 @@ body.light-theme #view-chat {
 .brand-container { display: flex; align-items: center; gap: 10px; }
 
 .cyborg-brand {
-    font-family: 'Share Tech Mono', monospace;
+    font-family: 'Poppins', sans-serif;
     font-size: 1.2em;
     letter-spacing: 2px;
     color: var(--primary-text-color);
@@ -1029,7 +1029,7 @@ body.light-theme #view-chat {
     color: var(--secondary-text-dark);
     font-size: 0.9em;
     margin: 0 0 24px 0;
-    font-family: sans-serif;
+    font-family: 'Poppins', sans-serif;
     line-height: 1.5;
     font-style: italic;
 }
@@ -1041,7 +1041,7 @@ body.light-theme #view-chat {
     border: 1px solid var(--input-border-dark);
     padding: 14px 16px;
     border-radius: 8px;
-    font-family: 'Share Tech Mono', monospace;
+    font-family: 'Poppins', sans-serif;
     font-size: 1em;
     outline: none;
     box-sizing: border-box;
@@ -1318,12 +1318,12 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 .message-bubble tbody tr:nth-child(even) { background: rgba(127,127,127,0.06); }
 .message-bubble code {
     background: var(--bot-message-bg); padding: 1px 5px; border-radius: 4px;
-    font-family: 'Share Tech Mono', monospace; font-size: 0.9em;
+    font-family: ui-monospace, 'Courier New', monospace; font-size: 0.9em;
 }
 .message-bubble pre {
     background: var(--bot-message-bg); border: 1px solid var(--border-color);
     border-radius: 10px; padding: 12px 14px; margin: 12px 0; overflow-x: auto;
-    font-family: 'Share Tech Mono', monospace; font-size: 0.86em; line-height: 1.5;
+    font-family: ui-monospace, 'Courier New', monospace; font-size: 0.86em; line-height: 1.5;
 }
 .message-bubble pre code {
     background: none; padding: 0; border-radius: 0; font-size: 1em; white-space: pre;
@@ -1335,7 +1335,7 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 /* ============================================================================== */
 .brand { margin: 0; line-height: 1; }
 .brand-svg { width: min(72vw, 460px); height: auto; display: block; margin: 0 auto; overflow: visible; }
-.brand-text { font-family: 'Share Tech Mono', monospace; font-size: 60px; letter-spacing: 6px; }
+.brand-text { font-family: 'Poppins', sans-serif; font-size: 60px; letter-spacing: 6px; }
 .brand-text tspan {
     fill: var(--primary-text-color);
     stroke: var(--primary-text-color);
@@ -1431,7 +1431,7 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 }
 .cyborg-chat-container.landing .input-area::before { display: none; }
 #chat-landing-text {
-    font-family: 'Share Tech Mono', monospace; font-weight: 600;
+    font-family: 'Poppins', sans-serif; font-weight: 600;
     font-size: clamp(1.02rem, 3vw, 1.55rem); color: var(--primary-text-color);
     text-shadow: 0 2px 6px rgba(0,0,0,0.5); line-height: 1.4; display: inline-block; max-width: 90%;
 }
@@ -1558,7 +1558,7 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 }
 .cfg-btn-ghost:hover { background: var(--component-hover-bg); border-color: var(--neutral-line); }
 .cfg-btn-ghost:disabled { opacity: 0.5; cursor: default; }
-.cfg-acc-msg { font-size: 0.82rem; margin: 4px 0 10px; min-height: 1em; font-family: sans-serif; }
+.cfg-acc-msg { font-size: 0.82rem; margin: 4px 0 10px; min-height: 1em; font-family: 'Poppins', sans-serif; }
 .cfg-acc-msg.err { color: #d93025; }
 .cfg-acc-msg.ok { color: #16a34a; }
 
