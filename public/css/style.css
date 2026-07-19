@@ -1664,3 +1664,6 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 /* A seta de avancar so aparece/funciona depois que a intro carrega (efeito + anel) */
 #intro-next { opacity: 0; pointer-events: none; transition: opacity 0.4s ease, border-color 0.3s, background-color 0.3s; }
 #intro-next.ready { opacity: 1; pointer-events: auto; }
+
+/* Corrige corte na borda direita dos modais: tudo respeita a largura (padding para dentro) */
+.modal-box, .modal-box *, .admin-card, .admin-card * { box-sizing: border-box; }
