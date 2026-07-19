@@ -1729,3 +1729,9 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 .sp-icon { background: transparent; border: none; color: var(--secondary-text-color); cursor: pointer; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: background .15s, color .15s; }
 .sp-icon:hover { background: var(--component-hover-bg); color: var(--primary-text-color); }
 .sp-icon svg { width: 20px; height: 20px; fill: currentColor; }
+
+/* Modal "mover para pasta" */
+.mv-folder-list { display: flex; flex-direction: column; gap: 6px; }
+.mv-folder-opt { width: 100%; text-align: left; background: transparent; border: 1px solid var(--border-color); color: var(--primary-text-color); border-radius: 10px; padding: 12px 14px; cursor: pointer; font-family: inherit; font-size: 0.9rem; transition: background .15s, border-color .15s; }
+.mv-folder-opt:hover { background: var(--component-hover-bg); border-color: var(--neutral-line); }
+.mv-folder-empty { font-size: 0.82rem; opacity: 0.6; text-align: center; padding: 10px; }

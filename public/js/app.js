@@ -391,6 +391,9 @@ function __sessionRowHtml(sess){
     return `
         <span class="history-title" onclick="carregarSessao('${sess.id}')" title="${__escAttr(sess.title)}">${__escHtml(sess.title)}</span>
         <div class="history-actions">
+            <button class="btn-icon-hist" onclick="abrirMoverPasta('${sess.id}')" title="Mover para pasta">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2z"/></svg>
+            </button>
             <button class="btn-icon-hist btn-pin ${sess.is_pinned ? 'pinned' : ''}" onclick="togglePin('${sess.id}', ${sess.is_pinned})" title="Fixar">${pinIcon}</button>
             <button class="btn-icon-hist" onclick="renomearConversa('${sess.id}', '${__escAttr(sess.title)}')" title="Renomear">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -405,10 +408,6 @@ function __appendSessionItem(container, sess, folders){
     const item = document.createElement('div');
     item.className = `history-item ${sess.id === currentSessionId ? 'active-chat' : ''}`;
     item.innerHTML = __sessionRowHtml(sess);
-    const actions = item.querySelector('.history-actions');
-    const sel = document.createElement('span');
-    sel.innerHTML = __folderSelectHtml(sess, folders);
-    actions.insertBefore(sel.firstChild, actions.firstChild);
     container.appendChild(item);
 }
 
@@ -469,12 +468,6 @@ window.carregarListaSessoes = async () => {
     // conversas sem pasta
     const soltas = porPasta['__none__'] || [];
     if (soltas.length > 0) {
-        if ((folders || []).length > 0) {
-            const lbl = document.createElement('div');
-            lbl.className = 'hist-unfiled-label';
-            lbl.textContent = window.T ? window.T('folder_none') : 'Sem pasta';
-            listDiv.appendChild(lbl);
-        }
         soltas.forEach(sc => __appendSessionItem(listDiv, sc, folders));
     }
 };
@@ -1205,10 +1198,13 @@ window.renderCharts = function(scope) {
 window.renderSugestoes = function() {
     const cont = document.getElementById('chat-suggestions');
     if (!cont) return;
-    const arr = (window.I18N && window.I18N[window.currentLang] && window.I18N[window.currentLang].suggestions)
+    const all = (window.I18N && window.I18N[window.currentLang] && window.I18N[window.currentLang].suggestions)
              || (window.I18N && window.I18N.pt && window.I18N.pt.suggestions) || [];
+    const arr = all.slice();
+    for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
+    const pick = arr.slice(0, 3);
     cont.innerHTML = '';
-    arr.forEach(function(txt){
+    pick.forEach(function(txt){
         const b = document.createElement('button');
         b.type = 'button'; b.className = 'chat-suggestion'; b.textContent = txt;
         b.onclick = function(){
@@ -1219,9 +1215,38 @@ window.renderSugestoes = function() {
         cont.appendChild(b);
     });
 };
-window.mostrarSugestoes = function(show) {
+window.mostrarSugestoes = async function(show) {
     const cont = document.getElementById('chat-suggestions');
     if (!cont) return;
-    if (show) { window.renderSugestoes(); cont.classList.add('show'); }
-    else cont.classList.remove('show');
+    if (!show) { cont.classList.remove('show'); return; }
+    // Só no primeiro contato: usuário com conta e histórico registrado não vê as sugestões
+    try {
+        const ctx = JSON.parse(localStorage.getItem('cyborg_current_session') || '{}');
+        if (ctx.registered && DB.listarSessoes) {
+            const sess = await DB.listarSessoes();
+            if (sess && sess.length > 0) { cont.classList.remove('show'); return; }
+        }
+    } catch (e) {}
+    window.renderSugestoes();
+    cont.classList.add('show');
+};
+
+// ===================== Mover conversa para pasta (modal) =====================
+window.__moveSessionId = null;
+window.abrirMoverPasta = async (sid) => {
+    window.__moveSessionId = sid;
+    const cont = document.getElementById('move-folder-list');
+    if (cont) cont.innerHTML = '<div style="opacity:.6;padding:10px;text-align:center;">' + (window.T ? window.T('loading_word') : 'Carregando...') + '</div>';
+    window.openModal('modal-move-folder');
+    const folders = (DB.listarPastas ? await DB.listarPastas() : []) || [];
+    let html = '<button type="button" class="mv-folder-opt" onclick="moverParaPasta(null)">' + (window.T ? window.T('folder_none') : 'Sem pasta') + '</button>';
+    folders.forEach(function(f){ html += '<button type="button" class="mv-folder-opt" onclick="moverParaPasta(\'' + f.id + '\')">' + __escHtml(f.name) + '</button>'; });
+    if (!folders.length) html += '<div class="mv-folder-empty">' + (window.T ? window.T('folder_none_yet') : 'Você ainda não tem pastas. Crie uma na barra lateral.') + '</div>';
+    if (cont) cont.innerHTML = html;
+};
+window.moverParaPasta = async (fid) => {
+    if (window.__moveSessionId && DB.moverSessaoParaPasta) await DB.moverSessaoParaPasta(window.__moveSessionId, fid);
+    window.__moveSessionId = null;
+    window.closeModal('modal-move-folder');
+    carregarListaSessoes();
 };
