@@ -109,6 +109,24 @@ body.light-theme #theme-switcher svg { fill: #57606a; }
 #theme-switcher:hover svg { fill: #e6edf3; }
 body.light-theme #theme-switcher:hover svg { fill: #24292f; }
 
+#intro-next {
+    position: absolute;
+    top: 20px; right: 78px;
+    cursor: pointer;
+    display: flex;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: rgba(0,0,0,0.5);
+    transition: border-color 0.3s;
+    z-index: 20;
+    backdrop-filter: blur(4px);
+}
+#intro-next svg { width: 20px; height: 20px; fill: #7d8590; transition: fill 0.3s; }
+body.light-theme #intro-next svg { fill: #57606a; }
+#intro-next:hover svg { fill: #e6edf3; }
+body.light-theme #intro-next:hover svg { fill: #24292f; }
+#intro-next:hover { border-color: var(--led-static-blue); }
+
 .dark-icon { display: none; }
 .light-icon { display: block; }
 body.light-theme .dark-icon { display: block; }
