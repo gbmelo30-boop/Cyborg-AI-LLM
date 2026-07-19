@@ -793,7 +793,7 @@ body.light-theme #view-chat {
 
 .side-panel {
     position: absolute; top: 0; left: 0;
-    width: 300px; height: 100%;
+    width: 320px; height: 100%;
     background-color: var(--chat-header-bg);
     border-right: 1px solid var(--border-color);
     z-index: 2000;
@@ -1705,3 +1705,27 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 /* Modal de instruções com tamanho fixo + rolagem (não "pula" entre os passos) */
 #modal-instrucoes .modal-content { height: min(52vh, 430px); overflow-y: auto; }
 #modal-instrucoes .carousel-controls { position: sticky; bottom: 0; background: var(--chat-header-bg); margin-top: 16px; }
+
+
+/* ===== Sidebar: histórico fixo + rodapé de identidade (estilo ChatGPT) ===== */
+.side-panel-top { padding: 12px 10px 8px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
+.sp-newchat { width: 100%; display: flex; align-items: center; gap: 10px; background: transparent; border: 1px solid var(--border-color); color: var(--primary-text-color); border-radius: 10px; padding: 10px 12px; cursor: pointer; font-family: inherit; font-size: 0.92rem; font-weight: 500; transition: background .15s, border-color .15s; }
+.sp-newchat:hover { background: var(--component-hover-bg); border-color: var(--neutral-line); }
+.sp-newchat svg { width: 20px; height: 20px; fill: currentColor; flex-shrink: 0; }
+.sp-tools { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.sp-tools .history-search { flex: 1; min-width: 0; margin: 0; }
+.sp-folder-btn { flex-shrink: 0; width: 40px; height: 40px; justify-content: center; padding: 0; }
+.side-panel-history { flex: 1 1 auto; overflow-y: auto; padding: 8px; min-height: 0; scrollbar-width: thin; scrollbar-color: #7d8590 transparent; }
+.side-panel-history::-webkit-scrollbar { width: 8px; }
+.side-panel-history::-webkit-scrollbar-thumb { background: #7d8590; border-radius: 8px; }
+.side-panel-history::-webkit-scrollbar-thumb:hover { background: #9aa4af; }
+.side-panel-history::-webkit-scrollbar-track { background: transparent; }
+.side-panel-footer { flex-shrink: 0; border-top: 1px solid var(--border-color); padding: 8px; display: flex; align-items: center; gap: 6px; }
+.sp-user { flex: 1; display: flex; align-items: center; gap: 10px; background: transparent; border: none; color: var(--primary-text-color); cursor: pointer; padding: 6px 8px; border-radius: 10px; font-family: inherit; text-align: left; min-width: 0; transition: background .15s; }
+.sp-user:hover { background: var(--component-hover-bg); }
+.sp-user-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--neutral-fill); color: var(--neutral-on); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+.sp-user-name { font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sp-footer-actions { display: flex; gap: 2px; flex-shrink: 0; }
+.sp-icon { background: transparent; border: none; color: var(--secondary-text-color); cursor: pointer; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: background .15s, color .15s; }
+.sp-icon:hover { background: var(--component-hover-bg); color: var(--primary-text-color); }
+.sp-icon svg { width: 20px; height: 20px; fill: currentColor; }

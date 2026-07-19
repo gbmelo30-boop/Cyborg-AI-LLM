@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Cyborg AI</title>
 
-    <link rel="stylesheet" href="css/style.css?v=54">
+    <link rel="stylesheet" href="css/style.css?v=55">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -117,27 +117,31 @@
                         <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
                     </button>
                 </div>
-                <div class="side-panel-body">
-                    <button class="menu-item" title="Instruções" onclick="openModal('modal-instrucoes')">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
-                        <span data-i18n="nav_instructions">Instruções</span>
-                    </button>
-                    <button class="menu-item" title="Nova Conversa" onclick="novaConversa()">
+                                <div class="side-panel-top">
+                    <button class="sp-newchat" title="Nova Conversa" onclick="novaConversa()">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
                         <span data-i18n="nav_new">Nova Conversa</span>
                     </button>
-                    <button class="menu-item" title="Histórico" onclick="abrirHistorico()">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.25 2.52.77-1.28-3.52-2.09V8H12z"/></svg>
-                    <span data-i18n="nav_history">Histórico</span>
+                    <div class="sp-tools">
+                        <input type="text" id="history-search" class="history-search" placeholder="Buscar conversa..." data-i18n-ph="hist_search_ph" oninput="filtrarHistorico()">
+                        <button type="button" class="btn-new-folder sp-folder-btn" onclick="criarPastaUI()" title="Nova pasta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2zm8 9h-3v3h-2v-3h-3v-2h3V8h2v3h3v2z"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div id="history-list" class="side-panel-history">
+                    <div style="text-align:center; color:#666; margin-top:20px;" data-i18n="loading_word">Carregando...</div>
+                </div>
+                <div class="side-panel-footer">
+                    <button class="sp-user" onclick="abrirContaSidebar()" title="Sua conta">
+                        <span class="sp-user-avatar" id="sidebar-avatar">V</span>
+                        <span class="sp-user-name" id="sidebar-username">Visitante</span>
                     </button>
-                    <button class="menu-item" title="Configurações" onclick="openModal('modal-config')">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.58 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
-                        <span data-i18n="nav_settings">Configurações</span>
-                    </button>
-                    <button class="menu-item" id="logout-button" title="Sair" onclick="handleLogout()">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
-                        <span data-i18n="nav_logout">Sair</span>
-                    </button>
+                    <div class="sp-footer-actions">
+                        <button class="sp-icon" title="Instruções" onclick="openModal('modal-instrucoes')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></button>
+                        <button class="sp-icon" title="Configurações" onclick="openModal('modal-config')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.58 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></button>
+                        <button class="sp-icon" title="Sair" onclick="handleLogout()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg></button>
+                    </div>
                 </div>
             </div>
 
@@ -330,35 +334,27 @@
                 </div>
             </div>
 
-            <div id="modal-historico" class="modal-overlay">
-                <div class="modal-box">
+            <div id="modal-folder-name" class="modal-overlay">
+                <div class="modal-box" style="width:380px;">
                     <div class="modal-header">
-                        <span class="modal-title" data-i18n="hist_title">Histórico de Conversas</span>
-                        <button class="close-modal" onclick="closeModal('modal-historico')">&times;</button>
+                        <span class="modal-title" id="folder-modal-title">Nova pasta</span>
+                        <button class="close-modal" onclick="closeModal('modal-folder-name')">&times;</button>
                     </div>
                     <div class="modal-content">
-                        <div class="hist-toolbar">
-                            <input type="text" id="history-search" class="history-search" placeholder="Buscar conversa..." data-i18n-ph="hist_search_ph" oninput="filtrarHistorico()">
-                            <button type="button" class="btn-new-folder" onclick="criarPastaUI()" title="Nova pasta">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2zm8 9h-3v3h-2v-3h-3v-2h3V8h2v3h3v2z"/></svg>
-                                <span data-i18n="hist_new_folder">Nova pasta</span>
-                            </button>
-                        </div>
-                        <div id="history-list" class="history-list-container">
-                            <div style="text-align:center; color: #666; margin-top: 20px;">Carregando...</div>
-                        </div>
+                        <input type="text" id="folder-name-input" class="cfg-input" maxlength="60" placeholder="Nome da pasta" data-i18n-ph="folder_ph" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();confirmarPasta();}">
+                        <button type="button" class="cfg-btn cfg-btn-full" onclick="confirmarPasta()" data-i18n="cfg_memory_save">Salvar</button>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <script src="js/i18n.js?v=18"></script>
+    <script src="js/i18n.js?v=19"></script>
     <script src="js/config.js?v=7"></script>
     <script src="js/db.js?v=12"></script>
     <script src="js/cyborg.js?v=11"></script>
     <script src="js/orb.js?v=8"></script>
-    <script src="js/app.js?v=32"></script>
+    <script src="js/app.js?v=33"></script>
 
 </body>
 </html>

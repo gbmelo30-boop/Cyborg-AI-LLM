@@ -60,7 +60,7 @@ window.openModal = (id) => {
         if(id === 'modal-config' && window.initConfigModal) initConfigModal(); 
     }
 };
-window.closeModal = (id) => { document.getElementById(id).classList.remove('active'); };
+window.closeModal = (id) => { const el = document.getElementById(id); if (el) el.classList.remove('active'); };
 
 // --- NAVEGAÇÃO DE TELAS ---
 window.switchView = function(viewIdToShow) {
@@ -125,6 +125,8 @@ window.voltarParaIntro = function() { window.switchView('view-intro'); };
 window.irParaLogin = function(event) { if(event) event.preventDefault(); window.gsapSwitch('view-intro', 'view-auth', 'fade-elegant'); };
 window.irParaChat = function() {
     const mostrarSaudacao = () => {
+        if (window.carregarListaSessoes) window.carregarListaSessoes();
+        if (window.atualizarIdentidadeSidebar) window.atualizarIdentidadeSidebar();
         const historyDiv = document.getElementById('chat-history');
         if(historyDiv && historyDiv.innerHTML.trim() === '') {
             const ctx       = JSON.parse(localStorage.getItem('cyborg_current_session') || '{}');
@@ -482,7 +484,7 @@ window.carregarSessao = async (id) => {
     if (window.esconderBoasVindas) window.esconderBoasVindas();
     document.getElementById('chat-history').innerHTML = '';
     window.toggleSidebar();
-    window.closeModal('modal-historico');
+    if (window.carregarListaSessoes) window.carregarListaSessoes();
     const msgs = await DB.carregarHistorico(id);
     if (msgs && msgs.length > 0) {
         msgs.forEach(msg => {
@@ -497,6 +499,7 @@ window.carregarSessao = async (id) => {
 window.novaConversa = () => {
     currentSessionId = null;
     document.getElementById('chat-history').innerHTML = '';
+    if (window.carregarListaSessoes) window.carregarListaSessoes();
     const ctx       = JSON.parse(localStorage.getItem('cyborg_current_session') || '{}');
     const firstName = ctx.userName || '';
     const greeting  = getGreeting(firstName);
@@ -522,17 +525,49 @@ window.toggleFolder = (fid) => {
 window.moverSessao = async (sessionId, folderId) => {
     if (DB.moverSessaoParaPasta) { await DB.moverSessaoParaPasta(sessionId, folderId || null); carregarListaSessoes(); }
 };
-window.criarPastaUI = async () => {
-    const nome = prompt(window.T ? window.T("folder_prompt_name") : "Nome da pasta:", "");
-    if (nome && nome.trim() !== "" && DB.criarPasta) {
-        const f = await DB.criarPasta(nome.trim());
-        if (f && f.id) window.__openFolders[f.id] = true;
-        carregarListaSessoes();
-    }
+window.__folderEditId = null;
+window.criarPastaUI = () => {
+    window.__folderEditId = null;
+    const t = document.getElementById('folder-modal-title');
+    if (t) t.textContent = window.T ? window.T('folder_new_title') : 'Nova pasta';
+    const inp = document.getElementById('folder-name-input');
+    if (inp) inp.value = '';
+    window.openModal('modal-folder-name');
+    if (inp) setTimeout(() => inp.focus(), 60);
 };
-window.renomearPastaUI = async (fid, atual) => {
-    const novo = prompt(window.T ? window.T("folder_prompt_name") : "Nome da pasta:", atual);
-    if (novo && novo.trim() !== "" && DB.renomearPasta) { await DB.renomearPasta(fid, novo.trim()); carregarListaSessoes(); }
+window.renomearPastaUI = (fid, atual) => {
+    window.__folderEditId = fid;
+    const t = document.getElementById('folder-modal-title');
+    if (t) t.textContent = window.T ? window.T('folder_rename_title') : 'Renomear pasta';
+    const inp = document.getElementById('folder-name-input');
+    if (inp) inp.value = atual || '';
+    window.openModal('modal-folder-name');
+    if (inp) setTimeout(() => { inp.focus(); inp.select(); }, 60);
+};
+window.confirmarPasta = async () => {
+    const inp = document.getElementById('folder-name-input');
+    const nome = (inp ? inp.value : '').trim();
+    if (!nome) { if (inp) inp.focus(); return; }
+    if (window.__folderEditId) {
+        if (DB.renomearPasta) await DB.renomearPasta(window.__folderEditId, nome);
+    } else {
+        if (DB.criarPasta) { const f = await DB.criarPasta(nome); if (f && f.id) window.__openFolders[f.id] = true; }
+    }
+    window.__folderEditId = null;
+    window.closeModal('modal-folder-name');
+    carregarListaSessoes();
+};
+window.abrirContaSidebar = () => {
+    window.openModal('modal-config');
+    const ctx = JSON.parse(localStorage.getItem('cyborg_current_session') || '{}');
+    if (ctx.registered && window.abrirCfgPanel) setTimeout(() => window.abrirCfgPanel('conta'), 70);
+};
+window.atualizarIdentidadeSidebar = () => {
+    const ctx = JSON.parse(localStorage.getItem('cyborg_current_session') || '{}');
+    let nome = ctx.userName ? capitalizeName(String(ctx.userName).split(/\s+/)[0]) : '';
+    if (!nome) nome = window.T ? window.T('guest_label') : 'Visitante';
+    const nEl = document.getElementById('sidebar-username'); if (nEl) nEl.textContent = nome;
+    const aEl = document.getElementById('sidebar-avatar'); if (aEl) aEl.textContent = (nome || 'V').charAt(0).toUpperCase();
 };
 window.deletarPastaUI = async (fid) => {
     const msg = window.T ? window.T("folder_delete_confirm") : "Excluir esta pasta? As conversas dentro dela não serão apagadas, apenas soltas.";
@@ -679,6 +714,7 @@ window.handleChatSubmit = async (e) => {
             if (loaderEl) loaderEl.remove();
         } else if (resultado && resultado.response && !resultado.error) {
             if (resultado.sessionId) currentSessionId = resultado.sessionId;
+            if (window.carregarListaSessoes) window.carregarListaSessoes();
 
             const rawText   = resultado.response;
             let htmlFinal   = typeof marked !== 'undefined' ? marked.parse(rawText) : rawText;
@@ -1083,6 +1119,7 @@ window.salvarConta = async (btn) => {
     if (res.email) ctx.email = res.email;
     localStorage.setItem('cyborg_current_session', JSON.stringify(ctx));
     if (typeof DB !== 'undefined' && DB.user && res.email) DB.user.email = res.email;
+    if (window.atualizarIdentidadeSidebar) window.atualizarIdentidadeSidebar();
     document.getElementById('acc-edit-newpass').value = '';
     document.getElementById('acc-edit-curpass').value = '';
     msg.textContent = window.T ? window.T('cfg_account_ok') : 'Dados atualizados!'; msg.classList.add('ok');
