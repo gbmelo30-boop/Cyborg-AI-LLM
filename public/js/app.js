@@ -736,6 +736,8 @@ $(document).ready(function() {
         if (loadingSequence) loadingSequence.classList.add('fade-out');
         setTimeout(() => {
             if (startButton) startButton.classList.add('fade-in');
+            var introNext = document.getElementById('intro-next');
+            if (introNext) introNext.classList.add('ready');
         }, 300);
     }, 4000);
 });
