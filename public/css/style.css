@@ -104,9 +104,10 @@ footer p {
     backdrop-filter: blur(4px);
 }
 .theme-box { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; }
-#theme-switcher svg { width: 20px; height: 20px; fill: #ffffff; transition: fill 0.3s; }
-body.light-theme #theme-switcher svg { fill: #000000; }
-#theme-switcher:hover svg { fill: var(--led-static-blue); }
+#theme-switcher svg { width: 20px; height: 20px; fill: #7d8590; transition: fill 0.3s; }
+body.light-theme #theme-switcher svg { fill: #57606a; }
+#theme-switcher:hover svg { fill: #e6edf3; }
+body.light-theme #theme-switcher:hover svg { fill: #24292f; }
 
 .dark-icon { display: none; }
 .light-icon { display: block; }
