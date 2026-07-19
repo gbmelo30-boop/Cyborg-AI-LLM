@@ -447,6 +447,11 @@ window.applyLang = function(lang){
     if (wt && window.saudacao) { var g = window.saudacao(ctxL.userName || ''); wt.textContent = g; window.__welcomeGreeting = g; }
     var lt = document.getElementById('chat-landing-text');
     if (lt && window.saudacao) { lt.textContent = window.saudacao(ctxL.userName || ''); }
+    if (window.__welcomeActive && window.mostrarBoasVindas && window.saudacao) {
+      var wm = document.getElementById('welcome-msg');
+      if (wm) wm.remove();
+      window.mostrarBoasVindas(window.saudacao(ctxL.userName || ''));
+    }
   } catch (e) {}
   const st = document.getElementById('rag-status'); if (st) st.textContent = window.useRag ? window.T('on') : window.T('off');
 };

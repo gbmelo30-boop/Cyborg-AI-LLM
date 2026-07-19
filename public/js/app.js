@@ -830,8 +830,10 @@ window.mostrarBoasVindas = function(texto) {
     const cont = __chatCont();
     if (cont) cont.classList.remove('landing');
     window.__welcomeGreeting = texto;
-    window.__welcomeActive = false;
+    window.__welcomeActive = true;
     if (typeof addMessage === 'function') addMessage(BOT_NAME, texto, false);
+    const hist = document.getElementById('chat-history');
+    if (hist && hist.lastElementChild) hist.lastElementChild.id = 'welcome-msg';
 };
 window.encerrarBoasVindas = function() {
     if (!window.__welcomeActive) return;
