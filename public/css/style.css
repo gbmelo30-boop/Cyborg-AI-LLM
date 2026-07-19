@@ -102,32 +102,31 @@ footer p {
     top: 20px; right: 20px;
     cursor: pointer;
     display: flex;
-    border: 1px solid var(--border-color);
+    border: 1px solid #30363d;
     border-radius: 6px;
-    background-color: rgba(0,0,0,0.5);
-    transition: border-color 0.3s;
+    background-color: #161616;
+    transition: border-color 0.3s, background-color 0.3s;
     z-index: 20;
-    backdrop-filter: blur(4px);
 }
-.theme-box { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; }
-#theme-switcher svg { width: 20px; height: 20px; fill: #7d8590; transition: fill 0.3s; }
+.theme-box { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+body.light-theme #theme-switcher, body.light-theme #intro-next { background-color: #f6f8fa; border-color: #d0d7de; }
+#theme-switcher svg { width: 18px; height: 18px; fill: #7d8590; transition: fill 0.3s; }
 body.light-theme #theme-switcher svg { fill: #57606a; }
 #theme-switcher:hover svg { fill: #e6edf3; }
 body.light-theme #theme-switcher:hover svg { fill: #24292f; }
 
 #intro-next {
     position: absolute;
-    top: 20px; right: 78px;
+    top: 20px; right: 66px;
     cursor: pointer;
     display: flex;
-    border: 1px solid var(--border-color);
+    border: 1px solid #30363d;
     border-radius: 6px;
-    background-color: rgba(0,0,0,0.5);
-    transition: border-color 0.3s;
+    background-color: #161616;
+    transition: border-color 0.3s, background-color 0.3s;
     z-index: 20;
-    backdrop-filter: blur(4px);
 }
-#intro-next svg { width: 20px; height: 20px; fill: #7d8590; transition: fill 0.3s; }
+#intro-next svg { width: 18px; height: 18px; fill: #7d8590; transition: fill 0.3s; }
 body.light-theme #intro-next svg { fill: #57606a; }
 #intro-next:hover svg { fill: #e6edf3; }
 body.light-theme #intro-next:hover svg { fill: #24292f; }
