@@ -1438,7 +1438,7 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
     }
     .cyborg-chat-container.landing .input-area { transform: translateY(-40vh); }
     /* no estado inicial (campo no meio) o icone de expandir nao aparece */
-    .cyborg-chat-container.landing #expand-button { display: none; }
+    .cyborg-chat-container.landing #expand-button { display: flex; }
     .chat-history { padding-left: max(6%, calc((100% - 780px) / 2)); padding-right: max(6%, calc((100% - 780px) / 2)); }
 }
 
