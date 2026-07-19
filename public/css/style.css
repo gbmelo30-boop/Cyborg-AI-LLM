@@ -867,7 +867,7 @@ body.light-theme #view-chat {
     margin-bottom: 20px; border-bottom: 1px solid var(--border-color);
     padding-bottom: 10px;
 }
-.modal-title { color: var(--led-static-blue); font-weight: bold; text-transform: uppercase; }
+.modal-title { color: var(--primary-text-color); font-weight: bold; text-transform: uppercase; }
 .close-modal { background: none; border: none; color: var(--secondary-text-color); font-size: 1.5em; cursor: pointer; }
 
 .slide { display: none; }
@@ -1574,10 +1574,10 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 .modal-box { max-height: 88vh; display: flex; flex-direction: column; }
 .modal-box .modal-content { overflow-y: auto; }
 @media (max-width: 640px) {
-    .modal-overlay { align-items: flex-end; }
+    .modal-overlay { align-items: center; }
     .modal-box {
-        width: 100%; max-width: 100%; padding: 16px 16px 26px; max-height: 88vh;
-        border-radius: 18px 18px 0 0; border-left: none; border-right: none; border-bottom: none;
+        width: 92%; max-width: 92%; padding: 18px 16px; max-height: 85vh;
+        border-radius: 14px;
     }
     .modal-title { font-size: 0.95em; }
     .cfg-row { font-size: 0.9rem; padding: 15px 8px; }
