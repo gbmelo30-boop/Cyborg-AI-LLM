@@ -606,6 +606,8 @@ window.addMessage = function(author, content, isHtml = false, timestamp = null) 
     container.appendChild(bubbleDiv);
     historyDiv.appendChild(container);
 
+    if (isBot && isHtml && window.renderCharts) window.renderCharts(bubbleDiv);
+
     if (isUser || isNearBottom) {
         historyDiv.scrollTop = historyDiv.scrollHeight;
     }
@@ -683,6 +685,7 @@ window.handleChatSubmit = async (e) => {
 
             if (bubbleEl) {
                 bubbleEl.innerHTML = htmlFinal;
+                if (window.renderCharts) window.renderCharts(bubbleEl);
                 bubbleEl.classList.remove('fade-in');
                 void bubbleEl.offsetWidth;         // reflow p/ reiniciar a animacao
                 bubbleEl.classList.add('msg-appear');
@@ -1088,4 +1091,63 @@ window.togglePw = (btn) => {
 // Interrompe a geracao em andamento (aborta a requisicao no cliente)
 window.interromperGeracao = () => {
     if (window.__chatAbort) { try { window.__chatAbort.abort(); } catch (e) {} }
+};
+
+
+// ==============================================================================
+// GRÁFICOS: converte blocos ```chart {JSON} em graficos de barra/pizza (Chart.js)
+// ==============================================================================
+window.renderCharts = function(scope) {
+    if (typeof Chart === 'undefined') return;
+    const root = scope || document;
+    const blocks = root.querySelectorAll('code.language-chart');
+    blocks.forEach(code => {
+        let cfg;
+        try { cfg = JSON.parse((code.textContent || '').trim()); } catch (e) { return; }
+        const type = String(cfg.type || 'bar').toLowerCase();
+        if (['bar', 'pie', 'doughnut'].indexOf(type) === -1) return;
+        const labels = Array.isArray(cfg.labels) ? cfg.labels : [];
+        const data = Array.isArray(cfg.data) ? cfg.data.map(Number) : [];
+        if (!labels.length || !data.length) return;
+
+        const wrap = document.createElement('div');
+        wrap.className = 'chart-wrap';
+        const canvas = document.createElement('canvas');
+        wrap.appendChild(canvas);
+        const pre = code.closest('pre') || code;
+        pre.replaceWith(wrap);
+
+        const cs = getComputedStyle(document.body);
+        const txt = (cs.getPropertyValue('--primary-text-color') || '#fff').trim();
+        const grid = 'rgba(125,133,144,0.25)';
+        const palette = ['#1E40AF', '#3b82f6', '#60a5fa', '#93c5fd', '#2563eb', '#1d4ed8', '#7dd3fc', '#bfdbfe'];
+        const isCircular = (type === 'pie' || type === 'doughnut');
+
+        new Chart(canvas, {
+            type: type,
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: cfg.title || '',
+                    data: data,
+                    backgroundColor: isCircular ? palette : '#1E40AF',
+                    borderColor: isCircular ? (cs.getPropertyValue('--chat-header-bg') || '#0a0a0a').trim() : '#1E40AF',
+                    borderWidth: isCircular ? 2 : 0,
+                    borderRadius: isCircular ? 0 : 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: isCircular, position: 'bottom', labels: { color: txt } },
+                    title: { display: !!cfg.title, text: cfg.title || '', color: txt, font: { size: 14 } }
+                },
+                scales: isCircular ? {} : {
+                    x: { ticks: { color: txt }, grid: { display: false } },
+                    y: { ticks: { color: txt }, grid: { color: grid }, beginAtZero: true }
+                }
+            }
+        });
+    });
 };

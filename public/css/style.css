@@ -1631,3 +1631,15 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 @media (max-width: 640px) {
     .modal-box-hub { width: 100%; max-width: 100%; }
 }
+
+/* ==== Gráficos (Chart.js) dentro das respostas ==== */
+.chart-wrap {
+    position: relative;
+    height: 300px;
+    max-width: 100%;
+    margin: 14px 0 6px;
+    padding: 12px;
+    background: var(--bot-message-bg, rgba(255,255,255,0.03));
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+}
