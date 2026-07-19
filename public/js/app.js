@@ -837,14 +837,17 @@ window.mostrarBoasVindas = function(texto) {
     if (typeof addMessage === 'function') addMessage(BOT_NAME, texto, false);
     const hist = document.getElementById('chat-history');
     if (hist && hist.lastElementChild) hist.lastElementChild.id = 'welcome-msg';
+    if (window.mostrarSugestoes) window.mostrarSugestoes(true);
 };
 window.encerrarBoasVindas = function() {
+    if (window.mostrarSugestoes) window.mostrarSugestoes(false);
     if (!window.__welcomeActive) return;
     window.__welcomeActive = false;
     const cont = __chatCont();
     if (cont) cont.classList.remove('landing');
 };
 window.esconderBoasVindas = function() {
+    if (window.mostrarSugestoes) window.mostrarSugestoes(false);
     window.__welcomeActive = false;
     const cont = __chatCont();
     if (cont) cont.classList.remove('landing');
@@ -1159,4 +1162,29 @@ window.renderCharts = function(scope) {
             }
         });
     });
+};
+
+// ===================== Sugestões de partida (tela inicial do chat) =====================
+window.renderSugestoes = function() {
+    const cont = document.getElementById('chat-suggestions');
+    if (!cont) return;
+    const arr = (window.I18N && window.I18N[window.currentLang] && window.I18N[window.currentLang].suggestions)
+             || (window.I18N && window.I18N.pt && window.I18N.pt.suggestions) || [];
+    cont.innerHTML = '';
+    arr.forEach(function(txt){
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'chat-suggestion'; b.textContent = txt;
+        b.onclick = function(){
+            const inp = document.getElementById('user-input');
+            if (inp) inp.value = txt;
+            if (window.handleChatSubmit) window.handleChatSubmit();
+        };
+        cont.appendChild(b);
+    });
+};
+window.mostrarSugestoes = function(show) {
+    const cont = document.getElementById('chat-suggestions');
+    if (!cont) return;
+    if (show) { window.renderSugestoes(); cont.classList.add('show'); }
+    else cont.classList.remove('show');
 };
