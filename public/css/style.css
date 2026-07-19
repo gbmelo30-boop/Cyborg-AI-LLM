@@ -1579,7 +1579,11 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 
 /* ==== Modal + Configurações responsivos ==== */
 .modal-box { max-height: 88vh; display: flex; flex-direction: column; }
-.modal-box .modal-content { overflow-y: auto; }
+.modal-box .modal-content { overflow-y: auto; scrollbar-width: thin; scrollbar-color: #7d8590 transparent; }
+.modal-box .modal-content::-webkit-scrollbar { width: 8px; }
+.modal-box .modal-content::-webkit-scrollbar-thumb { background: #7d8590; border-radius: 8px; }
+.modal-box .modal-content::-webkit-scrollbar-thumb:hover { background: #9aa4af; }
+.modal-box .modal-content::-webkit-scrollbar-track { background: transparent; }
 @media (max-width: 640px) {
     .modal-overlay { align-items: center; }
     .modal-box {
