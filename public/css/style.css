@@ -1320,6 +1320,14 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
     background: var(--bot-message-bg); padding: 1px 5px; border-radius: 4px;
     font-family: 'Share Tech Mono', monospace; font-size: 0.9em;
 }
+.message-bubble pre {
+    background: var(--bot-message-bg); border: 1px solid var(--border-color);
+    border-radius: 10px; padding: 12px 14px; margin: 12px 0; overflow-x: auto;
+    font-family: 'Share Tech Mono', monospace; font-size: 0.86em; line-height: 1.5;
+}
+.message-bubble pre code {
+    background: none; padding: 0; border-radius: 0; font-size: 1em; white-space: pre;
+}
 
 
 /* ============================================================================== */
