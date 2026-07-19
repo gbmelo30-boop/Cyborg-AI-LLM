@@ -255,13 +255,19 @@ FECHAMENTO:
         system_content = SYSTEM_PROMPT
 
         if estilo == "mais_filosofico":
-            system_content += ("\n\nAJUSTE DE ESTILO: aprofunde a densidade filosófica e conceitual da "
-                               "reflexão, explorando com mais vagar as fronteiras híbridas e as implicações "
-                               "mais amplas — sem jamais perder o vínculo com o caso concreto do usuário.")
+            system_content += ("\n\nAJUSTE DE ESTILO (MÁXIMO FILOSÓFICO): leve a reflexão ao ponto mais alto de "
+                               "densidade filosófica e conceitual possível. Aprofunde ao extremo o hibridismo, as "
+                               "fronteiras dissolvidas entre humano e máquina, as agências distribuídas, o "
+                               "conhecimento situado e parcial e a potência de subverter as tecnologias; puxe ao "
+                               "limite a perspectiva ciborgue e provoque o usuário à reflexão mais profunda "
+                               "possível — sem jamais nomear autores nem teorias e sem perder o vínculo com o caso "
+                               "concreto que ele trouxe.")
         elif estilo == "menos_filosofico":
-            system_content += ("\n\nAJUSTE DE ESTILO: seja mais direto, concreto e acessível, com menos "
-                               "densidade filosófica e linguagem mais simples, mantendo ainda assim o olhar "
-                               "crítico e as boas perguntas ao final.")
+            system_content += ("\n\nAJUSTE DE ESTILO (UM POUCO MAIS DIRETO): seja um pouco mais direto e conciso, "
+                               "reduzindo LEVEMENTE a densidade filosófica e usando linguagem mais simples. Ainda "
+                               "assim, continue sendo um chatbot essencialmente filosófico: mantenha o olhar "
+                               "crítico, o ponto de vista ciborgue e as boas provocações — apenas de forma um "
+                               "pouco mais enxuta e acessível.")
 
         if memoria:
             system_content += ("\n\nPERFIL DO USUÁRIO (uso interno; incorpore com muita leveza e só quando "

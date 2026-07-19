@@ -1028,6 +1028,8 @@ function __aplicarPrefsUI(prefs){
     const badge = document.getElementById('memory-state-badge');
     if (tgl) tgl.checked = !!prefs.memory_enabled;
     if (txt) txt.value = prefs.memory_text || '';
+    const cnt = document.getElementById('memory-count');
+    if (cnt && txt) cnt.textContent = (txt.value.length) + '/500';
     if (badge){
         const ready = !!prefs.memory_ready;
         badge.textContent = ready ? (window.T ? window.T('mem_ready') : 'pronta') : (window.T ? window.T('mem_collecting') : 'coletando');
