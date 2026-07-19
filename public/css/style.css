@@ -21,6 +21,9 @@ body {
     --secondary-text-color: #e6edf3;
     --tertiary-text-color: #d0d7de;
     --led-static-blue: #1E40AF;
+    --neutral-line: #7d8590;
+    --neutral-fill: #3d444d;
+    --neutral-on: #e6edf3;
     --led-glow: rgba(30, 64, 175, 0.7);
     --loader-bar-bg: #22272e;
     --border-color: #30363d;
@@ -36,6 +39,9 @@ body.light-theme {
     --secondary-text-color: #333333;
     --tertiary-text-color: #555555;
     --led-static-blue: #0056b3;
+    --neutral-line: #57606a;
+    --neutral-fill: #d0d7de;
+    --neutral-on: #24292f;
     --led-glow: rgba(0, 86, 179, 0.8);
     --loader-bar-bg: #e0e0e0;
     --border-color: #cccccc;
@@ -125,7 +131,7 @@ body.light-theme #theme-switcher:hover svg { fill: #24292f; }
 body.light-theme #intro-next svg { fill: #57606a; }
 #intro-next:hover svg { fill: #e6edf3; }
 body.light-theme #intro-next:hover svg { fill: #24292f; }
-#intro-next:hover { border-color: var(--led-static-blue); }
+#intro-next:hover { border-color: var(--neutral-line); }
 
 .dark-icon { display: none; }
 .light-icon { display: block; }
@@ -352,7 +358,7 @@ body.light-theme #view-auth {
     transition: border-color 0.3s;
     cursor: pointer;
 }
-.setup-select:focus { border-color: var(--led-blue-light); }
+.setup-select:focus { border-color: var(--neutral-line); }
 
 .btn-start-research {
     width: 100%;
@@ -400,9 +406,9 @@ body.light-theme #view-auth {
 }
 .auth-tab:hover { color: var(--primary-text-color); }
 .auth-tab.active {
-    background: var(--led-static-blue);
-    color: #fff;
-    box-shadow: 0 2px 10px rgba(30, 64, 175, 0.35);
+    background: var(--neutral-fill);
+    color: var(--neutral-on);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
 }
 
 #auth-account .name-input { margin-bottom: 10px; }
@@ -415,7 +421,7 @@ body.light-theme #view-auth {
     font-family: sans-serif;
 }
 .auth-switch a {
-    color: var(--led-static-blue);
+    color: var(--neutral-line);
     font-weight: 600;
     text-decoration: none;
 }
@@ -902,7 +908,7 @@ body.light-theme #view-chat {
     margin-bottom: 4px;
 }
 .history-item:hover { background-color: var(--component-hover-bg); }
-.history-item.active-chat { background-color: rgba(30, 64, 175, 0.1); border-left: 3px solid var(--led-static-blue); }
+.history-item.active-chat { background-color: rgba(125, 133, 144, 0.14); border-left: 3px solid var(--neutral-line); }
 
 .history-title {
     flex-grow: 1;
@@ -933,11 +939,11 @@ body.light-theme #view-chat {
 }
 .btn-icon-hist:hover { background-color: rgba(255,255,255,0.1); color: var(--primary-text-color); }
 
-.btn-pin.pinned { color: var(--led-static-blue); }
+.btn-pin.pinned { color: var(--neutral-line); }
 .btn-delete:hover { color: #ff4444; }
 
 .history-search { width: 100%; padding: 12px; background: var(--bot-message-bg); border: 1px solid var(--border-color); color: var(--primary-text-color); border-radius: 8px; box-sizing: border-box; outline: none; }
-.history-search:focus { border-color: var(--led-static-blue); }
+.history-search:focus { border-color: var(--neutral-line); }
 
 @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(10px); }
@@ -1045,8 +1051,8 @@ body.light-theme #view-chat {
 }
 
 .name-input:focus {
-    border-color: var(--led-blue-light);
-    box-shadow: 0 0 0 3px rgba(0, 132, 255, 0.15);
+    border-color: var(--neutral-line);
+    box-shadow: 0 0 0 3px rgba(125, 133, 144, 0.15);
 }
 
 .name-input::placeholder {
@@ -1069,7 +1075,7 @@ body.light-theme .modal-box .slide strong {
 .switch input { opacity: 0; width: 0; height: 0; }
 .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 34px; border: 1px solid var(--border-color); }
 .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-input:checked + .slider { background-color: var(--led-static-blue); }
+input:checked + .slider { background-color: var(--neutral-fill); }
 input:checked + .slider:before { transform: translateX(26px); }
 /* ============================================================================== */
 /* Esconde as barras de rolagem (mantendo a rolagem funcional)                    */
@@ -1143,16 +1149,16 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
     border: 1px solid var(--border-color); border-radius: 8px;
     padding: 13px 46px 13px 14px; font-family: inherit; font-size: 1em; outline: none;
 }
-.admin-input:focus { border-color: var(--led-static-blue); }
+.admin-input:focus { border-color: var(--neutral-line); }
 .eye {
     position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
     background: transparent; border: none; color: var(--secondary-text-color);
     cursor: pointer; padding: 6px; display: flex; align-items: center;
 }
-.eye:hover { color: var(--led-static-blue); }
+.eye:hover { color: var(--neutral-line); }
 .btn-admin-primary {
-    width: 100%; margin-top: 16px; padding: 13px; background: var(--led-static-blue);
-    color: #ffffff; border: none; border-radius: 8px; font-family: inherit;
+    width: 100%; margin-top: 16px; padding: 13px; background: var(--neutral-fill);
+    color: var(--neutral-on); border: none; border-radius: 8px; font-family: inherit;
     font-weight: bold; letter-spacing: 1px; cursor: pointer;
 }
 .btn-admin-primary:hover { filter: brightness(1.1); }
@@ -1174,13 +1180,13 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 /* ============================================================================== */
 /* Painel admin — estatísticas e conversas                                        */
 /* ============================================================================== */
-.btn-admin-secondary { width:100%; margin-top:22px; padding:13px; background:transparent; color:var(--led-static-blue); border:1px solid var(--led-static-blue); border-radius:8px; font-family:inherit; font-weight:bold; letter-spacing:1px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
-.btn-admin-secondary:hover { background:rgba(30,64,175,0.1); }
+.btn-admin-secondary { width:100%; margin-top:22px; padding:13px; background:transparent; color:var(--neutral-line); border:1px solid var(--neutral-line); border-radius:8px; font-family:inherit; font-weight:bold; letter-spacing:1px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
+.btn-admin-secondary:hover { background:rgba(125,133,144,0.12); }
 .btn-admin-secondary svg { width:18px; height:18px; fill:currentColor; }
 .admin-subtitle { margin:20px 0 10px; font-size:0.85em; color:var(--secondary-text-color); text-transform:uppercase; letter-spacing:1px; }
 .admin-list { max-height:320px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding-right:4px; }
 .admin-list-item { background:var(--chat-bg); border:1px solid var(--border-color); border-radius:8px; padding:12px; cursor:pointer; transition:border-color .2s; }
-.admin-list-item:hover { border-color:var(--led-static-blue); }
+.admin-list-item:hover { border-color:var(--neutral-line); }
 .ali-top { display:flex; justify-content:space-between; align-items:center; gap:8px; }
 .ali-user { font-weight:bold; color:var(--primary-text-color); }
 .ali-count { font-size:0.72em; color:var(--led-static-blue); flex-shrink:0; }
@@ -1237,8 +1243,8 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
     font-family: inherit; font-size: 1em; cursor: pointer; transition: border-color .2s, color .2s, background .2s;
 }
 .lang-option:hover { background: var(--component-hover-bg); }
-.lang-option.active { border-color: var(--led-static-blue); color: var(--led-static-blue); }
-.lang-option .lang-check { opacity: 0; color: var(--led-static-blue); font-weight: bold; }
+.lang-option.active { border-color: var(--neutral-line); color: var(--neutral-line); }
+.lang-option .lang-check { opacity: 0; color: var(--neutral-line); font-weight: bold; }
 .lang-option.active .lang-check { opacity: 1; }
 
 /* ============================================================================== */
@@ -1463,7 +1469,7 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
     padding: 8px 12px; cursor: pointer; font-family: inherit; font-size: 0.85rem;
     white-space: nowrap; transition: background-color 0.15s, border-color 0.15s;
 }
-.btn-new-folder:hover { background-color: var(--component-hover-bg); border-color: var(--led-static-blue); }
+.btn-new-folder:hover { background-color: var(--component-hover-bg); border-color: var(--neutral-line); }
 .btn-new-folder svg { fill: var(--led-static-blue); }
 
 .hist-folder { border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
@@ -1495,7 +1501,7 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
     font-size: 0.72rem; padding: 2px 4px; max-width: 96px; cursor: pointer;
     font-family: inherit;
 }
-.hist-folder-select:hover { border-color: var(--led-static-blue); }
+.hist-folder-select:hover { border-color: var(--neutral-line); }
 
 
 /* ==== Configurações avançadas (versão LLM) ==== */
@@ -1515,7 +1521,7 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 }
 .cfg-seg-col .cfg-seg-btn { text-align: left; }
 .cfg-seg-btn:hover { color: var(--primary-text-color); }
-.cfg-seg-btn.active { background: var(--led-static-blue); color: #fff; }
+.cfg-seg-btn.active { background: var(--neutral-fill); color: var(--neutral-on); }
 
 .cfg-memory-body { margin-top: 12px; }
 .cfg-memory-status { font-size: 0.82rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
@@ -1529,11 +1535,11 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
     border-radius: 8px; padding: 10px 12px; font-family: inherit; font-size: 0.9rem;
     resize: vertical; outline: none; transition: border-color 0.2s;
 }
-.cfg-textarea:focus, .cfg-input:focus { border-color: var(--led-static-blue); }
+.cfg-textarea:focus, .cfg-input:focus { border-color: var(--neutral-line); }
 .cfg-input { margin-bottom: 10px; }
 .cfg-memory-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
 .cfg-btn {
-    background: var(--led-static-blue); color: #fff; border: none; border-radius: 8px;
+    background: var(--neutral-fill); color: var(--neutral-on); border: none; border-radius: 8px;
     padding: 9px 16px; cursor: pointer; font-family: inherit; font-size: 0.85rem; font-weight: 600;
     transition: filter 0.2s;
 }
@@ -1543,7 +1549,7 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
     border-radius: 8px; padding: 9px 16px; cursor: pointer; font-family: inherit; font-size: 0.85rem; font-weight: 600;
     transition: background 0.2s, border-color 0.2s;
 }
-.cfg-btn-ghost:hover { background: var(--component-hover-bg); border-color: var(--led-static-blue); }
+.cfg-btn-ghost:hover { background: var(--component-hover-bg); border-color: var(--neutral-line); }
 .cfg-btn-ghost:disabled { opacity: 0.5; cursor: default; }
 .cfg-acc-msg { font-size: 0.82rem; margin: 4px 0 10px; min-height: 1em; font-family: sans-serif; }
 .cfg-acc-msg.err { color: #d93025; }

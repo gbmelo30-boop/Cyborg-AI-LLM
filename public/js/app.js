@@ -822,13 +822,13 @@ window.__welcomeActive = false;
 window.__welcomeGreeting = '';
 function __chatCont(){ return document.querySelector('.cyborg-chat-container'); }
 window.mostrarBoasVindas = function(texto) {
+    // Saudacao agora e uma mensagem normal (canto esquerdo), em qualquer tamanho de tela.
+    // Sem o layout "landing" centralizado. O texto varia por horario (window.saudacao).
     const cont = __chatCont();
-    const txt = document.getElementById('chat-landing-text');
-    if (!cont || !txt) { if (typeof addMessage === 'function') addMessage(BOT_NAME, texto, false); return; }
+    if (cont) cont.classList.remove('landing');
     window.__welcomeGreeting = texto;
-    txt.textContent = texto;
-    cont.classList.add('landing');
-    window.__welcomeActive = true;
+    window.__welcomeActive = false;
+    if (typeof addMessage === 'function') addMessage(BOT_NAME, texto, false);
 };
 window.encerrarBoasVindas = function() {
     if (!window.__welcomeActive) return;
