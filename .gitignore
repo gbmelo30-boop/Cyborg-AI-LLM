@@ -211,3 +211,12 @@ data/
 *.db
 *.db-wal
 *.db-shm
+
+# Capacitor / Android (gerados localmente na maquina de build)
+node_modules/
+package-lock.json
+/android
+/ios
+.gradle/
+*.apk
+*.aab

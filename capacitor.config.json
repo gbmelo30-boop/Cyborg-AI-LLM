@@ -1,0 +1,9 @@
+{
+  "appId": "br.cyborgai.app",
+  "appName": "Cyborg AI",
+  "webDir": "public",
+  "server": {
+    "url": "http://200.156.26.159/chat/",
+    "cleartext": true
+  }
+}
