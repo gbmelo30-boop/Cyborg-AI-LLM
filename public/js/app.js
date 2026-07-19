@@ -9,6 +9,7 @@ let isProcessing = false;
 window.useRag = false;
 window.toggleRag = (checkbox) => {
     window.useRag = checkbox.checked;
+    if (window.DB && DB.registrarAtividade) DB.registrarAtividade('rag', checkbox.checked ? 'ativado' : 'desativado');
     const statusLabel = document.getElementById('rag-status');
     if (!statusLabel) return;
     if (window.useRag) {
@@ -1021,6 +1022,7 @@ window.setIdiomaConfig = (lang) => {
 window.setEstiloConfig = (estilo) => {
     localStorage.setItem('cyborg_estilo', estilo);
     __marcarSeg('cfg-style-seg', 'estilo', estilo);
+    if (window.DB && DB.registrarAtividade) DB.registrarAtividade('estilo', estilo);
 };
 
 function __aplicarPrefsUI(prefs){
@@ -1041,6 +1043,7 @@ function __aplicarPrefsUI(prefs){
 
 window.toggleMemoria = async (chk) => {
     if (DB.salvarPrefs) await DB.salvarPrefs({ memory_enabled: chk.checked });
+    if (DB.registrarAtividade) DB.registrarAtividade('memoria', chk.checked ? 'ativado' : 'desativado');
 };
 
 window.salvarMemoria = async (btn) => {

@@ -94,6 +94,14 @@ def init_db():
                 msgs_since INTEGER DEFAULT 0,
                 updated_at TEXT
             );
+            CREATE TABLE IF NOT EXISTS activity_log (
+                id TEXT PRIMARY KEY,
+                user_id TEXT,
+                tipo TEXT,
+                detalhe TEXT,
+                created_at TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_activity_created ON activity_log(created_at);
             """
         )
         # Valores padrão do painel admin (só inserem se ainda não existirem)
@@ -141,10 +149,38 @@ def get_bool(chave, default=False):
 
 
 def clear_history():
-    """Apaga TODAS as sessões e mensagens (não mexe nos documentos do RAG)."""
+    """Apaga TODAS as sessões, mensagens e ajustes registrados (não mexe nos documentos do RAG)."""
     with _lock, _conn() as c:
         c.execute("DELETE FROM chat_messages")
         c.execute("DELETE FROM chat_sessions")
+        c.execute("DELETE FROM activity_log")
+
+
+def add_activity(user_id, tipo, detalhe):
+    """Registra um ajuste do usuário (ativar/desativar RAG, memória, mudar estilo)."""
+    if not get_bool("gravar_no_bd", True):
+        return {"gravado": False}
+    aid = str(uuid.uuid4()); ts = now_iso()
+    with _lock, _conn() as c:
+        c.execute(
+            "INSERT INTO activity_log (id,user_id,tipo,detalhe,created_at) VALUES (?,?,?,?,?)",
+            (aid, user_id or "", (tipo or "")[:40], (detalhe or "")[:120], ts),
+        )
+    return {"id": aid, "created_at": ts}
+
+
+def list_activities(limit=1000):
+    with _conn() as c:
+        rows = c.execute(
+            "SELECT user_id,tipo,detalhe,created_at FROM activity_log ORDER BY created_at DESC LIMIT ?",
+            (limit,),
+        ).fetchall()
+    out = []
+    for r in rows:
+        d = dict(r)
+        d["participante"] = anon_label(d.get("user_id"))
+        out.append(d)
+    return out
 
 
 def list_all_sessions():

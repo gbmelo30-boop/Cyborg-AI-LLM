@@ -725,6 +725,28 @@ def admin_messages():
     return jsonify({"mensagens": db_local.get_messages(sid)})
 
 
+@app.route('/api/activity', methods=['POST'])
+def registrar_atividade():
+    """Registra um ajuste do usuário (RAG/memória/estilo) para o histórico do admin."""
+    d = request.json or {}
+    uid = (d.get('user_id') or '').strip()
+    tipo = (d.get('tipo') or '').strip()
+    detalhe = (d.get('detalhe') or '').strip()
+    if not tipo:
+        return jsonify({"error": "tipo obrigatório"}), 400
+    return jsonify(db_local.add_activity(uid, tipo, detalhe))
+
+
+@app.route('/api/admin/activity', methods=['POST'])
+def admin_activity():
+    d = request.json or {}
+    if not ADMIN_PASSWORD:
+        return jsonify({"error": "Admin não configurado no servidor (defina ADMIN_PASSWORD no api/.env)."}), 503
+    if not _admin_ok(d.get("password")):
+        return jsonify({"error": "Senha incorreta."}), 401
+    return jsonify({"atividades": db_local.list_activities()})
+
+
 @app.route('/api/guest_login', methods=['POST'])
 def guest_login():
     return jsonify({"user_id": str(uuid.uuid4()), "role": "guest"})

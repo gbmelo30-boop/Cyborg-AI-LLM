@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Cyborg AI — Painel Administrativo</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=51">
+<link rel="stylesheet" href="css/style.css?v=52">
 <style>
   body { min-height:100vh; margin:0; display:flex; align-items:center; justify-content:center;
          padding:20px; box-sizing:border-box; background:var(--bg-color, #000000); }
@@ -59,6 +59,7 @@
         <label class="switch"><input type="checkbox" id="t-rag" onchange="salvar('rag_padrao', this.checked)"><span class="slider"></span></label>
       </div>
       <button class="btn-admin-secondary" onclick="abrirStats()">Estatísticas e conversas</button>
+      <button class="btn-admin-secondary" onclick="abrirAtividades()">Ajustes dos usuários (ativar/desativar)</button>
       <button class="btn-admin-primary" style="margin-top:20px;" onclick="baixarCSV()">Baixar histórico (CSV)</button>
       <button class="btn-admin-secondary" style="margin-top:10px;" onclick="baixarXLSX()">Baixar histórico (XLSX)</button>
       <button class="btn-admin-danger" onclick="apagar()">Apagar histórico</button>
@@ -78,6 +79,11 @@
     <div id="admin-messages-view" class="hidden-admin">
       <div class="admin-subtitle" id="msg-titulo">Mensagens</div>
       <div id="mensagens-lista" class="admin-list"></div>
+    </div>
+
+    <div id="admin-activity-view" class="hidden-admin">
+      <div class="admin-subtitle">Ajustes dos usuários (ativar/desativar)</div>
+      <div id="atividades-lista" class="admin-list"></div>
     </div>
   </div>
 
@@ -188,8 +194,33 @@
       });
     } catch(e){ lista.innerHTML='<div class="admin-empty">Erro de conexão.</div>'; }
   }
+  async function abrirAtividades(){
+    hide('admin-panel'); hide('admin-stats-view'); hide('admin-messages-view'); show('admin-activity-view'); backBtn(true);
+    const lista=$('atividades-lista'); lista.innerHTML='<div class="admin-empty">Carregando...</div>';
+    try {
+      const r = await api('/api/admin/activity', { password: PW });
+      const data = await r.json().catch(()=>({}));
+      if(!r.ok){ lista.innerHTML='<div class="admin-empty">Erro ao carregar.</div>'; return; }
+      const at = data.atividades || [];
+      if(!at.length){ lista.innerHTML='<div class="admin-empty">Nenhum ajuste registrado ainda.</div>'; return; }
+      const LBL = { rag:'Respostas aprimoradas', memoria:'Memória', estilo:'Estilo de resposta' };
+      const EST = { mais_filosofico:'Mais filosófico e denso', equilibrado:'Equilibrado (padrão)', menos_filosofico:'Mais direto' };
+      lista.innerHTML='';
+      at.forEach(a=>{
+        const nome = LBL[a.tipo] || a.tipo;
+        let val = a.detalhe;
+        if(a.tipo==='estilo') val = EST[a.detalhe] || a.detalhe;
+        const div=document.createElement('div'); div.className='admin-list-item';
+        div.innerHTML =
+          '<div class="ali-top"><span class="ali-user">'+escapeHtml(a.participante||'—')+'</span><span class="ali-count">'+fmtData(a.created_at)+'</span></div>'+
+          '<div class="ali-sub">'+escapeHtml(nome)+': <strong>'+escapeHtml(val)+'</strong></div>';
+        lista.appendChild(div);
+      });
+    } catch(e){ lista.innerHTML='<div class="admin-empty">Erro de conexão.</div>'; }
+  }
   function voltar(){
-    const msgs=$('admin-messages-view'), stats=$('admin-stats-view');
+    const msgs=$('admin-messages-view'), stats=$('admin-stats-view'), acts=$('admin-activity-view');
+    if (acts && !acts.classList.contains('hidden-admin')){ hide('admin-activity-view'); show('admin-panel'); backBtn(false); return; }
     if (!msgs.classList.contains('hidden-admin')){ hide('admin-messages-view'); show('admin-stats-view'); return; }
     if (!stats.classList.contains('hidden-admin')){ hide('admin-stats-view'); show('admin-panel'); backBtn(false); return; }
   }

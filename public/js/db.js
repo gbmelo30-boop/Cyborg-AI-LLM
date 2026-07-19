@@ -169,6 +169,17 @@ const DB = {
             });
             return await r.json();
         } catch (e) { return { error: 'conexao' }; }
+    },
+
+    // Registra um ajuste do usuario (RAG/memoria/estilo) para o historico do admin
+    registrarAtividade: async (tipo, detalhe) => {
+        if (!DB.user) return;
+        try {
+            await fetch(`${API_BASE_URL}/api/activity`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: DB.user.id, tipo: tipo, detalhe: detalhe })
+            });
+        } catch (e) {}
     }
 };
 
