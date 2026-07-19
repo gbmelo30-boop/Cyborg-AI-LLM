@@ -6,7 +6,9 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Cyborg AI — Painel Administrativo</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=52">
+<link rel="stylesheet" href="css/style.css?v=53">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
 <style>
   body { min-height:100vh; margin:0; display:flex; align-items:center; justify-content:center;
          padding:20px; box-sizing:border-box; background:var(--bg-color, #000000); }
@@ -187,9 +189,16 @@
       lista.innerHTML='';
       msgs.forEach(m => {
         const div = document.createElement('div'); div.className='admin-msg '+(m.role==='user'?'admin-msg-user':'admin-msg-bot');
+        var texto;
+        if (m.role === 'user') {
+          texto = escapeHtml(m.content||'');
+        } else {
+          texto = (typeof marked !== 'undefined') ? marked.parse(m.content||'') : escapeHtml(m.content||'');
+          if (typeof DOMPurify !== 'undefined') texto = DOMPurify.sanitize(texto);
+        }
         div.innerHTML =
           '<div class="am-role">'+(m.role==='user'?'Usuário':'Cyborg AI')+' · '+fmtData(m.created_at)+'</div>'+
-          '<div class="am-text">'+escapeHtml(m.content||'')+'</div>';
+          '<div class="am-text">'+texto+'</div>';
         lista.appendChild(div);
       });
     } catch(e){ lista.innerHTML='<div class="admin-empty">Erro de conexão.</div>'; }
