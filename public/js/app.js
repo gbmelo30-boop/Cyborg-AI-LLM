@@ -503,12 +503,30 @@ window.novaConversa = () => {
 
 window.filtrarHistorico = () => { carregarListaSessoes(); }
 window.togglePin = async (id, status) => { await DB.fixarSessao(id, status); carregarListaSessoes(); };
-window.renomearConversa = async (id, atual) => {
-    const novo = prompt(window.T ? window.T("rename_prompt") : "Novo nome:", atual);
-    if(novo && novo.trim() !== "") { await DB.renomearSessao(id, novo.trim()); carregarListaSessoes(); }
+window.__renameChatId = null;
+window.renomearConversa = (id, atual) => {
+    window.__renameChatId = id;
+    const inp = document.getElementById('rename-chat-input');
+    if (inp) inp.value = atual || '';
+    window.openModal('modal-rename-chat');
+    if (inp) setTimeout(() => { inp.focus(); inp.select(); }, 60);
 };
-window.deletarSessao = async (id) => {
-    if(confirm(window.T ? window.T("confirm_delete") : "Excluir conversa?")) { await DB.deletarSessao(id); if(currentSessionId === id) novaConversa(); carregarListaSessoes(); }
+window.confirmarRenomearChat = async () => {
+    const inp = document.getElementById('rename-chat-input');
+    const nome = (inp ? inp.value : '').trim();
+    if (!nome) { if (inp) inp.focus(); return; }
+    if (window.__renameChatId) await DB.renomearSessao(window.__renameChatId, nome);
+    window.__renameChatId = null;
+    window.closeModal('modal-rename-chat');
+    carregarListaSessoes();
+};
+window.deletarSessao = (id) => {
+    window.abrirConfirm(
+        window.T ? window.T('confirm_delete_title') : 'Excluir conversa',
+        window.T ? window.T('confirm_delete_msg') : 'Tem certeza que deseja excluir esta conversa? Ela sairá da sua lista.',
+        async () => { await DB.deletarSessao(id); if (currentSessionId === id) novaConversa(); carregarListaSessoes(); },
+        window.T ? window.T('btn_delete') : 'Excluir'
+    );
 };
 
 // ----- Pastas do histórico -----
@@ -563,9 +581,13 @@ window.atualizarIdentidadeSidebar = () => {
     const nEl = document.getElementById('sidebar-username'); if (nEl) nEl.textContent = nome;
     const aEl = document.getElementById('sidebar-avatar'); if (aEl) aEl.textContent = (nome || 'V').charAt(0).toUpperCase();
 };
-window.deletarPastaUI = async (fid) => {
-    const msg = window.T ? window.T("folder_delete_confirm") : "Excluir esta pasta? As conversas dentro dela não serão apagadas, apenas soltas.";
-    if (confirm(msg) && DB.deletarPasta) { await DB.deletarPasta(fid); carregarListaSessoes(); }
+window.deletarPastaUI = (fid) => {
+    window.abrirConfirm(
+        window.T ? window.T('folder_delete_title') : 'Excluir pasta',
+        window.T ? window.T('folder_delete_confirm') : 'Excluir esta pasta? As conversas dentro dela não serão apagadas, apenas soltas.',
+        async () => { if (DB.deletarPasta) { await DB.deletarPasta(fid); carregarListaSessoes(); } },
+        window.T ? window.T('btn_delete') : 'Excluir'
+    );
 };
 
 // --- INTERFACE DO CHAT ---

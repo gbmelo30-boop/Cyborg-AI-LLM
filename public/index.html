@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Cyborg AI</title>
 
-    <link rel="stylesheet" href="css/style.css?v=56">
+    <link rel="stylesheet" href="css/style.css?v=57">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -358,15 +358,44 @@
                     </div>
                 </div>
             </div>
+
+            <div id="modal-rename-chat" class="modal-overlay">
+                <div class="modal-box" style="width:380px;">
+                    <div class="modal-header">
+                        <span class="modal-title" data-i18n="rename_chat_title">Renomear conversa</span>
+                        <button class="close-modal" onclick="closeModal('modal-rename-chat')">&times;</button>
+                    </div>
+                    <div class="modal-content">
+                        <input type="text" id="rename-chat-input" class="cfg-input" maxlength="60" placeholder="Novo nome" data-i18n-ph="rename_chat_ph" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();confirmarRenomearChat();}">
+                        <button type="button" class="cfg-btn cfg-btn-full" onclick="confirmarRenomearChat()" data-i18n="cfg_memory_save">Salvar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="modal-confirm" class="modal-overlay">
+                <div class="modal-box" style="width:380px;">
+                    <div class="modal-header">
+                        <span class="modal-title" id="confirm-title">Confirmar</span>
+                        <button class="close-modal" onclick="closeModal('modal-confirm')">&times;</button>
+                    </div>
+                    <div class="modal-content">
+                        <p id="confirm-msg" class="cfg-hint" style="margin-bottom:18px;"></p>
+                        <div class="confirm-actions">
+                            <button type="button" class="cfg-btn-ghost" onclick="closeModal('modal-confirm')" data-i18n="btn_cancel">Cancelar</button>
+                            <button type="button" class="cfg-btn cfg-btn-danger" id="confirm-ok-btn">Excluir</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
-    <script src="js/i18n.js?v=20"></script>
+    <script src="js/i18n.js?v=21"></script>
     <script src="js/config.js?v=7"></script>
     <script src="js/db.js?v=12"></script>
     <script src="js/cyborg.js?v=11"></script>
     <script src="js/orb.js?v=8"></script>
-    <script src="js/app.js?v=37"></script>
+    <script src="js/app.js?v=38"></script>
 
 </body>
 </html>
