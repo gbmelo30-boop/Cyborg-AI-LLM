@@ -436,7 +436,7 @@ window.carregarListaSessoes = async () => {
     (folders || []).forEach(f => {
         const itens = porPasta[f.id] || [];
         if (termoBusca && itens.length === 0) return; // durante busca, esconde pastas sem match
-        const isOpen = window.__openFolders[f.id] !== false; // aberto por padrao
+        const isOpen = termoBusca ? true : (window.__openFolders[f.id] !== false); // aberto por padrao; durante a busca, sempre aberto p/ revelar o resultado
         const block = document.createElement('div');
         block.className = 'hist-folder';
         block.innerHTML = `

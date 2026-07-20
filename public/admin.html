@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Cyborg AI — Painel Administrativo</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=68">
+<link rel="stylesheet" href="css/style.css?v=69">
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
 <style>
@@ -55,7 +55,7 @@
       </div>
       <button class="btn-admin-secondary" onclick="abrirStats()">Estatísticas e conversas</button>
       <button class="btn-admin-primary" style="margin-top:20px;" onclick="abrirDownload()">Baixar histórico</button>
-      <button class="btn-admin-danger" onclick="apagar()">Apagar histórico</button>
+      <button class="btn-admin-danger" onclick="abrirApagar()">Apagar histórico</button>
       <div class="admin-toast" id="toast"></div>
     </div>
 
@@ -78,6 +78,13 @@
       <div class="admin-subtitle">Baixar histórico</div>
       <button class="btn-admin-primary" onclick="baixarXLSX()">Baixar em XLSX</button>
       <button class="btn-admin-secondary" style="margin-top:10px;" onclick="baixarCSV()">Baixar em CSV</button>
+    </div>
+
+    <div id="admin-delete-view" class="hidden-admin">
+      <div class="admin-subtitle">Apagar histórico</div>
+      <button class="btn-admin-danger" onclick="apagarTudo()">Apagar TODO o histórico</button>
+      <div class="admin-subtitle" style="margin-top:20px;">Ou apague uma conversa específica</div>
+      <div id="delete-lista" class="admin-list"></div>
     </div>
 
   </div>
@@ -134,14 +141,51 @@
       t.innerText="CSV baixado ✓"; setTimeout(()=>t.innerText="",2000);
     } catch(e){ t.innerText="Erro."; }
   }
-  async function apagar(){
-    if (!confirm('Apagar TODAS as sessões e mensagens do banco? Esta ação não pode ser desfeita.')) return;
-    const t=$('toast'); t.innerText="Apagando...";
+  async function abrirApagar(){
+    hide('admin-panel'); hide('admin-stats-view'); hide('admin-messages-view'); hide('admin-download-view'); show('admin-delete-view'); backBtn(true);
+    await carregarApagarLista();
+  }
+  async function carregarApagarLista(){
+    const lista=$('delete-lista'); lista.innerHTML='<div class="admin-empty">Carregando...</div>';
+    try {
+      const r = await api('/api/admin/sessions', { password: PW });
+      const data = await r.json().catch(()=>({}));
+      if(!r.ok){ lista.innerHTML='<div class="admin-empty">Erro ao carregar.</div>'; return; }
+      if (data.stats) pintaStats(data.stats);
+      const sess = data.sessoes || [];
+      if(!sess.length){ lista.innerHTML='<div class="admin-empty">Nenhuma conversa registrada.</div>'; return; }
+      lista.innerHTML='';
+      sess.forEach(sx => {
+        const usuario = sx.user_name || sx.user_id || '—';
+        const tipoBadge = sx.tipo==='conta' ? '<span class="adm-tipo adm-tipo-conta">Conta</span>' : '<span class="adm-tipo adm-tipo-visitante">Visitante</span>';
+        const div=document.createElement('div'); div.className='admin-list-item adm-del-item';
+        div.innerHTML =
+          '<div class="adm-del-info">'
+          + '<div class="ali-top"><span class="ali-user">'+escapeHtml(usuario)+' '+tipoBadge+'</span><span class="ali-count">'+sx.n_msgs+' msg</span></div>'
+          + '<div class="ali-sub">'+fmtData(sx.created_at)+'</div>'
+          + '<div class="ali-title">'+escapeHtml(sx.title||'')+'</div>'
+          + '</div>'
+          + '<button class="adm-del-btn" title="Apagar esta conversa"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>';
+        div.querySelector('.adm-del-btn').onclick = () => apagarConversa(sx.id);
+        lista.appendChild(div);
+      });
+    } catch(e){ lista.innerHTML='<div class="admin-empty">Erro de conexão.</div>'; }
+  }
+  async function apagarConversa(id){
+    if(!confirm('Apagar esta conversa permanentemente? Ela some para o usuário e não sai mais nos exports.')) return;
+    try {
+      const r = await api('/api/admin/delete_session', { password: PW, session_id: id });
+      const data = await r.json().catch(()=>({}));
+      if(r.ok){ if(data.stats) pintaStats(data.stats); await carregarApagarLista(); }
+    } catch(e){}
+  }
+  async function apagarTudo(){
+    if(!confirm('Apagar TODAS as sessões e mensagens do banco? Esta ação não pode ser desfeita.')) return;
     try {
       const r = await api('/api/admin/clear_history', { password: PW });
       const data = await r.json().catch(()=>({}));
-      if (r.ok){ pintaStats(data.stats); t.innerText="Histórico apagado ✓"; setTimeout(()=>t.innerText="",2000); } else t.innerText = data.error || "Falha.";
-    } catch(e){ t.innerText="Erro."; }
+      if(r.ok){ if(data.stats) pintaStats(data.stats); await carregarApagarLista(); }
+    } catch(e){}
   }
   async function abrirStats(){
     hide('admin-panel'); hide('admin-messages-view'); show('admin-stats-view'); backBtn(true);
@@ -161,8 +205,9 @@
         const div = document.createElement('div'); div.className='admin-list-item';
         div.onclick = () => verMensagens(sx.id, sx);
         const usuario = sx.user_name || sx.user_id || '—';
+        const tipoBadge = sx.tipo==='conta' ? '<span class="adm-tipo adm-tipo-conta">Conta</span>' : '<span class="adm-tipo adm-tipo-visitante">Visitante</span>';
         div.innerHTML =
-          '<div class="ali-top"><span class="ali-user">'+escapeHtml(usuario)+'</span><span class="ali-count">'+sx.n_msgs+' msg</span></div>'+
+          '<div class="ali-top"><span class="ali-user">'+escapeHtml(usuario)+' '+tipoBadge+'</span><span class="ali-count">'+sx.n_msgs+' msg</span></div>'+
           '<div class="ali-sub">'+fmtData(sx.created_at)+'</div>'+
           '<div class="ali-title">'+escapeHtml(sx.title||'')+'</div>';
         lista.appendChild(div);
@@ -209,7 +254,8 @@
     hide('admin-panel'); hide('admin-stats-view'); hide('admin-messages-view'); show('admin-download-view'); backBtn(true);
   }
   function voltar(){
-    const msgs=$('admin-messages-view'), stats=$('admin-stats-view'), dl=$('admin-download-view');
+    const msgs=$('admin-messages-view'), stats=$('admin-stats-view'), dl=$('admin-download-view'), del=$('admin-delete-view');
+    if (del && !del.classList.contains('hidden-admin')){ hide('admin-delete-view'); show('admin-panel'); backBtn(false); return; }
     if (dl && !dl.classList.contains('hidden-admin')){ hide('admin-download-view'); show('admin-panel'); backBtn(false); return; }
     if (!msgs.classList.contains('hidden-admin')){ hide('admin-messages-view'); show('admin-stats-view'); return; }
     if (!stats.classList.contains('hidden-admin')){ hide('admin-stats-view'); show('admin-panel'); backBtn(false); return; }

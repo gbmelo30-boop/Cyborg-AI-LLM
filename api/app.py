@@ -706,6 +706,21 @@ def admin_clear_history():
     return jsonify({"ok": True, "stats": db_local.stats()})
 
 
+@app.route('/api/admin/delete_session', methods=['POST'])
+def admin_delete_session():
+    """Apaga permanentemente uma conversa especifica (some para o usuario e dos exports)."""
+    d = request.json or {}
+    if not ADMIN_PASSWORD:
+        return jsonify({"error": "Admin não configurado no servidor (defina ADMIN_PASSWORD no api/.env)."}), 503
+    if not _admin_ok(d.get("password")):
+        return jsonify({"error": "Senha incorreta."}), 401
+    sid = d.get("session_id")
+    if not sid:
+        return jsonify({"error": "session_id obrigatório"}), 400
+    db_local.delete_session_hard(sid)
+    return jsonify({"ok": True, "stats": db_local.stats()})
+
+
 @app.route('/api/admin/sessions', methods=['POST'])
 def admin_sessions():
     d = request.json or {}

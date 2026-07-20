@@ -162,6 +162,13 @@ def clear_history():
         c.execute("DELETE FROM activity_log")
 
 
+def delete_session_hard(session_id):
+    """Apaga PERMANENTEMENTE uma conversa (sessão + mensagens) do banco — uso admin."""
+    with _lock, _conn() as c:
+        c.execute("DELETE FROM chat_messages WHERE session_id=?", (session_id,))
+        c.execute("DELETE FROM chat_sessions WHERE id=?", (session_id,))
+
+
 def add_activity(user_id, tipo, detalhe):
     """Registra um ajuste do usuário (ativar/desativar RAG, memória, mudar estilo)."""
     if not get_bool("gravar_no_bd", True):
@@ -195,7 +202,8 @@ def list_all_sessions():
         rows = c.execute(
             "SELECT s.id, s.user_id, s.user_name, s.title, s.created_at, "
             "       s.oculta_para_usuario, "
-            "       (SELECT COUNT(*) FROM chat_messages m WHERE m.session_id = s.id) AS n_msgs "
+            "       (SELECT COUNT(*) FROM chat_messages m WHERE m.session_id = s.id) AS n_msgs, "
+            "       (SELECT COUNT(*) FROM users u WHERE u.id = s.user_id) AS is_conta "
             "FROM chat_sessions s ORDER BY s.created_at DESC"
         ).fetchall()
     out = []
@@ -203,6 +211,7 @@ def list_all_sessions():
         d = dict(r)
         d["participante"] = anon_label(d.get("user_id"))
         d["user_name"] = d["participante"]
+        d["tipo"] = "conta" if d.get("is_conta") else "visitante"
         out.append(d)
     return out
 
