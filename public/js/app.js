@@ -1284,3 +1284,12 @@ window.moverParaPasta = async (fid) => {
     window.closeModal('modal-move-folder');
     carregarListaSessoes();
 };
+
+// ===================== Confirmação genérica (telinha) =====================
+window.abrirConfirm = (titulo, msg, onOk, okLabel) => {
+    const t = document.getElementById('confirm-title'); if (t) t.textContent = titulo || 'Confirmar';
+    const m = document.getElementById('confirm-msg'); if (m) m.textContent = msg || '';
+    const b = document.getElementById('confirm-ok-btn');
+    if (b) { b.textContent = okLabel || 'Confirmar'; b.onclick = async () => { window.closeModal('modal-confirm'); if (onOk) await onOk(); }; }
+    window.openModal('modal-confirm');
+};

@@ -1720,7 +1720,7 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 .side-panel-history::-webkit-scrollbar-thumb { background: #7d8590; border-radius: 8px; }
 .side-panel-history::-webkit-scrollbar-thumb:hover { background: #9aa4af; }
 .side-panel-history::-webkit-scrollbar-track { background: transparent; }
-.side-panel-footer { flex-shrink: 0; border-top: 1px solid var(--border-color); padding: 8px; display: flex; flex-direction: column; gap: 2px; }
+.side-panel-footer { flex-shrink: 0; padding: 8px; display: flex; flex-direction: column; gap: 2px; }
 .sp-footer-links { display: flex; flex-direction: column; gap: 2px; }
 .sp-link { display: flex; align-items: center; gap: 12px; width: 100%; background: transparent; border: none; color: var(--secondary-text-color); cursor: pointer; padding: 9px 10px; border-radius: 8px; font-family: inherit; font-size: 0.88rem; text-align: left; transition: background .15s, color .15s; }
 .sp-link:hover { background: var(--component-hover-bg); color: var(--primary-text-color); }
