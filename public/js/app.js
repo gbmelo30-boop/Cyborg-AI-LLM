@@ -1293,3 +1293,9 @@ window.abrirConfirm = (titulo, msg, onOk, okLabel) => {
     if (b) { b.textContent = okLabel || 'Confirmar'; b.onclick = async () => { window.closeModal('modal-confirm'); if (onOk) await onOk(); }; }
     window.openModal('modal-confirm');
 };
+
+// ===================== Rodape recolhivel da sidebar =====================
+window.toggleFooterMenu = () => {
+    const f = document.querySelector('.side-panel-footer');
+    if (f) f.classList.toggle('open');
+};
