@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Cyborg AI — Painel Administrativo</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=62">
+<link rel="stylesheet" href="css/style.css?v=63">
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
 <style>
@@ -169,7 +169,7 @@
         const usuario = sx.user_name || sx.user_id || '—';
         div.innerHTML =
           '<div class="ali-top"><span class="ali-user">'+escapeHtml(usuario)+'</span><span class="ali-count">'+sx.n_msgs+' msg</span></div>'+
-          '<div class="ali-sub">'+escapeHtml(sx.grupo||'')+' · '+escapeHtml(sx.tema||'')+' · '+fmtData(sx.created_at)+'</div>'+
+          '<div class="ali-sub">'+fmtData(sx.created_at)+'</div>'+
           '<div class="ali-title">'+escapeHtml(sx.title||'')+'</div>';
         lista.appendChild(div);
       });
@@ -197,7 +197,7 @@
           if (typeof DOMPurify !== 'undefined') texto = DOMPurify.sanitize(texto);
         }
         div.innerHTML =
-          '<div class="am-role">'+(m.role==='user'?'Usuário':'Cyborg AI')+' · '+fmtData(m.created_at)+'</div>'+
+          '<div class="am-role">'+(m.role==='user'?'Usuário':'Cyborg AI')+' · '+fmtData(m.created_at)+(m.role==='user'?'':(' · RAG: '+(m.used_rag?'sim':'não')+' · estilo: '+(m.estilo||'equilibrado')))+'</div>'+
           '<div class="am-text">'+texto+'</div>';
         lista.appendChild(div);
       });

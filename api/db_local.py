@@ -45,8 +45,6 @@ def init_db():
                 id TEXT PRIMARY KEY,
                 user_id TEXT NOT NULL,
                 title TEXT NOT NULL,
-                grupo TEXT DEFAULT 'Uso Individual',
-                tema TEXT DEFAULT 'Geral',
                 user_name TEXT,
                 is_pinned INTEGER DEFAULT 0,
                 oculta_para_usuario INTEGER DEFAULT 0,
@@ -107,6 +105,14 @@ def init_db():
         # Valores padrão do painel admin (só inserem se ainda não existirem)
         c.execute("INSERT OR IGNORE INTO config (chave,valor) VALUES ('gravar_no_bd','true')")
         c.execute("INSERT OR IGNORE INTO config (chave,valor) VALUES ('rag_padrao','false')")
+        # Remocao de campos legados (grupo/tema) do banco de dados
+        for _leg in ("grupo", "tema"):
+            try:
+                _cols = [r[1] for r in c.execute("PRAGMA table_info(chat_sessions)").fetchall()]
+                if _leg in _cols:
+                    c.execute(f"ALTER TABLE chat_sessions DROP COLUMN {_leg}")
+            except Exception:
+                pass
         # Migracao leve: coluna folder_id em chat_sessions (pastas do historico)
         try:
             cols = [r[1] for r in c.execute("PRAGMA table_info(chat_sessions)").fetchall()]
@@ -187,7 +193,7 @@ def list_all_sessions():
     """Todas as sessões (inclui ocultas) com contagem de mensagens — uso admin."""
     with _conn() as c:
         rows = c.execute(
-            "SELECT s.id, s.user_id, s.user_name, s.grupo, s.tema, s.title, s.created_at, "
+            "SELECT s.id, s.user_id, s.user_name, s.title, s.created_at, "
             "       s.oculta_para_usuario, "
             "       (SELECT COUNT(*) FROM chat_messages m WHERE m.session_id = s.id) AS n_msgs "
             "FROM chat_sessions s ORDER BY s.created_at DESC"
@@ -368,7 +374,7 @@ def get_user_messages(user_id, limit=40):
     return [r["content"] for r in rows][::-1]
 
 
-def create_session(user_id, title, grupo="Uso Individual", tema="Geral", user_name=None):
+def create_session(user_id, title, user_name=None):
     sid = str(uuid.uuid4())
     ts = now_iso()
     user_name = (user_name or "").strip() or None  # visitante fica None (anonimo); usuario logado guarda o nome
@@ -376,25 +382,25 @@ def create_session(user_id, title, grupo="Uso Individual", tema="Geral", user_na
     titulo = (raw[:30] + "...") if len(raw) > 30 else (raw or "Nova conversa")
     if not get_bool("gravar_no_bd", True):
         # Gravação desligada no painel admin: sessão efêmera (não persiste)
-        return {"id": sid, "user_id": user_id, "title": titulo, "grupo": grupo,
-                "tema": tema, "user_name": user_name, "is_pinned": False,
+        return {"id": sid, "user_id": user_id, "title": titulo,
+                "user_name": user_name, "is_pinned": False,
                 "created_at": ts, "gravado": False}
     with _lock, _conn() as c:
         c.execute(
-            "INSERT INTO chat_sessions (id,user_id,title,grupo,tema,user_name,is_pinned,oculta_para_usuario,created_at)"
-            " VALUES (?,?,?,?,?,?,0,0,?)",
-            (sid, user_id, titulo, grupo, tema, user_name, ts),
+            "INSERT INTO chat_sessions (id,user_id,title,user_name,is_pinned,oculta_para_usuario,created_at)"
+            " VALUES (?,?,?,?,0,0,?)",
+            (sid, user_id, titulo, user_name, ts),
         )
     return {
-        "id": sid, "user_id": user_id, "title": titulo, "grupo": grupo,
-        "tema": tema, "user_name": user_name, "is_pinned": False, "created_at": ts,
+        "id": sid, "user_id": user_id, "title": titulo,
+        "user_name": user_name, "is_pinned": False, "created_at": ts,
     }
 
 
 def list_sessions(user_id):
     with _conn() as c:
         rows = c.execute(
-            "SELECT id,title,grupo,tema,is_pinned,folder_id,created_at FROM chat_sessions"
+            "SELECT id,title,is_pinned,folder_id,created_at FROM chat_sessions"
             " WHERE user_id=? AND oculta_para_usuario=0"
             " ORDER BY is_pinned DESC, created_at DESC",
             (user_id,),
@@ -487,7 +493,7 @@ def add_message(session_id, role, content, used_rag=False, estilo=None):
 def get_messages(session_id):
     with _conn() as c:
         rows = c.execute(
-            "SELECT role,content,created_at FROM chat_messages WHERE session_id=? ORDER BY created_at ASC",
+            "SELECT role,content,used_rag,estilo,created_at FROM chat_messages WHERE session_id=? ORDER BY created_at ASC",
             (session_id,),
         ).fetchall()
     return [dict(r) for r in rows]
@@ -511,13 +517,13 @@ def _fmt_dt(iso_str):
 
 def export_rows(user_id=None):
     """Retorna [cabecalho] + linhas, pareando cada pergunta com a resposta seguinte.
-    Colunas: session_id, participante, grupo, tema, pergunta, resposta, data_hora."""
-    q = "SELECT id,user_id,user_name,grupo,tema,created_at FROM chat_sessions"
+    Colunas: session_id, participante, pergunta, resposta, rag, estilo, data_hora."""
+    q = "SELECT id,user_id,user_name,created_at FROM chat_sessions"
     params = []
     if user_id:
         q += " WHERE user_id=?"; params.append(user_id)
     q += " ORDER BY created_at ASC"
-    rows = [["session_id", "participante", "grupo", "tema", "pergunta", "resposta", "rag", "estilo", "data_hora"]]
+    rows = [["session_id", "participante", "pergunta", "resposta", "rag", "estilo", "data_hora"]]
     with _conn() as c:
         sessions = c.execute(q, params).fetchall()
         for s in sessions:
@@ -541,7 +547,7 @@ def export_rows(user_id=None):
                         i += 2
                     else:
                         i += 1
-                    rows.append([s["id"], participante, s["grupo"], s["tema"], pergunta, resposta, rag_flag, estilo_v, data_hora])
+                    rows.append([s["id"], participante, pergunta, resposta, rag_flag, estilo_v, data_hora])
                 else:
                     i += 1
     return rows

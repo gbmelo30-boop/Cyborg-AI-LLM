@@ -519,8 +519,7 @@ def criar_sessao():
     if not d.get('user_id'):
         return jsonify({"error": "user_id obrigatório"}), 400
     sessao = db_local.create_session(
-        d['user_id'], d.get('title', ''),
-        d.get('grupo', 'Uso Individual'), d.get('tema', 'Geral'), d.get('user_name')
+        d['user_id'], d.get('title', ''), d.get('user_name')
     )
     return jsonify(sessao)
 
