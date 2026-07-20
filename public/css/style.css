@@ -250,9 +250,8 @@ body.light-theme .loading-text { text-shadow: none; }
     opacity: 0;
     position: absolute;
     pointer-events: none;
-    border: 1px solid transparent;
+    border: none;
     padding: 15px 30px;
-    border-radius: 4px;
     text-shadow: 0 2px 4px rgba(0,0,0,0.8);
     cursor: pointer;
     background: transparent;
@@ -264,10 +263,8 @@ body.light-theme #start-button { text-shadow: none; font-weight: 800; }
 #start-button:hover {
     color: var(--primary-text-color);
     text-shadow: none;
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.35);
 }
-body.light-theme #start-button:hover { background: rgba(0, 0, 0, 0.05); border-color: rgba(0,0,0,0.25); }
+body.light-theme #start-button:hover { color: #000; }
 
 footer { position: absolute; bottom: 20px; font-size: 0.8em; z-index: 20; padding: 0 20px; }
 footer p { color: var(--tertiary-text-color); font-style: italic; font-family: 'Poppins', sans-serif; text-shadow: 0 1px 2px rgba(0,0,0,0.5); margin: 0; }
