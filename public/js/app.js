@@ -296,6 +296,7 @@ window.handleAccountSubmit = async () => {
                 userName: firstName
             };
         }
+        if (btn) btn.innerText = orig;
         window.systemLog(`Login: ${firstName}`);
         if (window.irParaChat) window.irParaChat();
     } catch (e) {

@@ -141,9 +141,10 @@ def generate_llm_response(messages, use_rag=True, tema_pesquisa="Geral", user_na
                 logger.info("Contexto RAG encontrado e injetado.")
 
         clausula_nome = (
-            f" O nome do usuário é {user_name}. Dirija-se a ele pelo nome ao longo de toda a"
-            " conversa, de forma natural e calorosa, sempre que for conveniente, e não apenas na"
-            " primeira mensagem; evite apenas repetir o nome a ponto de soar artificial." if user_name else ""
+            f" O nome do usuário é {user_name}. Use o nome com MUITA parcimônia: no máximo de forma"
+            " esporádica e só quando soar realmente natural (por exemplo, uma única vez, num momento"
+            " oportuno). NÃO abra as respostas com o nome nem o repita a cada mensagem; na maioria das"
+            " respostas, simplesmente não use o nome. O importante é soar humano e natural, nunca mecânico." if user_name else ""
         )
 
         SYSTEM_PROMPT = f"""Você é o Cyborg AI, um assistente que provoca reflexões críticas para revelar aspectos de sistemas que não estão explícitos na fala inicial do usuário.
@@ -268,6 +269,10 @@ FECHAMENTO:
                                "assim, continue sendo um chatbot essencialmente filosófico: mantenha o olhar "
                                "crítico, o ponto de vista ciborgue e as boas provocações — apenas de forma um "
                                "pouco mais enxuta e acessível.")
+
+        system_content += ("\n\nLEMBRETE (vale para QUALQUER estilo): toda resposta deve ser SEMPRE reflexiva e "
+                           "provocativa, jamais meramente informativa, seca ou uma resposta pronta. O caráter "
+                           "reflexivo é inegociável e não muda com o estilo escolhido.")
 
         if memoria:
             system_content += ("\n\nPERFIL DO USUÁRIO (uso interno; incorpore com muita leveza e só quando "
