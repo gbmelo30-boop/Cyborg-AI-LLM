@@ -1750,3 +1750,8 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 
 /* Botao "Iniciar interacao": sem retangulo de foco/toque (sem retangulo de toque) */
 #start-button, #start-button:focus, #start-button:focus-visible, #start-button:active { outline: none; -webkit-tap-highlight-color: transparent; }
+
+/* Selos acima das respostas no painel admin (RAG / estilo) */
+.am-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 6px; }
+.am-tag { font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; background: rgba(127,127,127,0.15); color: var(--secondary-text-color); border: 1px solid var(--border-color); }
+.am-tag-on { background: rgba(34,197,94,0.16); color: #22c55e; border-color: rgba(34,197,94,0.35); }

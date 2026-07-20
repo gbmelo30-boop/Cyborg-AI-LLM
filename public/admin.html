@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Cyborg AI — Painel Administrativo</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=63">
+<link rel="stylesheet" href="css/style.css?v=64">
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
 <style>
@@ -61,7 +61,6 @@
         <label class="switch"><input type="checkbox" id="t-rag" onchange="salvar('rag_padrao', this.checked)"><span class="slider"></span></label>
       </div>
       <button class="btn-admin-secondary" onclick="abrirStats()">Estatísticas e conversas</button>
-      <button class="btn-admin-secondary" onclick="abrirAtividades()">Ajustes dos usuários (ativar/desativar)</button>
       <button class="btn-admin-primary" style="margin-top:20px;" onclick="baixarCSV()">Baixar histórico (CSV)</button>
       <button class="btn-admin-secondary" style="margin-top:10px;" onclick="baixarXLSX()">Baixar histórico (XLSX)</button>
       <button class="btn-admin-danger" onclick="apagar()">Apagar histórico</button>
@@ -83,10 +82,6 @@
       <div id="mensagens-lista" class="admin-list"></div>
     </div>
 
-    <div id="admin-activity-view" class="hidden-admin">
-      <div class="admin-subtitle">Ajustes dos usuários (ativar/desativar)</div>
-      <div id="atividades-lista" class="admin-list"></div>
-    </div>
   </div>
 
 <script>
@@ -99,6 +94,7 @@
   const backBtn = v => { $('admin-back').style.display = v ? 'inline-block' : 'none'; };
   const api = (path, body) => fetch(path, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
   const escapeHtml = x => String(x==null?'':x).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const estiloLabel = e => ({mais_filosofico:'Mais filosófico e denso', equilibrado:'Equilibrado', menos_filosofico:'Mais direto'})[e] || (e||'Equilibrado');
   const fmtData = iso => { try { return new Date(iso).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); } catch(e){ return iso||''; } };
   const pintaStats = st => { if(!st) return; $('s-sessoes').innerText=st.sessoes; $('s-mensagens').innerText=st.mensagens; $('s-docs').innerText=st.documentos; };
   const pintaConfig = d => { $('t-gravar').checked=!!d.config.gravar_no_bd; $('t-rag').checked=!!d.config.rag_padrao; pintaStats(d.stats); };
@@ -196,40 +192,23 @@
           texto = (typeof marked !== 'undefined') ? marked.parse(m.content||'') : escapeHtml(m.content||'');
           if (typeof DOMPurify !== 'undefined') texto = DOMPurify.sanitize(texto);
         }
+        var meta = '';
+        if (m.role !== 'user') {
+          meta = '<div class="am-tags">'
+               + '<span class="am-tag '+(m.used_rag?'am-tag-on':'')+'">RAG '+(m.used_rag?'ativado':'desativado')+'</span>'
+               + '<span class="am-tag">Estilo: '+escapeHtml(estiloLabel(m.estilo))+'</span>'
+               + '</div>';
+        }
         div.innerHTML =
-          '<div class="am-role">'+(m.role==='user'?'Usuário':'Cyborg AI')+' · '+fmtData(m.created_at)+(m.role==='user'?'':(' · RAG: '+(m.used_rag?'sim':'não')+' · estilo: '+(m.estilo||'equilibrado')))+'</div>'+
+          '<div class="am-role">'+(m.role==='user'?'Usuário':'Cyborg AI')+' · '+fmtData(m.created_at)+'</div>'+
+          meta +
           '<div class="am-text">'+texto+'</div>';
         lista.appendChild(div);
       });
     } catch(e){ lista.innerHTML='<div class="admin-empty">Erro de conexão.</div>'; }
   }
-  async function abrirAtividades(){
-    hide('admin-panel'); hide('admin-stats-view'); hide('admin-messages-view'); show('admin-activity-view'); backBtn(true);
-    const lista=$('atividades-lista'); lista.innerHTML='<div class="admin-empty">Carregando...</div>';
-    try {
-      const r = await api('/api/admin/activity', { password: PW });
-      const data = await r.json().catch(()=>({}));
-      if(!r.ok){ lista.innerHTML='<div class="admin-empty">Erro ao carregar.</div>'; return; }
-      const at = data.atividades || [];
-      if(!at.length){ lista.innerHTML='<div class="admin-empty">Nenhum ajuste registrado ainda.</div>'; return; }
-      const LBL = { rag:'Respostas aprimoradas', memoria:'Memória', estilo:'Estilo de resposta' };
-      const EST = { mais_filosofico:'Mais filosófico e denso', equilibrado:'Equilibrado (padrão)', menos_filosofico:'Mais direto' };
-      lista.innerHTML='';
-      at.forEach(a=>{
-        const nome = LBL[a.tipo] || a.tipo;
-        let val = a.detalhe;
-        if(a.tipo==='estilo') val = EST[a.detalhe] || a.detalhe;
-        const div=document.createElement('div'); div.className='admin-list-item';
-        div.innerHTML =
-          '<div class="ali-top"><span class="ali-user">'+escapeHtml(a.participante||'—')+'</span><span class="ali-count">'+fmtData(a.created_at)+'</span></div>'+
-          '<div class="ali-sub">'+escapeHtml(nome)+': <strong>'+escapeHtml(val)+'</strong></div>';
-        lista.appendChild(div);
-      });
-    } catch(e){ lista.innerHTML='<div class="admin-empty">Erro de conexão.</div>'; }
-  }
   function voltar(){
-    const msgs=$('admin-messages-view'), stats=$('admin-stats-view'), acts=$('admin-activity-view');
-    if (acts && !acts.classList.contains('hidden-admin')){ hide('admin-activity-view'); show('admin-panel'); backBtn(false); return; }
+    const msgs=$('admin-messages-view'), stats=$('admin-stats-view');
     if (!msgs.classList.contains('hidden-admin')){ hide('admin-messages-view'); show('admin-stats-view'); return; }
     if (!stats.classList.contains('hidden-admin')){ hide('admin-stats-view'); show('admin-panel'); backBtn(false); return; }
   }
