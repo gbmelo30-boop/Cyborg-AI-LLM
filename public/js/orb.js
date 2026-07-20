@@ -57,17 +57,19 @@ function iniciarAnelIntro() {
                 x0: 0, y0: 0, cxp: 0, cyp: 0
             });
         }
-        const m = 60, desl = Math.min(W, H) * 0.4;
+        const desl = Math.min(W, H) * 0.4;
+        const Rstart = Math.min(W, H) * 0.42;   // circulo invisivel onde as particulas ja nascem agrupadas
         for (const p of pts) {
-            // origem em qualquer uma das quatro bordas (cima, baixo, esquerda, direita)
-            const b = Math.floor(Math.random() * 4);
-            if (b === 0)      { p.x0 = Math.random() * W;                 p.y0 = -m - Math.random() * H * 0.35; }
-            else if (b === 1) { p.x0 = Math.random() * W;                 p.y0 = H + m + Math.random() * H * 0.35; }
-            else if (b === 2) { p.x0 = -m - Math.random() * W * 0.35;     p.y0 = Math.random() * H; }
-            else              { p.x0 = W + m + Math.random() * W * 0.35;  p.y0 = Math.random() * H; }
-            // ponto de controle deslocado aleatoriamente -> trajetoria curva e imprevisivel
-            p.cxp = (p.x0 + cx) / 2 + (Math.random() - 0.5) * desl;
-            p.cyp = (p.y0 + cy) / 2 + (Math.random() - 0.5) * desl;
+            // origem SOBRE um circulo grande, perto do angulo final -> as particulas ja nascem em forma de circulo
+            const aStart = p.ang + (Math.random() - 0.5) * 0.22;
+            const rStart = Rstart * (0.86 + Math.random() * 0.28);
+            p.x0 = cx + Math.cos(aStart) * rStart;
+            p.y0 = cy + Math.sin(aStart) * rStart;
+            // ponto de controle deslocado tangencialmente -> convergencia em espiral suave (mais elegante)
+            const midA = aStart + 0.55;
+            const midR = rStart * 0.5;
+            p.cxp = cx + Math.cos(midA) * midR + (Math.random() - 0.5) * desl * 0.22;
+            p.cyp = cy + Math.sin(midA) * midR + (Math.random() - 0.5) * desl * 0.22;
         }
     }
 
@@ -78,7 +80,7 @@ function iniciarAnelIntro() {
         ctx.lineWidth = rr * 0.20;
         // dispersao de brilho em ambos os temas (claro e escuro)
         ctx.shadowColor = 'rgba(' + COR + ', ' + (alfa * 0.85).toFixed(3) + ')';
-        ctx.shadowBlur = rr * 0.22;
+        ctx.shadowBlur = rr * 0.28;
         ctx.beginPath();
         ctx.arc(cx, cy, rr, 0, Math.PI * 2);
         ctx.stroke();

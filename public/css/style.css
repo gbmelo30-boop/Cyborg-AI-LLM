@@ -1750,3 +1750,6 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 .confirm-actions { display: flex; gap: 8px; justify-content: flex-end; }
 .cfg-btn-danger { background: #b3261e; color: #fff; border: none; }
 .cfg-btn-danger:hover { filter: brightness(1.1); }
+
+/* Botao "Iniciar interacao": sem retangulo de foco/toque (sem retangulo de toque) */
+#start-button, #start-button:focus, #start-button:focus-visible, #start-button:active { outline: none; -webkit-tap-highlight-color: transparent; }
