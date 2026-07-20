@@ -1054,6 +1054,10 @@ window.initConfigModal = async () => {
     __marcarSeg('cfg-style-seg', 'estilo', localStorage.getItem('cyborg_estilo') || 'equilibrado');
     __cfgRowVals();
 
+    // Reflete o estado atual do RAG no toggle "Respostas aprimoradas" (ativo por padrao)
+    const ragTgl = document.getElementById('rag-toggle');
+    if (ragTgl) ragTgl.checked = !!window.useRag;
+
     const ctx = JSON.parse(localStorage.getItem('cyborg_current_session') || '{}');
     const rowMem = document.getElementById('cfg-row-memory');
     const rowAcc = document.getElementById('cfg-row-account');
