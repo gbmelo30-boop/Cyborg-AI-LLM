@@ -925,28 +925,53 @@ window.iniciarRastroLoader = function(loaderEl) {
     const canvas = loaderEl.querySelector('.loader-parts');
     if (!canvas || !canvas.getContext) return;
     const ctx = canvas.getContext('2d');
-    const COR = '30, 64, 175'; // azul escuro, igual ao anel da marca
+    // Rastro AMARELO (#FFB300), igual ao anel enquanto gera. O rastro so roda
+    // durante o carregamento (amarelo); ao concluir (azul) ou dar erro (vermelho)
+    // ele ja foi parado -> sem rastro nesses estados.
+    const COR = '255, 179, 0';
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const S = 54;
     canvas.width = S * dpr; canvas.height = S * dpr;
     const cx = S / 2, cy = S / 2, R = 9;
     let ang = 0;
+    const parts = [];
     loaderEl.__rastro = true;
     const passo = () => {
         if (!loaderEl.__rastro) { ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,S,S); return; }
         requestAnimationFrame(passo);
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        ctx.globalCompositeOperation = 'destination-out';
-        ctx.fillStyle = 'rgba(0,0,0,0.085)';
-        ctx.fillRect(0, 0, S, S);
+        ctx.clearRect(0, 0, S, S);
+        ang += 0.10;
+        const hx = cx + Math.cos(ang) * R, hy = cy + Math.sin(ang) * R;
+        // emite particulas na ponta que giram
+        for (let i = 0; i < 2; i++) {
+            const a = ang + (Math.random() - 0.5) * 0.7;
+            const sp = 0.12 + Math.random() * 0.35;
+            parts.push({ x: hx, y: hy,
+                vx: Math.cos(a) * sp + (Math.random()-0.5)*0.18,
+                vy: Math.sin(a) * sp + (Math.random()-0.5)*0.18,
+                life: 1, size: 0.8 + Math.random() * 1.7 });
+        }
+        if (parts.length > 90) parts.splice(0, parts.length - 90);
+        ctx.globalCompositeOperation = 'lighter';
+        for (let i = parts.length - 1; i >= 0; i--) {
+            const p = parts[i];
+            p.x += p.vx; p.y += p.vy; p.life -= 0.035;
+            if (p.life <= 0) { parts.splice(i, 1); continue; }
+            const r = Math.max(0.1, p.size * p.life) * 2.0;
+            const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
+            g.addColorStop(0, 'rgba(' + COR + ', ' + (0.9 * p.life).toFixed(3) + ')');
+            g.addColorStop(1, 'rgba(' + COR + ', 0)');
+            ctx.fillStyle = g;
+            ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill();
+        }
+        // ponta mais brilhante
+        const hg = ctx.createRadialGradient(hx, hy, 0, hx, hy, 3.2);
+        hg.addColorStop(0, 'rgba(' + COR + ', 0.95)');
+        hg.addColorStop(1, 'rgba(' + COR + ', 0)');
+        ctx.fillStyle = hg;
+        ctx.beginPath(); ctx.arc(hx, hy, 3.2, 0, Math.PI * 2); ctx.fill();
         ctx.globalCompositeOperation = 'source-over';
-        ang += 0.09;
-        const x = cx + Math.cos(ang) * R, y = cy + Math.sin(ang) * R;
-        const g = ctx.createRadialGradient(x, y, 0, x, y, 2.8);
-        g.addColorStop(0, 'rgba(' + COR + ', 0.95)');
-        g.addColorStop(1, 'rgba(' + COR + ', 0)');
-        ctx.fillStyle = g;
-        ctx.beginPath(); ctx.arc(x, y, 2.8, 0, Math.PI * 2); ctx.fill();
     };
     requestAnimationFrame(passo);
 };
