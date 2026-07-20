@@ -6,7 +6,7 @@ let currentSessionId = null;
 let isProcessing = false;
 
 // --- CONTROLE DO RAG (biblioteca de PDFs) — exclusivo da versão LLM ---
-window.useRag = false;
+window.useRag = true;
 window.toggleRag = (checkbox) => {
     window.useRag = checkbox.checked;
     const statusLabel = document.getElementById('rag-status');
@@ -862,7 +862,7 @@ async function aplicarConfigServidor() {
         const r = await fetch(`${API_BASE_URL}/api/config`);
         if (!r.ok) return;
         const cfg = await r.json();
-        window.useRag = !!cfg.rag_padrao;
+        window.useRag = true;
         const chk = document.getElementById('rag-toggle');
         const st = document.getElementById('rag-status');
         if (chk) chk.checked = window.useRag;
