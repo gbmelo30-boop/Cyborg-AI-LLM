@@ -427,7 +427,7 @@ body.light-theme #view-auth {
 .error-message { color: #d93025; text-align: center; margin-top: 15px; display: none; font-size: 0.9em; font-family: 'Poppins', sans-serif; }
 
 .brand-main-content { display: flex; flex-direction: column; align-items: center; gap: 20px; margin-bottom: auto; padding-top: 50px; }
-.cyborg-title { color: var(--primary-text-dark); font-family: 'Poppins', sans-serif; font-size: 2.2em; letter-spacing: 4px; text-align: center; }
+.cyborg-title { color: var(--primary-text-dark); font-family: 'Times New Roman', Times, serif; font-size: 2.2em; letter-spacing: 4px; text-align: center; }
 
 @media (max-width: 880px) {
     .login-card {
@@ -564,7 +564,7 @@ body.light-theme #view-chat {
 .brand-container { display: flex; align-items: center; gap: 10px; }
 
 .cyborg-brand {
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Times New Roman', Times, serif;
     font-size: 1.2em;
     letter-spacing: 2px;
     color: var(--primary-text-color);
@@ -1332,7 +1332,7 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 /* ============================================================================== */
 .brand { margin: 0; line-height: 1; }
 .brand-svg { width: min(72vw, 460px); height: auto; display: block; margin: 0 auto; overflow: visible; }
-.brand-text { font-family: 'Poppins', sans-serif; font-size: 60px; letter-spacing: 6px; }
+.brand-text { font-family: 'Times New Roman', Times, serif; font-size: 60px; letter-spacing: 6px; }
 .brand-text tspan {
     fill: var(--primary-text-color);
     stroke: var(--primary-text-color);
