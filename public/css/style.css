@@ -1720,8 +1720,12 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 .side-panel-history::-webkit-scrollbar-thumb { background: #7d8590; border-radius: 8px; }
 .side-panel-history::-webkit-scrollbar-thumb:hover { background: #9aa4af; }
 .side-panel-history::-webkit-scrollbar-track { background: transparent; }
-.side-panel-footer { flex-shrink: 0; border-top: 1px solid var(--border-color); padding: 8px; display: flex; align-items: center; gap: 6px; }
-.sp-user { flex: 1; display: flex; align-items: center; gap: 10px; background: transparent; border: none; color: var(--primary-text-color); cursor: pointer; padding: 6px 8px; border-radius: 10px; font-family: inherit; text-align: left; min-width: 0; transition: background .15s; }
+.side-panel-footer { flex-shrink: 0; border-top: 1px solid var(--border-color); padding: 8px; display: flex; flex-direction: column; gap: 2px; }
+.sp-footer-links { display: flex; flex-direction: column; gap: 2px; }
+.sp-link { display: flex; align-items: center; gap: 12px; width: 100%; background: transparent; border: none; color: var(--secondary-text-color); cursor: pointer; padding: 9px 10px; border-radius: 8px; font-family: inherit; font-size: 0.88rem; text-align: left; transition: background .15s, color .15s; }
+.sp-link:hover { background: var(--component-hover-bg); color: var(--primary-text-color); }
+.sp-link svg { width: 19px; height: 19px; fill: currentColor; flex-shrink: 0; }
+.sp-user { width: 100%; display: flex; align-items: center; gap: 10px; background: transparent; border: none; color: var(--primary-text-color); cursor: pointer; padding: 9px 10px; border-radius: 10px; font-family: inherit; text-align: left; min-width: 0; transition: background .15s; border-top: 1px solid var(--border-color); margin-top: 4px; }
 .sp-user:hover { background: var(--component-hover-bg); }
 .sp-user-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--neutral-fill); color: var(--neutral-on); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
 .sp-user-name { font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
