@@ -1788,6 +1788,20 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
     .brand-svg { max-width: 62vw; }
     /* saudacao inicial: campo colado embaixo continua valendo */
     .cyborg-chat-container.landing .chat-history { flex: 0 0 auto; }
+
+    /* telas centralizadas: fluem do topo e rolam se nao couber (evita corte em paisagem) */
+    #view-welcome, #view-auth { justify-content: flex-start; overflow-y: auto; padding-top: 18px; padding-bottom: 18px; }
+
+    /* tela de boas-vindas: compacta para caber na altura reduzida */
+    .welcome-wrap { gap: 9px; max-width: 520px; }
+    .welcome-ring { width: 56px; height: 56px; margin-bottom: 0; }
+    .welcome-brand { font-size: 1.35em; letter-spacing: 4px; }
+    .welcome-heading { font-size: 0.98rem; margin-top: 4px; }
+    .welcome-sub { font-size: 0.88rem; }
+    .welcome-advance { margin-top: 8px; padding: 11px 26px; font-size: 0.92rem; }
+
+    /* splash: anel/nome nao estouram a altura */
+    #view-intro .led-ring, .intro-orb-anchor { width: 64px; height: 64px; }
 }
 
 /* 3 pontinhos pulando (indicador de carregamento na bolha) */
