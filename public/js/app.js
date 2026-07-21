@@ -122,8 +122,9 @@ window.gsapSwitch = function(fromId, toId, kind, onDone) {
 
 window.voltarParaIntro = function() { window.switchView('view-intro'); };
 window.irParaLogin = function(event) { if(event) event.preventDefault(); window.gsapSwitch('view-intro', 'view-auth', 'fade-elegant'); };
-window.irParaLoginDoWelcome = function() { window.gsapSwitch('view-welcome', 'view-auth', 'fade-elegant'); };
+window.irParaLoginDoWelcome = function() { var b=document.getElementById('auth-back-ctrl'); if(b) b.style.display='none'; window.gsapSwitch('view-welcome', 'view-auth', 'fade-elegant'); };
 window.irParaChat = function(fromView) {
+    { const b = document.getElementById('auth-back-ctrl'); if (b) b.style.display = 'none'; }
     const mostrarSaudacao = () => {
         if (window.carregarListaSessoes) window.carregarListaSessoes();
         if (window.atualizarIdentidadeSidebar) window.atualizarIdentidadeSidebar();
@@ -605,7 +606,12 @@ window.visitanteCriarConta = () => {
     window.gsapSwitch('view-chat', 'view-auth', 'fade-elegant', () => {
         if (window.setAuthMode) window.setAuthMode('account');
         if (window.toggleRegister) window.toggleRegister();
+        const b = document.getElementById('auth-back-ctrl'); if (b) b.style.display = 'block';
     });
+};
+window.voltarParaSuaConta = () => {
+    const b = document.getElementById('auth-back-ctrl'); if (b) b.style.display = 'none';
+    window.gsapSwitch('view-auth', 'view-chat', 'fade-elegant', () => { window.openModal('modal-guest'); });
 };
 window.atualizarIdentidadeSidebar = () => {
     const ctx = JSON.parse(localStorage.getItem('cyborg_current_session') || '{}');

@@ -454,7 +454,7 @@ window.saudacao = function(firstName){
   const ask = d.greet_ask || 'Sou o Cyborg AI. Em que posso ajudar?';
   // apenas o primeiro nome, mesmo que o usuario tenha digitado o nome completo
   const first = (firstName || '').trim().split(/\s+/)[0] || '';
-  const nome = first ? (', ' + first) : '';
+  const nome = first ? (' ' + first) : '';  // sem virgula antes do nome
   return hi + ', ' + per.toLowerCase() + nome + '. ' + ask;
 };
 

@@ -1720,7 +1720,9 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 .sp-user { flex: 1; display: flex; align-items: center; gap: 10px; background: transparent; border: none; color: var(--primary-text-color); cursor: pointer; padding: 9px 10px; border-radius: 10px; font-family: inherit; text-align: left; min-width: 0; transition: background .15s; }
 .sp-user:hover { background: var(--component-hover-bg); }
 .sp-user-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--neutral-fill); color: var(--neutral-on); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
-.sp-user-name { font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sp-user-name { flex: 1; min-width: 0; font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; }
+.sp-avatar-btn { flex-shrink: 0; background: transparent; border: none; cursor: pointer; padding: 4px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background .15s; }
+.sp-avatar-btn:hover { background: var(--component-hover-bg); }
 .sp-footer-actions { display: flex; gap: 2px; flex-shrink: 0; }
 .sp-icon { background: transparent; border: none; color: var(--secondary-text-color); cursor: pointer; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: background .15s, color .15s; }
 .sp-icon:hover { background: var(--component-hover-bg); color: var(--primary-text-color); }
@@ -1857,3 +1859,6 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
     font-size: clamp(0.72rem, 2.6vw, 0.85rem);
     color: var(--secondary-text-color); opacity: 0.55; line-height: 1.4;
 }
+
+/* Seta de voltar no login (so quando veio de 'Criar conta') */
+.auth-back-ctrl { position: absolute; top: 16px; left: 16px; z-index: 30; }
