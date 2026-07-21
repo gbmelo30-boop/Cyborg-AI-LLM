@@ -122,9 +122,10 @@ window.gsapSwitch = function(fromId, toId, kind, onDone) {
 
 window.voltarParaIntro = function() { window.switchView('view-intro'); };
 window.irParaLogin = function(event) { if(event) event.preventDefault(); window.gsapSwitch('view-intro', 'view-auth', 'fade-elegant'); };
-window.irParaLoginDoWelcome = function() { var b=document.getElementById('auth-back-ctrl'); if(b) b.style.display='none'; window.gsapSwitch('view-welcome', 'view-auth', 'fade-elegant'); };
+window.irParaLoginDoWelcome = function() { var b=document.getElementById('auth-back-ctrl'); if(b) b.style.display='none'; if(typeof __setAuthTabs==='function') __setAuthTabs(true); window.gsapSwitch('view-welcome', 'view-auth', 'fade-elegant'); };
 window.irParaChat = function(fromView) {
     { const b = document.getElementById('auth-back-ctrl'); if (b) b.style.display = 'none'; }
+    if (typeof __setAuthTabs === 'function') __setAuthTabs(true);
     const mostrarSaudacao = () => {
         if (window.carregarListaSessoes) window.carregarListaSessoes();
         if (window.atualizarIdentidadeSidebar) window.atualizarIdentidadeSidebar();
@@ -596,9 +597,16 @@ window.salvarNomeVisitante = (btn) => {
     localStorage.setItem('cyborg_current_session', JSON.stringify(ctx));
     if (window.currentResearchContext) window.currentResearchContext.userName = firstName;
     if (window.atualizarIdentidadeSidebar) window.atualizarIdentidadeSidebar();
-    const wm = document.getElementById('welcome-msg');
-    if (wm) { const b = wm.querySelector('.message-bubble'); if (b && window.saudacao) b.textContent = window.saudacao(firstName); }
+    window.__refreshChatGreeting(firstName);
     window.closeModal('modal-guest');
+};
+function __setAuthTabs(show) {
+    const t = document.getElementById('auth-tabs');
+    if (t) t.style.display = show ? '' : 'none';
+}
+window.__refreshChatGreeting = (nome) => {
+    const wm = document.getElementById('welcome-msg');
+    if (wm) { const b = wm.querySelector('.message-bubble'); if (b && window.saudacao) b.textContent = window.saudacao(nome || ''); }
 };
 window.visitanteCriarConta = () => {
     window.closeModal('modal-guest');
@@ -606,6 +614,7 @@ window.visitanteCriarConta = () => {
     window.gsapSwitch('view-chat', 'view-auth', 'fade-elegant', () => {
         if (window.setAuthMode) window.setAuthMode('account');
         if (window.toggleRegister) window.toggleRegister();
+        __setAuthTabs(false); // aqui so criar conta ou entrar com conta (sem visitante)
         const b = document.getElementById('auth-back-ctrl'); if (b) b.style.display = 'block';
     });
 };
