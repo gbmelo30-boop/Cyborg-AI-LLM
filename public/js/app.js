@@ -63,7 +63,7 @@ window.closeModal = (id) => { const el = document.getElementById(id); if (el) el
 
 // --- NAVEGAÇÃO DE TELAS ---
 window.switchView = function(viewIdToShow) {
-    const views = ['view-intro', 'view-auth', 'view-chat'];
+    const views = ['view-intro', 'view-welcome', 'view-auth', 'view-chat'];
     views.forEach(id => {
         const el = document.getElementById(id);
         if(!el) return;
@@ -122,6 +122,7 @@ window.gsapSwitch = function(fromId, toId, kind, onDone) {
 
 window.voltarParaIntro = function() { window.switchView('view-intro'); };
 window.irParaLogin = function(event) { if(event) event.preventDefault(); window.gsapSwitch('view-intro', 'view-auth', 'fade-elegant'); };
+window.irParaLoginDoWelcome = function() { window.gsapSwitch('view-welcome', 'view-auth', 'fade-elegant'); };
 window.irParaChat = function(fromView) {
     const mostrarSaudacao = () => {
         if (window.carregarListaSessoes) window.carregarListaSessoes();
@@ -371,7 +372,7 @@ window.handleLogout = async () => {
     if (window.esconderBoasVindas) window.esconderBoasVindas();
     currentSessionId = null;
     document.getElementById('side-panel').classList.remove('is-open');
-    window.switchView('view-auth');
+    window.gsapSwitch('view-chat', 'view-welcome', 'fade-elegant');
 };
 
 window.abrirHistorico = function() { window.openModal('modal-historico'); };
@@ -821,7 +822,7 @@ $(document).ready(function() {
     }
     setTimeout(() => {
         if (jaLogado) { if (window.irParaChat) window.irParaChat('view-intro'); }
-        else { window.gsapSwitch('view-intro', 'view-auth', 'fade-elegant'); }
+        else { window.gsapSwitch('view-intro', 'view-welcome', 'fade-elegant'); }
     }, 4600);
 });
 
