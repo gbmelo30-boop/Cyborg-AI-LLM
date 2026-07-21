@@ -1802,6 +1802,9 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 
     /* splash: anel/nome nao estouram a altura */
     #view-intro .led-ring, .intro-orb-anchor { width: 64px; height: 64px; }
+
+    /* rodape da boas-vindas: flui junto (rolavel), nao fixo na base */
+    .welcome-footer { position: static; bottom: auto; margin-top: 14px; }
 }
 
 /* 3 pontinhos pulando (indicador de carregamento na bolha) */
@@ -1847,3 +1850,10 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 }
 .welcome-advance:hover { filter: brightness(1.1); transform: translateY(-1px); }
 .welcome-advance svg { width: 20px; height: 20px; fill: currentColor; }
+.welcome-footer {
+    position: absolute; bottom: 22px; left: 0; right: 0;
+    text-align: center; padding: 0 28px; margin: 0;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: clamp(0.72rem, 2.6vw, 0.85rem);
+    color: var(--secondary-text-color); opacity: 0.55; line-height: 1.4;
+}
