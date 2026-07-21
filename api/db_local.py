@@ -127,6 +127,13 @@ def init_db():
                 c.execute("ALTER TABLE chat_messages ADD COLUMN estilo TEXT")
         except Exception:
             pass
+        # Migracao leve: coluna estilo em user_prefs (estilo de resposta por conta)
+        try:
+            pcols = [r[1] for r in c.execute("PRAGMA table_info(user_prefs)").fetchall()]
+            if "estilo" not in pcols:
+                c.execute("ALTER TABLE user_prefs ADD COLUMN estilo TEXT DEFAULT 'equilibrado'")
+        except Exception:
+            pass
         # Anonimizacao: garante que nenhum nome real fique guardado no banco.
         c.execute("UPDATE chat_sessions SET user_name=NULL WHERE user_name IS NOT NULL")
 
@@ -320,21 +327,29 @@ def update_user(user_id, name=None, email=None, password=None):
 def get_prefs(user_id):
     with _conn() as c:
         row = c.execute(
-            "SELECT memory_enabled,memory_ready,memory_text,msgs_since FROM user_prefs WHERE user_id=?",
+            "SELECT memory_enabled,memory_ready,memory_text,msgs_since,estilo FROM user_prefs WHERE user_id=?",
             (user_id,),
         ).fetchone()
     if not row:
-        return {"memory_enabled": False, "memory_ready": False, "memory_text": "", "msgs_since": 0}
+        return {"memory_enabled": False, "memory_ready": False, "memory_text": "", "msgs_since": 0, "estilo": "equilibrado"}
     return {
         "memory_enabled": bool(row["memory_enabled"]),
         "memory_ready": bool(row["memory_ready"]),
         "memory_text": row["memory_text"] or "",
         "msgs_since": row["msgs_since"] or 0,
+        "estilo": row["estilo"] or "equilibrado",
     }
 
 
 def _ensure_prefs(c, user_id):
     c.execute("INSERT OR IGNORE INTO user_prefs (user_id,updated_at) VALUES (?,?)", (user_id, now_iso()))
+
+
+def set_estilo(user_id, estilo):
+    est = estilo if estilo in ("mais_filosofico", "equilibrado", "menos_filosofico") else "equilibrado"
+    with _lock, _conn() as c:
+        _ensure_prefs(c, user_id)
+        c.execute("UPDATE user_prefs SET estilo=?, updated_at=? WHERE user_id=?", (est, now_iso(), user_id))
 
 
 def set_memory_enabled(user_id, enabled):

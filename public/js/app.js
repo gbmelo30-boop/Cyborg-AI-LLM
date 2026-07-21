@@ -122,7 +122,7 @@ window.gsapSwitch = function(fromId, toId, kind, onDone) {
 
 window.voltarParaIntro = function() { window.switchView('view-intro'); };
 window.irParaLogin = function(event) { if(event) event.preventDefault(); window.gsapSwitch('view-intro', 'view-auth', 'fade-elegant'); };
-window.irParaChat = function() {
+window.irParaChat = function(fromView) {
     const mostrarSaudacao = () => {
         if (window.carregarListaSessoes) window.carregarListaSessoes();
         if (window.atualizarIdentidadeSidebar) window.atualizarIdentidadeSidebar();
@@ -134,7 +134,7 @@ window.irParaChat = function() {
             window.mostrarBoasVindas(window.saudacao(firstName));
         }
     };
-    window.gsapSwitch('view-auth', 'view-chat', 'depth-3d', mostrarSaudacao);
+    window.gsapSwitch(fromView || 'view-auth', 'view-chat', 'depth-3d', mostrarSaudacao);
 };
 
 function getGreeting(firstName) {
@@ -296,6 +296,8 @@ window.handleAccountSubmit = async () => {
             };
         }
         if (btn) btn.innerText = orig;
+        // carrega o estilo salvo na conta (ou padrao)
+        try { const prefs = DB.obterPrefs ? await DB.obterPrefs() : null; localStorage.setItem('cyborg_estilo', (prefs && prefs.estilo) || 'equilibrado'); } catch (e) { localStorage.setItem('cyborg_estilo', 'equilibrado'); }
         window.systemLog(`Login: ${firstName}`);
         if (window.irParaChat) window.irParaChat();
     } catch (e) {
@@ -334,6 +336,7 @@ window.handleStartResearch = async () => {
             registered: false
         };
         localStorage.setItem('cyborg_current_session', JSON.stringify(sessionData));
+        localStorage.setItem('cyborg_estilo', 'equilibrado'); // visitante sempre comeca no padrao
 
         if (typeof DB !== 'undefined') {
             DB.user    = { id: sessionData.userId, email: sessionData.email };
@@ -362,6 +365,8 @@ window.handleLogout = async () => {
         await DB.logout();
         DB.user = null;
     }
+    localStorage.removeItem('cyborg_current_session');
+    localStorage.setItem('cyborg_estilo', 'equilibrado');
     document.getElementById('chat-history').innerHTML = '';
     if (window.esconderBoasVindas) window.esconderBoasVindas();
     currentSessionId = null;
@@ -569,9 +574,37 @@ window.confirmarPasta = async () => {
     carregarListaSessoes();
 };
 window.abrirContaSidebar = () => {
-    window.openModal('modal-config');
     const ctx = JSON.parse(localStorage.getItem('cyborg_current_session') || '{}');
-    if (ctx.registered && window.abrirCfgPanel) setTimeout(() => window.abrirCfgPanel('conta'), 70);
+    if (ctx.registered) {
+        window.openModal('modal-config');
+        if (window.abrirCfgPanel) setTimeout(() => window.abrirCfgPanel('conta'), 70);
+    } else {
+        const gi = document.getElementById('guest-name-input');
+        if (gi) gi.value = ctx.userName || '';
+        window.openModal('modal-guest');
+    }
+};
+window.salvarNomeVisitante = (btn) => {
+    const inp = document.getElementById('guest-name-input');
+    const raw = (inp && inp.value || '').trim();
+    if (!raw) { if (inp) inp.focus(); return; }
+    const firstName = capitalizeName(raw.split(/\s+/)[0]);
+    const ctx = JSON.parse(localStorage.getItem('cyborg_current_session') || '{}');
+    ctx.userName = firstName;
+    localStorage.setItem('cyborg_current_session', JSON.stringify(ctx));
+    if (window.currentResearchContext) window.currentResearchContext.userName = firstName;
+    if (window.atualizarIdentidadeSidebar) window.atualizarIdentidadeSidebar();
+    const wm = document.getElementById('welcome-msg');
+    if (wm) { const b = wm.querySelector('.message-bubble'); if (b && window.saudacao) b.textContent = window.saudacao(firstName); }
+    window.closeModal('modal-guest');
+};
+window.visitanteCriarConta = () => {
+    window.closeModal('modal-guest');
+    const sp = document.getElementById('side-panel'); if (sp) sp.classList.remove('is-open');
+    window.gsapSwitch('view-chat', 'view-auth', 'fade-elegant', () => {
+        if (window.setAuthMode) window.setAuthMode('account');
+        if (window.toggleRegister) window.toggleRegister();
+    });
 };
 window.atualizarIdentidadeSidebar = () => {
     const ctx = JSON.parse(localStorage.getItem('cyborg_current_session') || '{}');
@@ -657,7 +690,6 @@ window.addMessage = function(author, content, isHtml = false, timestamp = null) 
     container.appendChild(bubbleDiv);
     historyDiv.appendChild(container);
 
-    if (isBot && isHtml && window.renderCharts) window.renderCharts(bubbleDiv);
 
     if (isUser || isNearBottom) {
         historyDiv.scrollTop = historyDiv.scrollHeight;
@@ -737,7 +769,6 @@ window.handleChatSubmit = async (e) => {
 
             if (bubbleEl) {
                 bubbleEl.innerHTML = htmlFinal;
-                if (window.renderCharts) window.renderCharts(bubbleEl);
                 bubbleEl.classList.remove('fade-in');
                 void bubbleEl.offsetWidth;         // reflow p/ reiniciar a animacao
                 bubbleEl.classList.add('msg-appear');
@@ -781,17 +812,18 @@ $(document).ready(function() {
     if (themeSwitcher) themeSwitcher.addEventListener('click', toggleTheme);
     applySavedTheme();
 
-    const loadingSequence = document.getElementById('loading-sequence');
-    const startButton = document.getElementById('start-button');
-
+    // Splash: mantem o anel + nome por um instante e avanca sozinho
+    const ctxBoot = JSON.parse(localStorage.getItem('cyborg_current_session') || '{}');
+    const jaLogado = !!(ctxBoot.registered && ctxBoot.userId);
+    if (jaLogado && typeof DB !== 'undefined') {
+        DB.user = { id: ctxBoot.userId, email: ctxBoot.email };
+        DB.isGuest = false;
+        window.currentResearchContext = { group: ctxBoot.group || 'Registrado', topic: ctxBoot.topic || 'Geral', userName: ctxBoot.userName };
+    }
     setTimeout(() => {
-        if (loadingSequence) loadingSequence.classList.add('fade-out');
-        setTimeout(() => {
-            if (startButton) startButton.classList.add('fade-in');
-            var introNext = document.getElementById('intro-next');
-            if (introNext) introNext.classList.add('ready');
-        }, 300);
-    }, 4000);
+        if (jaLogado) { if (window.irParaChat) window.irParaChat('view-intro'); }
+        else { window.gsapSwitch('view-intro', 'view-auth', 'fade-elegant'); }
+    }, 3400);
 });
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -888,17 +920,14 @@ window.mostrarBoasVindas = function(texto) {
     if (typeof addMessage === 'function') addMessage(BOT_NAME, texto, false);
     const hist = document.getElementById('chat-history');
     if (hist && hist.lastElementChild) hist.lastElementChild.id = 'welcome-msg';
-    if (window.mostrarSugestoes) window.mostrarSugestoes(true);
 };
 window.encerrarBoasVindas = function() {
-    if (window.mostrarSugestoes) window.mostrarSugestoes(false);
     if (!window.__welcomeActive) return;
     window.__welcomeActive = false;
     const cont = __chatCont();
     if (cont) cont.classList.remove('landing');
 };
 window.esconderBoasVindas = function() {
-    if (window.mostrarSugestoes) window.mostrarSugestoes(false);
     window.__welcomeActive = false;
     const cont = __chatCont();
     if (cont) cont.classList.remove('landing');
@@ -1171,100 +1200,6 @@ window.interromperGeracao = () => {
 };
 
 
-// ==============================================================================
-// GRÁFICOS: converte blocos ```chart {JSON} em graficos de barra/pizza (Chart.js)
-// ==============================================================================
-window.renderCharts = function(scope) {
-    if (typeof Chart === 'undefined') return;
-    const root = scope || document;
-    const blocks = root.querySelectorAll('code.language-chart');
-    blocks.forEach(code => {
-        let cfg;
-        try { cfg = JSON.parse((code.textContent || '').trim()); } catch (e) { return; }
-        const type = String(cfg.type || 'bar').toLowerCase();
-        if (['bar', 'pie', 'doughnut'].indexOf(type) === -1) return;
-        const labels = Array.isArray(cfg.labels) ? cfg.labels : [];
-        const data = Array.isArray(cfg.data) ? cfg.data.map(Number) : [];
-        if (!labels.length || !data.length) return;
-
-        const wrap = document.createElement('div');
-        wrap.className = 'chart-wrap';
-        const canvas = document.createElement('canvas');
-        wrap.appendChild(canvas);
-        const pre = code.closest('pre') || code;
-        pre.replaceWith(wrap);
-
-        const cs = getComputedStyle(document.body);
-        const txt = (cs.getPropertyValue('--primary-text-color') || '#fff').trim();
-        const grid = 'rgba(125,133,144,0.25)';
-        const palette = ['#1E40AF', '#3b82f6', '#60a5fa', '#93c5fd', '#2563eb', '#1d4ed8', '#7dd3fc', '#bfdbfe'];
-        const isCircular = (type === 'pie' || type === 'doughnut');
-
-        new Chart(canvas, {
-            type: type,
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: cfg.title || '',
-                    data: data,
-                    backgroundColor: isCircular ? palette : '#1E40AF',
-                    borderColor: isCircular ? (cs.getPropertyValue('--chat-header-bg') || '#0a0a0a').trim() : '#1E40AF',
-                    borderWidth: isCircular ? 2 : 0,
-                    borderRadius: isCircular ? 0 : 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: isCircular, position: 'bottom', labels: { color: txt } },
-                    title: { display: !!cfg.title, text: cfg.title || '', color: txt, font: { size: 14 } }
-                },
-                scales: isCircular ? {} : {
-                    x: { ticks: { color: txt }, grid: { display: false } },
-                    y: { ticks: { color: txt }, grid: { color: grid }, beginAtZero: true }
-                }
-            }
-        });
-    });
-};
-
-// ===================== Sugestões de partida (tela inicial do chat) =====================
-window.renderSugestoes = function() {
-    const cont = document.getElementById('chat-suggestions');
-    if (!cont) return;
-    const all = (window.I18N && window.I18N[window.currentLang] && window.I18N[window.currentLang].suggestions)
-             || (window.I18N && window.I18N.pt && window.I18N.pt.suggestions) || [];
-    const arr = all.slice();
-    for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
-    const pick = arr.slice(0, 3);
-    cont.innerHTML = '';
-    pick.forEach(function(txt){
-        const b = document.createElement('button');
-        b.type = 'button'; b.className = 'chat-suggestion'; b.textContent = txt;
-        b.onclick = function(){
-            const inp = document.getElementById('user-input');
-            if (inp) inp.value = txt;
-            if (window.handleChatSubmit) window.handleChatSubmit();
-        };
-        cont.appendChild(b);
-    });
-};
-window.mostrarSugestoes = async function(show) {
-    const cont = document.getElementById('chat-suggestions');
-    if (!cont) return;
-    if (!show) { cont.classList.remove('show'); return; }
-    // Só no primeiro contato: usuário com conta e histórico registrado não vê as sugestões
-    try {
-        const ctx = JSON.parse(localStorage.getItem('cyborg_current_session') || '{}');
-        if (ctx.registered && DB.listarSessoes) {
-            const sess = await DB.listarSessoes();
-            if (sess && sess.length > 0) { cont.classList.remove('show'); return; }
-        }
-    } catch (e) {}
-    window.renderSugestoes();
-    cont.classList.add('show');
-};
 
 // ===================== Mover conversa para pasta (modal) =====================
 window.__moveSessionId = null;

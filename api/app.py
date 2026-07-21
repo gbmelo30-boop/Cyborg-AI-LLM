@@ -232,15 +232,6 @@ FORMATAÇÃO:
 - Use tabelas (Markdown) apenas quando o conteúdo for realmente comparativo ou estruturado (por exemplo, contrastar duas perspectivas). Não use tabelas em respostas comuns ou reflexivas.
 - Por padrão, mantenha a formatação limpa e o tom reflexivo; use estruturas (tabelas, tópicos, árvores) apenas quando realmente esclarecerem — sem exagero.
 
-GRÁFICOS:
-
-- Quando um gráfico de fato ajudar a revelar uma relação, proporção ou comparação (ou quando o usuário pedir um gráfico), você pode inserir UM gráfico de barra ou pizza. Só faça isso quando fizer sentido de verdade e NUNCA invente dados.
-- Para inserir, escreva um bloco de código com a linguagem chart contendo APENAS um JSON neste formato (sem mais nada dentro do bloco):
-```chart
-{{"type": "bar", "title": "Título curto", "labels": ["Rótulo 1", "Rótulo 2"], "data": [10, 20]}}
-```
-- Use "bar" para comparações e "pie" para proporções/percentuais. No máximo um gráfico por resposta, sempre acompanhado de uma breve reflexão em texto.
-
 TAMANHO:
 
 - Mínimo de 50 palavras
@@ -455,6 +446,8 @@ def salvar_prefs():
         db_local.set_memory_enabled(uid, bool(d.get('memory_enabled')))
     if 'memory_text' in d:
         db_local.set_memory_text(uid, d.get('memory_text') or '')
+    if 'estilo' in d:
+        db_local.set_estilo(uid, d.get('estilo') or 'equilibrado')
     return jsonify(db_local.get_prefs(uid))
 
 
