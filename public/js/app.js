@@ -729,7 +729,6 @@ window.handleChatSubmit = async (e) => {
     loaderDiv.innerHTML = `
         <div class="message-meta">
             <span class="loader-ring-wrap">
-                <canvas class="loader-parts" aria-hidden="true"></canvas>
                 <svg class="header-halo led-loading" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="10" cy="10" r="8" fill="none" stroke-width="2.2"
                         stroke-linecap="round"
@@ -738,11 +737,12 @@ window.handleChatSubmit = async (e) => {
             </span>
             <span>${BOT_NAME}</span>
         </div>
-        <div class="message-bubble fade-in" id="${loaderId}-bubble" style="padding:8px 16px; min-height:10px;"></div>
+        <div class="message-bubble fade-in" id="${loaderId}-bubble" style="padding:10px 16px; min-height:10px;">
+            <span class="typing-dots"><span></span><span></span><span></span></span>
+        </div>
     `;
     historyDiv.appendChild(loaderDiv);
     historyDiv.scrollTop = historyDiv.scrollHeight;
-    if (window.iniciarRastroLoader) window.iniciarRastroLoader(loaderDiv);
 
     if(typeof CYBORG !== 'undefined') {
         const resultado = await CYBORG.enviarMensagem(text, currentSessionId, window.__chatAbort ? window.__chatAbort.signal : null);
@@ -753,7 +753,6 @@ window.handleChatSubmit = async (e) => {
         window.__chatAbort = null;
 
         const loaderEl = document.getElementById(loaderId);
-        if (window.pararRastroLoader) window.pararRastroLoader(loaderEl);
         const bubbleEl = document.getElementById(`${loaderId}-bubble`);
         const ledEl    = loaderEl ? loaderEl.querySelector('.led-loading') : null;
 

@@ -973,18 +973,18 @@ body.light-theme #view-chat {
     40% { transform: scale(1); opacity: 1; }
 }
 
-@keyframes ledSpinPulse {
-    0%   { transform: rotate(0deg);   }
-    100% { transform: rotate(360deg); }
+@keyframes ledLoadPulse {
+    0%, 100% { transform: scale(1);    opacity: 0.6; }
+    50%      { transform: scale(1.14); opacity: 1;   }
 }
 .led-loading {
     transform-origin: center;
-    animation: ledSpinPulse 1.2s linear infinite;
-    filter: drop-shadow(0 0 4px #FFB300) drop-shadow(0 0 10px rgba(255, 179, 0, 0.85));
+    animation: ledLoadPulse 1.25s ease-in-out infinite;
+    filter: drop-shadow(0 0 3px rgba(30, 64, 175, 0.85)) drop-shadow(0 0 7px rgba(30, 64, 175, 0.5));
 }
 .led-loading circle {
-    stroke: #FFB300; /* amarelo forte */
-    stroke-dasharray: 32 20; /* anel aberto: arco com lacuna, tipo cometa */
+    stroke: var(--ring-color); /* anel azul INTEIRO, apenas pulsando (sem girar) */
+    stroke-dasharray: none;
 }
 .led-loading.led-done {
     animation: none;
@@ -1794,4 +1794,18 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
     .brand-svg { max-width: 62vw; }
     /* saudacao inicial: campo colado embaixo continua valendo */
     .cyborg-chat-container.landing .chat-history { flex: 0 0 auto; }
+}
+
+/* 3 pontinhos pulando (indicador de carregamento na bolha) */
+.typing-dots { display: inline-flex; gap: 5px; align-items: center; padding: 2px 0; }
+.typing-dots span {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--secondary-text-color); opacity: 0.5;
+    animation: typingBounce 1.2s infinite ease-in-out;
+}
+.typing-dots span:nth-child(2) { animation-delay: 0.16s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.32s; }
+@keyframes typingBounce {
+    0%, 60%, 100% { transform: translateY(0);    opacity: 0.4; }
+    30%           { transform: translateY(-5px); opacity: 1;   }
 }

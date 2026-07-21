@@ -673,7 +673,7 @@ def admin_export_xlsx():
     for cell in ws[1]:
         cell.font = Font(bold=True, color="FFFFFF"); cell.fill = fill
         cell.alignment = Alignment(vertical="center")
-    for i, wdt in enumerate([16, 16, 16, 14, 60, 60, 20], start=1):
+    for i, wdt in enumerate([18, 18, 58, 58, 8, 16, 18], start=1):  # session,participante,pergunta,resposta,rag,estilo,data
         ws.column_dimensions[get_column_letter(i)].width = wdt
     for row in ws.iter_rows(min_row=2):
         for cell in row:
