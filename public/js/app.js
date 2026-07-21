@@ -114,9 +114,9 @@ window.gsapSwitch = function(fromId, toId, kind, onDone) {
         tl.to(toEl, { opacity: 1, z: 0, rotationX: 0, duration: 0.9, ease: 'power3.out' }, 0.22);
     } else {
         // Animação 1 (intro -> cadastro): simples e elegante (fade + leve deslize/escala)
-        gsap.set(toEl, { opacity: 0, y: 26, scale: 0.985, zIndex: 300, willChange: 'transform,opacity' });
-        if (fromEl) tl.to(fromEl, { opacity: 0, y: -16, scale: 1.012, duration: 0.5, ease: 'power2.inOut' }, 0);
-        tl.to(toEl, { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: 'power3.out' }, 0.12);
+        gsap.set(toEl, { opacity: 0, y: 22, scale: 0.99, zIndex: 300, willChange: 'transform,opacity' });
+        if (fromEl) tl.to(fromEl, { opacity: 0, y: -14, scale: 1.01, duration: 0.75, ease: 'power2.inOut' }, 0);
+        tl.to(toEl, { opacity: 1, y: 0, scale: 1, duration: 0.95, ease: 'power3.out' }, 0.3);
     }
 };
 
@@ -822,7 +822,7 @@ $(document).ready(function() {
     setTimeout(() => {
         if (jaLogado) { if (window.irParaChat) window.irParaChat('view-intro'); }
         else { window.gsapSwitch('view-intro', 'view-auth', 'fade-elegant'); }
-    }, 3400);
+    }, 4600);
 });
 
 document.addEventListener('DOMContentLoaded', () => {

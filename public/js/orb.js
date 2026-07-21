@@ -21,9 +21,9 @@ function iniciarAnelIntro() {
     const REDUZ = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const QTD = MOBILE ? 1500 : 2600;
 
-    const SUBIDA = 2300;                     // viagem de cada particula (ms) — mais lenta
-    const DELAYS = 950;                      // espalhamento dos delays (ms)
-    const FUSAO  = 1000;                     // fusao pontilhado -> anel solido (ms)
+    const SUBIDA = 2800;                     // viagem de cada particula (ms) — mais lenta
+    const DELAYS = 1000;                      // espalhamento dos delays (ms)
+    const FUSAO  = 1150;                     // fusao pontilhado -> anel solido (ms)
     const INI_FUSAO = SUBIDA + DELAYS - 300;
 
     let W = 0, H = 0, dpr = 1, cx = 0, cy = 0, R = 90;
