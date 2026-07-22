@@ -1,7 +1,15 @@
 // ==============================================================================
 // CONFIGURAÇÃO DA API
+// ------------------------------------------------------------------------------
+// O backend (/api/) é servido pelo MESMO host que serve o app (o nginx faz o
+// proxy). Por isso usamos a própria origem da página: assim o app funciona em
+// HTTP ou HTTPS, por IP ou por domínio, sem precisar alterar código nenhum.
+// O endereço fixo abaixo é só um plano B (ex.: abrir o arquivo localmente).
 // ==============================================================================
-const API_BASE_URL = "http://200.156.26.159";
+const API_FALLBACK = "http://200.156.26.159";
+const API_BASE_URL = (location.protocol === 'http:' || location.protocol === 'https:')
+    ? location.origin
+    : API_FALLBACK;
 
 window.systemLog = function(mensagem, tipo = "INFO") {
     const timestamp = new Date().toLocaleTimeString();
