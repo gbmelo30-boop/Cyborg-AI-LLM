@@ -337,6 +337,9 @@ window.handleStartResearch = async () => {
 
 // --- LOGOUT E HISTÓRICO ---
 window.handleLogout = async () => {
+    // fecha qualquer modal aberto (o Sair agora vive dentro de "Sua conta")
+    ['modal-config', 'modal-guest', 'modal-historico', 'modal-autores', 'modal-sobre', 'modal-idioma']
+        .forEach(id => { const m = document.getElementById(id); if (m) m.classList.remove('active'); });
     if(typeof DB !== 'undefined' && DB.logout) {
         await DB.logout();
         DB.user = null;

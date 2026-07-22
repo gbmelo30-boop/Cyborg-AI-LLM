@@ -1885,3 +1885,14 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 .sobre-linha { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 5px 2px; color: var(--secondary-text-color); }
 .sobre-linha span:last-child { font-weight: 700; color: var(--primary-text-color); }
 .sobre-copy { font-size: 0.76rem; color: var(--secondary-text-color); opacity: 0.65; line-height: 1.5; margin: 12px 0 0; text-align: center; }
+
+/* Botao "Sair" dentro de Sua conta (menos destacado que as acoes principais) */
+.cfg-btn-sair {
+    width: 100%; margin-top: 10px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    background: transparent; color: #d93025;
+    border: 1px solid var(--border-color); border-radius: 8px;
+    padding: 11px 16px; cursor: pointer; font-family: inherit; font-size: 0.88rem; font-weight: 600;
+    transition: background 0.18s, border-color 0.18s;
+}
+.cfg-btn-sair:hover { background: rgba(217, 48, 37, 0.10); border-color: #d93025; }
+.cfg-btn-sair svg { fill: currentColor; flex-shrink: 0; }
