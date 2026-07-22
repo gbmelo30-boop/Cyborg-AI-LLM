@@ -1862,3 +1862,42 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 
 /* Seta de voltar no login (so quando veio de 'Criar conta') */
 .auth-back-ctrl { position: absolute; top: 16px; left: 16px; z-index: 30; }
+
+/* ==== Autores (carrossel) ==== */
+.autor-card { display: none; text-align: center; padding: 4px 2px 2px; }
+.autor-card.active { display: block; }
+.autor-card.active.from-right { animation: slideFromRight 0.32s cubic-bezier(0.22, 1, 0.36, 1); }
+.autor-card.active.from-left  { animation: slideFromLeft 0.32s cubic-bezier(0.22, 1, 0.36, 1); }
+.autor-foto {
+    width: 112px; height: 112px; border-radius: 50%; margin: 0 auto 14px;
+    position: relative; overflow: hidden; flex-shrink: 0;
+    background: var(--user-message-bg);
+    border: 2px solid var(--led-static-blue);
+    display: flex; align-items: center; justify-content: center;
+}
+.autor-foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.autor-inicial { font-family: 'Share Tech Mono', monospace; font-size: 1.9rem; font-weight: 700; color: var(--secondary-text-color); }
+.autor-nome { font-size: 1.02rem; font-weight: 700; margin: 0 0 3px; color: var(--primary-text-color); line-height: 1.3; }
+.autor-titulo { font-size: 0.82rem; color: var(--led-static-blue); font-weight: 700; margin: 0 0 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+.autor-papel { font-size: 0.88rem; color: var(--secondary-text-color); opacity: 0.9; line-height: 1.5; margin: 0 0 12px; }
+.autor-email { font-size: 0.82rem; color: var(--led-static-blue); text-decoration: none; word-break: break-all; }
+.autor-email:hover { text-decoration: underline; }
+.autor-nav { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--border-color); }
+.autor-arrow {
+    width: 34px; height: 34px; border-radius: 50%; background: transparent;
+    border: 1px solid var(--border-color); color: var(--secondary-text-color);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background .15s, color .15s, border-color .15s;
+}
+.autor-arrow svg { width: 18px; height: 18px; }
+.autor-arrow:hover { background: var(--component-hover-bg); color: var(--primary-text-color); border-color: var(--led-static-blue); }
+.autor-dots { display: flex; gap: 7px; align-items: center; }
+.autor-dot { width: 8px; height: 8px; border-radius: 50%; border: none; padding: 0; cursor: pointer; background: var(--border-color); transition: background .2s, transform .2s; }
+.autor-dot.active { background: var(--led-static-blue); transform: scale(1.25); }
+
+/* ==== Sobre o Cyborg AI ==== */
+.sobre-texto { font-size: 0.9rem; line-height: 1.6; color: var(--secondary-text-color); margin: 0 0 12px; text-align: justify; }
+.sobre-meta { border-top: 1px solid var(--border-color); margin-top: 14px; padding-top: 10px; }
+.sobre-linha { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 5px 2px; color: var(--secondary-text-color); }
+.sobre-linha span:last-child { font-weight: 700; color: var(--primary-text-color); }
+.sobre-copy { font-size: 0.76rem; color: var(--secondary-text-color); opacity: 0.65; line-height: 1.5; margin: 12px 0 0; text-align: center; }

@@ -63,7 +63,12 @@ const CYBORG = {
 
             if (!response.ok) {
                 const errData = await response.json().catch(() => ({}));
-                throw new Error(errData.error || `Erro HTTP: ${response.status}`);
+                let code = 'erro_generico';
+                if (response.status >= 500) code = 'erro_servidor';
+                else if (response.status === 401 || response.status === 403) code = 'erro_permissao';
+                else if (response.status >= 400) code = 'erro_requisicao';
+                window.systemLog(`Falha HTTP ${response.status}: ${errData.error || ''}`, "ERRO");
+                return { error: errData.error || ('HTTP ' + response.status), errorCode: code };
             }
 
             const result = await response.json();
@@ -89,10 +94,11 @@ const CYBORG = {
                 return { aborted: true };
             }
             console.error("ERRO GERAL:", e);
-            return {
-                response: "**Erro de Conexão:** Não foi possível alcançar o servidor do Cyborg AI. " + e.message,
-                error: e.message
-            };
+            let code = 'erro_generico';
+            const msg = (e && e.message) || '';
+            if (typeof navigator !== 'undefined' && navigator.onLine === false) code = 'erro_offline';
+            else if (e instanceof TypeError || /failed to fetch|networkerror|load failed|network request failed/i.test(msg)) code = 'erro_servidor_inacessivel';
+            return { error: msg, errorCode: code };
         }
     }
 };

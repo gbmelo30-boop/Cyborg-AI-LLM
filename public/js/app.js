@@ -57,6 +57,7 @@ window.openModal = (id) => {
         if(id === 'modal-historico') carregarListaSessoes(); 
         if(id === 'modal-instrucoes') showSlides(1); 
         if(id === 'modal-config' && window.initConfigModal) initConfigModal(); 
+        if(id === 'modal-autores' && window.__autorMostrar) window.__autorMostrar(1, 1); 
     }
 };
 window.closeModal = (id) => { const el = document.getElementById(id); if (el) el.classList.remove('active'); };
@@ -797,10 +798,12 @@ window.handleChatSubmit = async (e) => {
 
         } else {
             if (ledEl) ledEl.classList.add('led-error');
+            const __code = (resultado && resultado.errorCode) || 'erro_generico';
+            const __msg = (window.T ? window.T(__code) : null) || 'Algo saiu do esperado ao gerar a resposta. Tente novamente.';
             setTimeout(() => {
                 if(loaderEl) loaderEl.remove();
-                addMessage(BOT_NAME, window.T ? window.T("error_neural") : "Minhas redes neurais sentiram um distúrbio. Tente novamente.", false);
-            }, 1500);
+                addMessage(BOT_NAME, __msg, false);
+            }, 1200);
         }
     }
 };
@@ -1250,3 +1253,60 @@ window.toggleFooterMenu = () => {
     const f = document.querySelector('.side-panel-footer');
     if (f) f.classList.toggle('open');
 };
+
+// ==============================================================================
+// AUTORES (carrossel), SOBRE (versao) e FECHAR APLICATIVO
+// ==============================================================================
+window.APP_VERSION = '1.0.0';
+window.__autorAtual = 1;
+
+window.autorNavegar = (dir) => {
+    const cards = document.querySelectorAll('#modal-autores .autor-card');
+    if (!cards.length) return;
+    let novo = window.__autorAtual + dir;
+    if (novo < 1) novo = cards.length;
+    if (novo > cards.length) novo = 1;
+    window.__autorMostrar(novo, dir);
+};
+
+window.__autorMostrar = (idx, dir) => {
+    const cards = document.querySelectorAll('#modal-autores .autor-card');
+    cards.forEach(c => c.classList.remove('active', 'from-left', 'from-right'));
+    const alvo = document.getElementById('autor-' + idx);
+    if (!alvo) return;
+    void alvo.offsetWidth;
+    alvo.classList.add('active', (dir || 1) < 0 ? 'from-left' : 'from-right');
+    window.__autorAtual = idx;
+    const dots = document.getElementById('autor-dots');
+    if (dots) {
+        dots.innerHTML = '';
+        cards.forEach((c, i) => {
+            const d = document.createElement('button');
+            d.type = 'button';
+            d.className = 'autor-dot' + ((i + 1) === idx ? ' active' : '');
+            d.setAttribute('aria-label', 'Autor ' + (i + 1));
+            d.onclick = () => window.__autorMostrar(i + 1, (i + 1) > window.__autorAtual ? 1 : -1);
+            dots.appendChild(d);
+        });
+    }
+};
+
+// Fecha o aplicativo (so faz sentido no app nativo; no navegador o item fica oculto)
+window.fecharApp = () => {
+    try {
+        const C = window.Capacitor;
+        if (C && C.Plugins && C.Plugins.App && C.Plugins.App.exitApp) { C.Plugins.App.exitApp(); return; }
+        if (navigator.app && navigator.app.exitApp) { navigator.app.exitApp(); return; }
+    } catch (e) {}
+    window.systemLog('Fechar aplicativo indisponivel neste contexto.', 'AVISO');
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    // versao no modal Sobre
+    const v = document.getElementById('sobre-versao');
+    if (v) v.textContent = window.APP_VERSION;
+    // item "Fechar aplicativo" so aparece dentro do app nativo (Capacitor)
+    const ex = document.getElementById('sp-link-exit');
+    const nativo = !!(window.Capacitor && (window.Capacitor.isNativePlatform ? window.Capacitor.isNativePlatform() : true));
+    if (ex && nativo) ex.classList.remove('hidden');
+});

@@ -60,3 +60,20 @@ No Android Studio:
 O app fala com o servidor via **HTTP** (IP puro). Para uso interno/testes funciona
 (cleartext liberado). Para um app público e mais seguro, o recomendado é migrar o
 servidor para **HTTPS com um domínio** — aí trocamos a `server.url` para `https://`.
+
+---
+
+## Fechar o aplicativo (item "Fechar aplicativo" no menu)
+
+O menu do app tem a opção **Fechar aplicativo**, que só aparece quando o Cyborg AI
+está rodando como app nativo (no navegador ela fica oculta, pois não faz sentido).
+
+Ela usa o plugin `@capacitor/app`. Ao regerar o APK, rode:
+
+```bash
+npm install            # instala tambem o @capacitor/app
+npx cap sync android
+npx cap open android   # Build > Build APK(s)
+```
+
+Sem esse plugin instalado, o item aparece mas não encerra o app.
