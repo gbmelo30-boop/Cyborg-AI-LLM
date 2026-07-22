@@ -866,24 +866,10 @@ body.light-theme #view-chat {
 .modal-title { color: var(--primary-text-color); font-weight: bold; text-transform: uppercase; }
 .close-modal { background: none; border: none; color: var(--secondary-text-color); font-size: 1.5em; cursor: pointer; }
 
-.slide { display: none; }
-.slide.active { display: block; }
-.slide.active.from-right { animation: slideFromRight 0.34s cubic-bezier(0.22, 1, 0.36, 1); }
-.slide.active.from-left  { animation: slideFromLeft 0.34s cubic-bezier(0.22, 1, 0.36, 1); }
 @keyframes slideFromRight { from { opacity: 0; transform: translateX(26px); } to { opacity: 1; transform: none; } }
 @keyframes slideFromLeft  { from { opacity: 0; transform: translateX(-26px); } to { opacity: 1; transform: none; } }
 @keyframes fadeEffect { from {opacity: 0;} to {opacity: 1;} }
 
-.carousel-controls {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border-color);
-}
-.nav-btn {
-    background: transparent; border: 1px solid var(--border-color);
-    color: var(--primary-text-color); padding: 8px 16px; border-radius: 4px; cursor: pointer;
-}
-.nav-btn:hover { background-color: var(--component-hover-bg); }
-.nav-btn:disabled { opacity: 0.3; cursor: default; }
 
 .history-list-container {
     max-height: 400px;
@@ -1689,8 +1675,6 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 
 /* ===== Conversa centralizada + sugestões de partida (estilo ChatGPT) ===== */
 /* Modal de instruções com tamanho fixo + rolagem (não "pula" entre os passos) */
-#modal-instrucoes .modal-content { height: min(52vh, 430px); overflow-y: auto; }
-#modal-instrucoes .carousel-controls { position: sticky; bottom: 0; background: var(--chat-header-bg); margin-top: 16px; }
 
 
 /* ===== Sidebar: histórico fixo + rodapé de identidade (estilo ChatGPT) ===== */

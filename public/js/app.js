@@ -22,40 +22,12 @@ window.toggleRag = (checkbox) => {
     }
 };
 
-// --- CARROSSEL E MODAIS ---
-let slideIndex = 1;
-let slideDir = 1;
-window.changeSlide = function(n) { slideDir = n < 0 ? -1 : 1; showSlides(slideIndex += n); };
-window.currentSlide = function(n) { slideDir = n >= slideIndex ? 1 : -1; showSlides(slideIndex = n); };
-
-function showSlides(n) {
-    let i;
-    let slides = document.getElementsByClassName("slide");
-    let indicator = document.getElementById("slide-indicator");
-    let btnPrev = document.getElementById("btn-prev");
-    let btnNext = document.getElementById("btn-next");
-    if(!slides.length) return;
-    if (n > slides.length) {slideIndex = 1}
-    if (n < 1) {slideIndex = slides.length}
-    for (i = 0; i < slides.length; i++) { slides[i].classList.remove("active", "from-left", "from-right"); }
-    const __active = slides[slideIndex-1];
-    __active.classList.add("active");
-    void __active.offsetWidth; // reinicia a animacao
-    __active.classList.add(slideDir < 0 ? "from-left" : "from-right");
-    if(indicator) indicator.innerText = slideIndex + " / " + slides.length;
-    if(btnPrev) btnPrev.disabled = (slideIndex === 1);
-    if(btnNext) {
-        btnNext.innerText = (slideIndex === slides.length) ? (window.T ? window.T("btn_close") : "Fechar") : (window.T ? window.T("btn_next") : "Próximo >");
-        btnNext.onclick = (slideIndex === slides.length) ? function(){ window.closeModal('modal-instrucoes') } : function(){ window.changeSlide(1) };
-    }
-}
-
+// --- MODAIS ---
 window.openModal = (id) => {
     const modal = document.getElementById(id);
     if(modal) { 
         modal.classList.add('active'); 
         if(id === 'modal-historico') carregarListaSessoes(); 
-        if(id === 'modal-instrucoes') showSlides(1); 
         if(id === 'modal-config' && window.initConfigModal) initConfigModal(); 
         if(id === 'modal-autores' && window.__autorMostrar) window.__autorMostrar(1, 1); 
     }
@@ -952,38 +924,6 @@ window.esconderBoasVindas = function() {
 };
 
 
-// ==============================================================================
-// Frases rotativas da tela inicial (ordem aleatoria + transicao suave)
-// ==============================================================================
-window.iniciarFrasesIntro = function() {
-    const el = document.getElementById('intro-sub');
-    if (!el) return;
-    if (window.__introPhraseTimer) clearInterval(window.__introPhraseTimer);
-    let ordem = [], idx = 0;
-    const lista = () => (window.I18N && window.I18N[window.currentLang] && window.I18N[window.currentLang].intro_phrases)
-                        || (window.I18N && window.I18N.pt && window.I18N.pt.intro_phrases) || [];
-    const embaralhar = () => {
-        const n = lista().length;
-        ordem = Array.from({ length: n }, (_, i) => i);
-        for (let i = ordem.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [ordem[i], ordem[j]] = [ordem[j], ordem[i]];
-        }
-        idx = 0;
-    };
-    embaralhar();
-    const trocar = () => {
-        const arr = lista();
-        if (!arr.length) return;
-        if (idx >= ordem.length) embaralhar();
-        const frase = arr[ordem[idx] % arr.length];
-        idx++;
-        el.style.opacity = '0';
-        setTimeout(() => { el.textContent = frase; el.style.opacity = '1'; }, 550);
-    };
-    window.__introPhraseTimer = setInterval(trocar, 5200);
-};
-document.addEventListener('DOMContentLoaded', () => { window.iniciarFrasesIntro(); });
 
 
 // ==============================================================================
@@ -1291,14 +1231,57 @@ window.__autorMostrar = (idx, dir) => {
     }
 };
 
-// Fecha o aplicativo (so faz sentido no app nativo; no navegador o item fica oculto)
-window.fecharApp = () => {
+// Detecta se estamos rodando dentro do app nativo (Capacitor)
+window.__appNativo = () => {
+    const C = window.Capacitor;
+    if (!C) return false;
+    try { if (typeof C.isNativePlatform === 'function') return C.isNativePlatform(); } catch (e) {}
+    return !!C.platform && C.platform !== 'web';
+};
+
+// Encerra o aplicativo. Tenta, em ordem: plugin App, ponte nativa direta, Cordova.
+window.__tentarFechar = async () => {
+    const C = window.Capacitor;
+    // 1) plugin oficial @capacitor/app
     try {
-        const C = window.Capacitor;
-        if (C && C.Plugins && C.Plugins.App && C.Plugins.App.exitApp) { C.Plugins.App.exitApp(); return; }
-        if (navigator.app && navigator.app.exitApp) { navigator.app.exitApp(); return; }
+        if (C && C.Plugins && C.Plugins.App && typeof C.Plugins.App.exitApp === 'function') {
+            await C.Plugins.App.exitApp();
+            return true;
+        }
+    } catch (e) { window.systemLog('exitApp (plugin) falhou: ' + e.message, 'ERRO'); }
+    // 2) ponte nativa direta (funciona mesmo sem o wrapper JS do plugin)
+    try {
+        if (C && typeof C.nativePromise === 'function') { await C.nativePromise('App', 'exitApp', {}); return true; }
+    } catch (e) { window.systemLog('exitApp (nativePromise) falhou: ' + e.message, 'ERRO'); }
+    try {
+        if (C && typeof C.toNative === 'function') { C.toNative('App', 'exitApp', {}); return true; }
+    } catch (e) { window.systemLog('exitApp (toNative) falhou: ' + e.message, 'ERRO'); }
+    // 3) Cordova (caso o app seja empacotado por outra via)
+    try {
+        if (navigator.app && typeof navigator.app.exitApp === 'function') { navigator.app.exitApp(); return true; }
     } catch (e) {}
-    window.systemLog('Fechar aplicativo indisponivel neste contexto.', 'AVISO');
+    return false;
+};
+
+window.fecharApp = () => {
+    const confirmar = async () => {
+        const ok = await window.__tentarFechar();
+        if (!ok) {
+            // Nao deixa um botao morto: explica o motivo reaproveitando o modal de confirmacao
+            const titulo = window.T ? window.T('nav_exit_app') : 'Fechar aplicativo';
+            const msg = window.T ? window.T('exit_indisponivel') : 'Não foi possível encerrar o aplicativo por aqui.';
+            if (window.abrirConfirm) window.abrirConfirm(titulo, msg, () => {}, 'OK');
+            else alert(msg);
+        }
+    };
+    if (window.abrirConfirm) {
+        window.abrirConfirm(
+            window.T ? window.T('nav_exit_app') : 'Fechar aplicativo',
+            window.T ? window.T('exit_confirma') : 'Deseja realmente fechar o Cyborg AI?',
+            confirmar,
+            window.T ? window.T('nav_exit_app') : 'Fechar'
+        );
+    } else { confirmar(); }
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1307,6 +1290,5 @@ document.addEventListener('DOMContentLoaded', () => {
     if (v) v.textContent = window.APP_VERSION;
     // item "Fechar aplicativo" so aparece dentro do app nativo (Capacitor)
     const ex = document.getElementById('sp-link-exit');
-    const nativo = !!(window.Capacitor && (window.Capacitor.isNativePlatform ? window.Capacitor.isNativePlatform() : true));
-    if (ex && nativo) ex.classList.remove('hidden');
+    if (ex && window.__appNativo && window.__appNativo()) ex.classList.remove('hidden');
 });

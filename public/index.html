@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Cyborg AI</title>
 
-    <link rel="stylesheet" href="css/style.css?v=76">
+    <link rel="stylesheet" href="css/style.css?v=77">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -124,7 +124,6 @@
                 </div>
                                 <div class="side-panel-footer">
                     <div class="sp-footer-links" id="sp-footer-links">
-                        <button class="sp-link" onclick="openModal('modal-instrucoes')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg><span data-i18n="nav_instructions">Instruções</span></button>
                         <button class="sp-link" onclick="openModal('modal-config')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.58 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg><span data-i18n="nav_settings">Configurações</span></button>
                         <button class="sp-link" onclick="openModal('modal-autores')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg><span data-i18n="nav_authors">Autores</span></button>
                         <button class="sp-link" onclick="openModal('modal-sobre')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 17h2v-6h-2v6zm1-15C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zM11 9h2V7h-2v2z"/></svg><span data-i18n="nav_about">Sobre o Cyborg AI</span></button>
@@ -181,49 +180,6 @@
                     </div>
                 </form>
             </main>
-
-            <div id="modal-instrucoes" class="modal-overlay">
-                <div class="modal-box">
-                    <div class="modal-header">
-                        <span class="modal-title" data-i18n="instr_title">Instruções de Uso</span>
-                        <button class="close-modal" onclick="closeModal('modal-instrucoes')">&times;</button>
-                    </div>
-                    <div class="modal-content">
-                        <div class="slide active" id="slide-1" data-i18n-html="slide1">
-                            <h3>1. Quem sou eu?</h3>
-                            <p>Olá, eu sou o Cyborg AI.</p>
-                            <p>Existo para pensar <em>com</em> você nas fronteiras entre humanos, animais e máquinas, inspirado pela filosofia ciborgue e pelo Design Especulativo.</p>
-                        </div>
-                        <div class="slide" id="slide-2" data-i18n-html="slide2">
-                            <h3>2. Quando me usar?</h3>
-                            <p>Use-me quando quiser testar os limites de uma ideia. Se você está pensando em uma nova tecnologia, um projeto, ou simplesmente refletindo sobre os impactos do futuro na sociedade, este é o lugar.</p>
-                        </div>
-                        <div class="slide" id="slide-3" data-i18n-html="slide3">
-                            <h3>3. Como falar comigo?</h3>
-                            <p>Para que eu possa te ajudar, preciso de contexto. No chat, envie um texto contendo:</p>
-                            <ul>
-                                <li><strong>A ideia:</strong> Qual é a tecnologia, projeto ou problema que você quer discutir?</li>
-                                <li><strong>A intenção:</strong> O que você espera que isso mude no mundo?</li>
-                            </ul>
-                        </div>
-                        <div class="slide" id="slide-4" data-i18n-html="slide4">
-                            <h3>4. Como eu respondo?</h3>
-                            <p>Não espere respostas prontas, resumos ou soluções fáceis. Minhas falas serão concisas, diretas e, muitas vezes, provocarão desconforto.</p>
-                            <p>Meu papel é tensionar a sua visão de mundo.</p>
-                        </div>
-                        <div class="slide" id="slide-5" data-i18n-html="slide5">
-                            <h3>5. O que fazer com a resposta?</h3>
-                            <p>Toda interação comigo terminará com uma pergunta. Use essa pergunta para investigar os pontos cegos éticos e sociais das suas próprias ideias.</p> 
-                            <p>A reflexão final nunca é minha, é sempre sua.</p>
-                        </div>
-                        <div class="carousel-controls">
-                            <button class="nav-btn" id="btn-prev" onclick="changeSlide(-1)" data-i18n="btn_prev" disabled>&lt; Anterior</button>
-                            <span id="slide-indicator" style="font-size:0.9em; align-self:center;">1 / 5</span>
-                            <button class="nav-btn" id="btn-next" onclick="changeSlide(1)">Próximo &gt;</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             <div id="modal-config" class="modal-overlay">
                 <div class="modal-box modal-box-hub">
@@ -474,12 +430,12 @@
         </div>
     </section>
 
-    <script src="js/i18n.js?v=27"></script>
+    <script src="js/i18n.js?v=28"></script>
     <script src="js/config.js?v=7"></script>
     <script src="js/db.js?v=12"></script>
     <script src="js/cyborg.js?v=12"></script>
     <script src="js/orb.js?v=10"></script>
-    <script src="js/app.js?v=51"></script>
+    <script src="js/app.js?v=52"></script>
 
 </body>
 </html>
