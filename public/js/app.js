@@ -556,7 +556,11 @@ window.abrirContaSidebar = () => {
     const ctx = JSON.parse(localStorage.getItem('cyborg_current_session') || '{}');
     if (ctx.registered) {
         window.openModal('modal-config');
-        if (window.abrirCfgPanel) setTimeout(() => window.abrirCfgPanel('conta'), 70);
+        setTimeout(() => {
+            window.__cfgStack = ['conta'];   // entrou direto: nao ha tela anterior
+            __preencherConta();
+            __showCfgPanel('conta', 1);
+        }, 70);
     } else {
         const gi = document.getElementById('guest-name-input');
         if (gi) gi.value = ctx.userName || '';
@@ -999,8 +1003,9 @@ function __showCfgPanel(id, dir) {
     panel.classList.add('active', dir < 0 ? 'from-left' : 'from-right');
     const back = document.getElementById('cfg-back-btn');
     const title = document.getElementById('cfg-title');
-    const isMain = (id === 'main');
-    if (back) back.style.display = isMain ? 'none' : 'flex';
+    const pilha = window.__cfgStack || ['main'];
+    // so mostra a seta se existir uma tela anterior de verdade
+    if (back) back.style.display = (pilha.length > 1) ? 'flex' : 'none';
     if (title) {
         const key = panel.getAttribute('data-title') || 'settings_title';
         title.setAttribute('data-i18n', key);
