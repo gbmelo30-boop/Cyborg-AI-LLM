@@ -1,7 +1,7 @@
 # Cyborg AI — App Android (Capacitor)
 
 O app Android é um **invólucro nativo (Capacitor)** que carrega o site do Cyborg AI
-(`http://200.156.26.159/chat/`) dentro de uma WebView. O visual e a estrutura são
+(`https://cyborgai.duckdns.org/chat/`) dentro de uma WebView. O visual e a estrutura são
 **exatamente os mesmos** do site — nada foi alterado. Vantagem: toda vez que você
 atualiza o servidor (git pull), o app já mostra a versão nova, **sem precisar
 recompilar** o APK.
@@ -9,7 +9,7 @@ recompilar** o APK.
 Configuração em `capacitor.config.json`:
 - appId: `br.cyborgai.app`
 - appName: `Cyborg AI`
-- server.url: `http://200.156.26.159/chat/`  (cleartext liberado p/ HTTP)
+- server.url: `https://cyborgai.duckdns.org/chat/`  (HTTPS via Let's Encrypt)
 
 ---
 

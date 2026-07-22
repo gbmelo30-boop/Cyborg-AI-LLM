@@ -6,7 +6,7 @@
 // HTTP ou HTTPS, por IP ou por domínio, sem precisar alterar código nenhum.
 // O endereço fixo abaixo é só um plano B (ex.: abrir o arquivo localmente).
 // ==============================================================================
-const API_FALLBACK = "http://200.156.26.159";
+const API_FALLBACK = "https://cyborgai.duckdns.org";
 const API_BASE_URL = (location.protocol === 'http:' || location.protocol === 'https:')
     ? location.origin
     : API_FALLBACK;
