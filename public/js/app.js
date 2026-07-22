@@ -727,9 +727,10 @@ window.handleChatSubmit = async (e) => {
         <div class="message-meta">
             <span class="loader-ring-wrap">
                 <svg class="header-halo led-loading" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="10" cy="10" r="8" fill="none" stroke-width="2.2"
+                    <circle class="led-ring-base" cx="10" cy="10" r="8" fill="none" stroke-width="2.2"
                         stroke-linecap="round"
                         transform="rotate(-90 10 10)"/>
+                    <g class="led-parts"></g>
                 </svg>
             </span>
             <span>${BOT_NAME}</span>
@@ -739,6 +740,7 @@ window.handleChatSubmit = async (e) => {
         </div>
     `;
     historyDiv.appendChild(loaderDiv);
+    if (window.__gerarParticulasAnel) window.__gerarParticulasAnel(loaderDiv.querySelector('.led-loading'));
     historyDiv.scrollTop = historyDiv.scrollHeight;
 
     if(typeof CYBORG !== 'undefined') {
@@ -778,13 +780,17 @@ window.handleChatSubmit = async (e) => {
             if (ledEl) ledEl.classList.add('led-done');
 
         } else {
+            // Erro: o proprio bloco vira a mensagem e o anel FICA vermelho para sempre
             if (ledEl) ledEl.classList.add('led-error');
             const __code = (resultado && resultado.errorCode) || 'erro_generico';
             const __msg = (window.T ? window.T(__code) : null) || 'Algo saiu do esperado ao gerar a resposta. Tente novamente.';
-            setTimeout(() => {
-                if(loaderEl) loaderEl.remove();
-                addMessage(BOT_NAME, __msg, false);
-            }, 1200);
+            if (bubbleEl) {
+                bubbleEl.textContent = __msg;
+                bubbleEl.classList.remove('fade-in');
+                void bubbleEl.offsetWidth;
+                bubbleEl.classList.add('msg-appear');
+                if (window.__msgActions && loaderEl) window.__msgActions(loaderEl, bubbleEl, null);
+            }
         }
     }
 };
@@ -1342,4 +1348,26 @@ window.__msgActions = function(container, bubbleEl, quando) {
 
     acts.appendChild(bCopy); acts.appendChild(bTime); acts.appendChild(stamp);
     container.appendChild(acts);
+};
+
+// ==============================================================================
+// Particulas do anel de carregamento (aparencia de "compilado de particulas")
+// ==============================================================================
+window.__gerarParticulasAnel = function(svgEl) {
+    if (!svgEl) return;
+    const g = svgEl.querySelector('.led-parts');
+    if (!g || g.childNodes.length) return;
+    const NS = 'http://www.w3.org/2000/svg';
+    const N = 52, cx = 10, cy = 10, R = 8;
+    for (let i = 0; i < N; i++) {
+        const ang = (i / N) * Math.PI * 2 + (Math.random() - 0.5) * 0.12;
+        const rr  = R + (Math.random() - 0.5) * 2.1;          // espessura do anel de particulas
+        const c = document.createElementNS(NS, 'circle');
+        c.setAttribute('cx', (cx + Math.cos(ang) * rr).toFixed(2));
+        c.setAttribute('cy', (cy + Math.sin(ang) * rr).toFixed(2));
+        c.setAttribute('r',  (0.42 + Math.random() * 0.52).toFixed(2));
+        c.style.animationDelay    = (Math.random() * 1.5).toFixed(2) + 's';
+        c.style.animationDuration = (0.95 + Math.random() * 0.95).toFixed(2) + 's';
+        g.appendChild(c);
+    }
 };
