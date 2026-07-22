@@ -1358,14 +1358,19 @@ window.__gerarParticulasAnel = function(svgEl) {
     const g = svgEl.querySelector('.led-parts');
     if (!g || g.childNodes.length) return;
     const NS = 'http://www.w3.org/2000/svg';
-    const N = 52, cx = 10, cy = 10, R = 8;
+    // Particulas DENTRO da faixa do anel: a forma do anel se mantem,
+    // o que muda e a "massa" dele, que fica granulada.
+    const N = 130, cx = 10, cy = 10, R = 8;
+    const FAIXA = 2.3;   // largura da faixa do anel (onde as particulas vivem)
     for (let i = 0; i < N; i++) {
-        const ang = (i / N) * Math.PI * 2 + (Math.random() - 0.5) * 0.12;
-        const rr  = R + (Math.random() - 0.5) * 2.1;          // espessura do anel de particulas
+        const ang = (i / N) * Math.PI * 2 + (Math.random() - 0.5) * 0.09;
+        // distribui pela espessura da faixa, com leve concentracao no centro dela
+        const desvio = (Math.random() + Math.random() - 1) * (FAIXA / 2);
+        const rr = R + desvio;
         const c = document.createElementNS(NS, 'circle');
         c.setAttribute('cx', (cx + Math.cos(ang) * rr).toFixed(2));
         c.setAttribute('cy', (cy + Math.sin(ang) * rr).toFixed(2));
-        c.setAttribute('r',  (0.42 + Math.random() * 0.52).toFixed(2));
+        c.setAttribute('r',  (0.28 + Math.random() * 0.40).toFixed(2));
         c.style.animationDelay    = (Math.random() * 1.5).toFixed(2) + 's';
         c.style.animationDuration = (0.95 + Math.random() * 0.95).toFixed(2) + 's';
         g.appendChild(c);

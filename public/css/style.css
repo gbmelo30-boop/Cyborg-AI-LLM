@@ -987,6 +987,7 @@ body.light-theme #view-chat {
     50%      { transform: scale(1.14); opacity: 1;   }
 }
 .led-loading {
+    width: 24px; height: 24px;   /* um pouco maior: as particulas ficam legiveis */
     transform-origin: center;
     animation: ledLoadPulse 1.25s ease-in-out infinite;
     filter: drop-shadow(0 0 4px rgba(255, 179, 0, 0.85)) drop-shadow(0 0 9px rgba(255, 179, 0, 0.45));
@@ -994,9 +995,9 @@ body.light-theme #view-chat {
 }
 /* carregando: o anel solido some e dá lugar a um anel de PARTICULAS amarelas */
 .led-loading .led-ring-base {
-    stroke: var(--ring-color);
-    opacity: 0;
-    transition: opacity 0.45s ease 0.15s, stroke 0.5s ease;
+    stroke: #FFB300;
+    opacity: 0.28;              /* fica fraco: segura a FORMA do anel */
+    transition: opacity 0.45s ease, stroke 0.5s ease;
 }
 .led-loading .led-parts {
     opacity: 1;
@@ -1012,7 +1013,7 @@ body.light-theme #view-chat {
 }
 /* resposta pronta: as particulas se dissolvem e o anel azul inteiro reaparece */
 .led-loading.led-done .led-parts { opacity: 0; }
-.led-loading.led-done .led-ring-base { opacity: 1; }
+.led-loading.led-done .led-ring-base { opacity: 1; stroke: var(--ring-color); }
 .led-loading.led-done {
     animation: none;
     transform: none;
