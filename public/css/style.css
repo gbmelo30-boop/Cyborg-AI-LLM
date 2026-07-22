@@ -968,11 +968,29 @@ body.light-theme #view-chat {
 .led-loading {
     transform-origin: center;
     animation: ledLoadPulse 1.25s ease-in-out infinite;
-    filter: drop-shadow(0 0 3px rgba(30, 64, 175, 0.85)) drop-shadow(0 0 7px rgba(30, 64, 175, 0.5));
+    filter: drop-shadow(0 0 4px rgba(255, 179, 0, 0.85)) drop-shadow(0 0 9px rgba(255, 179, 0, 0.45));
+    transition: filter 0.6s ease;
 }
+/* carregando: o anel se desfaz em particulas amarelas, que "respiram" */
 .led-loading circle {
-    stroke: var(--ring-color); /* anel azul INTEIRO, apenas pulsando (sem girar) */
-    stroke-dasharray: none;
+    stroke: #FFB300;
+    stroke-linecap: round;
+    animation: ledVirarParticulas 0.55s ease-out forwards,
+               ledParticulasVivas 1.8s ease-in-out 0.55s infinite alternate;
+    transition: stroke 0.6s ease;
+}
+@keyframes ledVirarParticulas {
+    from { stroke-dasharray: 50 0; }
+    to   { stroke-dasharray: 1.7 2.1; }
+}
+@keyframes ledParticulasVivas {
+    from { stroke-dasharray: 1.7 2.1; opacity: 0.72; }
+    to   { stroke-dasharray: 2.5 1.5; opacity: 1; }
+}
+/* resposta pronta: as particulas se juntam de volta no anel azul inteiro */
+@keyframes ledVoltarInteiro {
+    from { stroke-dasharray: 2.2 1.8; }
+    to   { stroke-dasharray: 50 0; }
 }
 .led-loading.led-done {
     animation: none;
@@ -982,8 +1000,8 @@ body.light-theme #view-chat {
 }
 .led-loading.led-done circle {
     stroke: var(--ring-color);
-    stroke-dasharray: none;   /* anel volta a ser INTEIRO ao terminar a resposta */
-    transition: stroke 0.6s ease, stroke-dasharray 0.4s ease;
+    animation: ledVoltarInteiro 0.55s ease-out forwards;  /* particulas -> anel inteiro */
+    transition: stroke 0.6s ease;
 }
 .led-loading.led-error {
     animation: none;
@@ -1334,7 +1352,7 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
     stroke-dashoffset: 0;
     fill-opacity: 1;
     paint-order: stroke;
-    animation: brandInk 0.9s ease both;
+    animation: brandInk 1.45s ease both;
 }
 @keyframes brandInk {
     0%   { stroke-dashoffset: 240; fill-opacity: 0; }
@@ -1891,10 +1909,32 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 /* Botao "Sair" dentro de Sua conta (menos destacado que as acoes principais) */
 .cfg-btn-sair {
     width: 100%; margin-top: 10px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    background: transparent; color: #d93025;
+    background: transparent; color: var(--secondary-text-color);
     border: 1px solid var(--border-color); border-radius: 8px;
     padding: 11px 16px; cursor: pointer; font-family: inherit; font-size: 0.88rem; font-weight: 600;
     transition: background 0.18s, border-color 0.18s;
 }
-.cfg-btn-sair:hover { background: rgba(217, 48, 37, 0.10); border-color: #d93025; }
+.cfg-btn-sair:hover { background: var(--component-hover-bg); border-color: var(--neutral-line, var(--border-color)); color: var(--primary-text-color); }
 .cfg-btn-sair svg { fill: currentColor; flex-shrink: 0; }
+
+/* Icone do "Fechar aplicativo" em vermelho (apenas o icone) */
+#sp-link-exit svg { fill: #d93025; }
+
+/* ==== Acoes sob cada mensagem (copiar / data e hora) ==== */
+.msg-actions { display: flex; align-items: center; gap: 2px; margin-top: 3px; opacity: 0.4; transition: opacity 0.2s ease; }
+.message-container:hover .msg-actions { opacity: 1; }
+.user-container .msg-actions { justify-content: flex-end; }
+.msg-act {
+    background: transparent; border: none; padding: 4px; cursor: pointer;
+    color: var(--secondary-text-color); display: inline-flex; align-items: center;
+    border-radius: 6px; transition: background 0.15s, color 0.15s;
+}
+.msg-act svg { width: 15px; height: 15px; fill: currentColor; }
+.msg-act:hover { background: var(--component-hover-bg); color: var(--primary-text-color); }
+.msg-act.ok { color: #16a34a; }
+.msg-stamp {
+    font-size: 0.72rem; color: var(--secondary-text-color);
+    opacity: 0; max-width: 0; overflow: hidden; white-space: nowrap;
+    transition: opacity 0.2s ease, max-width 0.28s ease, margin 0.2s ease;
+}
+.msg-stamp.show { opacity: 0.7; max-width: 220px; margin-left: 5px; }

@@ -21,9 +21,9 @@ function iniciarAnelIntro() {
     const REDUZ = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const QTD = MOBILE ? 1500 : 2600;
 
-    const SUBIDA = 2800;                     // viagem de cada particula (ms) — mais lenta
-    const DELAYS = 1000;                      // espalhamento dos delays (ms)
-    const FUSAO  = 1150;                     // fusao pontilhado -> anel solido (ms)
+    const SUBIDA = 3400;                     // viagem de cada particula (ms) — mais lenta
+    const DELAYS = 1200;                      // espalhamento dos delays (ms)
+    const FUSAO  = 1350;                     // fusao pontilhado -> anel solido (ms)
     const INI_FUSAO = SUBIDA + DELAYS - 300;
 
     let W = 0, H = 0, dpr = 1, cx = 0, cy = 0, R = 90;
@@ -39,7 +39,7 @@ function iniciarAnelIntro() {
         const ar = ancora.getBoundingClientRect();
         cx = (ar.left - vr.left) + ar.width / 2;
         cy = (ar.top  - vr.top)  + ar.height / 2;
-        R  = ar.width * 0.44;
+        R  = ar.width * 0.47;
     }
 
     function easeOutCubic(v) { return 1 - Math.pow(1 - v, 3); }
@@ -58,7 +58,7 @@ function iniciarAnelIntro() {
             });
         }
         const desl = Math.min(W, H) * 0.4;
-        const Rstart = Math.min(W, H) * 0.42;   // circulo invisivel onde as particulas ja nascem agrupadas
+        const Rstart = Math.min(W, H) * 0.50;   // circulo invisivel onde as particulas ja nascem agrupadas
         for (const p of pts) {
             // origem SOBRE um circulo grande, perto do angulo final -> as particulas ja nascem em forma de circulo
             const aStart = p.ang + (Math.random() - 0.5) * 0.22;

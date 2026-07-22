@@ -684,6 +684,7 @@ window.addMessage = function(author, content, isHtml = false, timestamp = null) 
 
     container.appendChild(metaDiv);
     container.appendChild(bubbleDiv);
+    if (window.__msgActions) window.__msgActions(container, bubbleDiv, timestamp);
     historyDiv.appendChild(container);
 
 
@@ -771,6 +772,7 @@ window.handleChatSubmit = async (e) => {
                 timeDiv.className = 'message-time';
                 timeDiv.innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 bubbleEl.appendChild(timeDiv);
+                if (window.__msgActions && loaderEl) window.__msgActions(loaderEl, bubbleEl, null);
             }
 
             if (ledEl) ledEl.classList.add('led-done');
@@ -820,7 +822,7 @@ $(document).ready(function() {
     setTimeout(() => {
         if (jaLogado) { if (window.irParaChat) window.irParaChat('view-intro'); }
         else { window.gsapSwitch('view-intro', 'view-welcome', 'fade-elegant'); }
-    }, 4600);
+    }, 5900);
 });
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1300,3 +1302,44 @@ document.addEventListener('DOMContentLoaded', () => {
     const ex = document.getElementById('sp-link-exit');
     if (ex && window.__appNativo && window.__appNativo()) ex.classList.remove('hidden');
 });
+
+// ==============================================================================
+// Acoes discretas sob cada mensagem: copiar e ver data/hora
+// ==============================================================================
+window.__msgActions = function(container, bubbleEl, quando) {
+    if (!container || !bubbleEl || container.querySelector('.msg-actions')) return;
+    const acts = document.createElement('div');
+    acts.className = 'msg-actions';
+
+    const bCopy = document.createElement('button');
+    bCopy.type = 'button'; bCopy.className = 'msg-act';
+    bCopy.title = window.T ? window.T('msg_copy') : 'Copiar';
+    bCopy.innerHTML = '<svg viewBox="0 0 24 24"><path d="M16 1H4a2 2 0 00-2 2v14h2V3h12V1zm3 4H8a2 2 0 00-2 2v14a2 2 0 002 2h11a2 2 0 002-2V7a2 2 0 00-2-2zm0 16H8V7h11v14z"/></svg>';
+    bCopy.onclick = async () => {
+        const txt = (bubbleEl.innerText || '').trim();
+        let ok = false;
+        try { await navigator.clipboard.writeText(txt); ok = true; } catch (e) {
+            try {
+                const ta = document.createElement('textarea');
+                ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+                document.body.appendChild(ta); ta.select();
+                ok = document.execCommand('copy'); ta.remove();
+            } catch (e2) {}
+        }
+        if (ok) { bCopy.classList.add('ok'); setTimeout(() => bCopy.classList.remove('ok'), 1400); }
+    };
+
+    const bTime = document.createElement('button');
+    bTime.type = 'button'; bTime.className = 'msg-act';
+    bTime.title = window.T ? window.T('msg_time') : 'Data e hora';
+    bTime.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 18a8 8 0 110-16 8 8 0 010 16zm.5-13H11v6l5.2 3.1.8-1.3-4.5-2.7V7z"/></svg>';
+
+    const stamp = document.createElement('span');
+    stamp.className = 'msg-stamp';
+    const d = quando ? new Date(quando) : new Date();
+    stamp.textContent = d.toLocaleDateString('pt-BR') + '  ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    bTime.onclick = () => stamp.classList.toggle('show');
+
+    acts.appendChild(bCopy); acts.appendChild(bTime); acts.appendChild(stamp);
+    container.appendChild(acts);
+};
