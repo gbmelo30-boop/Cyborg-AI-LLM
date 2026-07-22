@@ -855,14 +855,13 @@ body.light-theme #view-chat {
     background: currentColor;
     transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.22s ease, top 0.32s ease;
 }
-/* fechado (ou fechando): tres riscos */
+/* tres riscos sempre: o mesmo icone que abre tambem fecha */
 .ham-bar:nth-child(1) { top: 0; }
-.ham-bar:nth-child(2) { top: 7px; opacity: 1; }
+.ham-bar:nth-child(2) { top: 7px; }
 .ham-bar:nth-child(3) { top: 14px; }
-/* aberto: as barras se cruzam formando o X */
-.side-panel.is-open .ham-bar:nth-child(1) { top: 7px; transform: rotate(45deg); }
-.side-panel.is-open .ham-bar:nth-child(2) { opacity: 0; transform: scaleX(0.3); }
-.side-panel.is-open .ham-bar:nth-child(3) { top: 7px; transform: rotate(-45deg); }
+/* micro-interacao ao tocar: as barras se aproximam de leve */
+#sidebar-close-button:active .ham-bar:nth-child(1) { top: 2px; }
+#sidebar-close-button:active .ham-bar:nth-child(3) { top: 12px; }
 
 .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
