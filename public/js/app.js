@@ -420,7 +420,7 @@ window.carregarListaSessoes = async () => {
     (folders || []).forEach(f => {
         const itens = porPasta[f.id] || [];
         if (termoBusca && itens.length === 0) return; // durante busca, esconde pastas sem match
-        const isOpen = termoBusca ? true : (window.__openFolders[f.id] !== false); // aberto por padrao; durante a busca, sempre aberto p/ revelar o resultado
+        const isOpen = termoBusca ? true : (window.__openFolders[f.id] === true); // FECHADA por padrao; abre so se o usuario clicou; durante a busca, sempre aberta p/ revelar o resultado
         const block = document.createElement('div');
         block.className = 'hist-folder';
         block.innerHTML = `
@@ -428,7 +428,6 @@ window.carregarListaSessoes = async () => {
                 <svg class="folder-caret ${isOpen ? 'open' : ''}" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M10 17l5-5-5-5v10z"/></svg>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="opacity:.8"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
                 <span class="hist-folder-name">${__escHtml(f.name)}</span>
-                <span class="hist-folder-count">${itens.length}</span>
                 <span class="hist-folder-actions">
                     <button class="btn-icon-hist" title="Renomear pasta" onclick="event.stopPropagation(); renomearPastaUI('${f.id}', '${__escAttr(f.name)}')">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -514,7 +513,8 @@ window.deletarSessao = (id) => {
 
 // ----- Pastas do histórico -----
 window.toggleFolder = (fid) => {
-    window.__openFolders[fid] = !(window.__openFolders[fid] !== false);
+    // fechada por padrao: alterna entre aberta (true) e fechada
+    window.__openFolders[fid] = !(window.__openFolders[fid] === true);
     carregarListaSessoes();
 };
 window.moverSessao = async (sessionId, folderId) => {
