@@ -310,20 +310,16 @@ def verify_user_by_id(user_id, password):
 
 
 def delete_user(user_id):
-    """Exclui a conta e TODOS os dados vinculados a ela: mensagens, sessoes,
-    pastas, preferencias/memoria, registros de atividade e o proprio usuario.
-    Acao permanente."""
+    """Exclui APENAS a conta (login) do usuario. O historico de conversas
+    (chat_sessions/chat_messages) permanece no banco de forma anonima, para
+    fins de pesquisa. Tambem removemos a memoria/preferencias pessoais, pois
+    sao dados de personalizacao (nao fazem parte do historico de pesquisa)."""
     if not user_id:
         return {"error": "sem_usuario"}
     with _lock, _conn() as c:
-        c.execute(
-            "DELETE FROM chat_messages WHERE session_id IN "
-            "(SELECT id FROM chat_sessions WHERE user_id=?)", (user_id,)
-        )
-        c.execute("DELETE FROM chat_sessions WHERE user_id=?", (user_id,))
-        c.execute("DELETE FROM folders WHERE user_id=?", (user_id,))
+        # Remove somente a conta e os dados pessoais de personalizacao.
+        # As sessoes e mensagens NAO sao apagadas (dado de pesquisa preservado).
         c.execute("DELETE FROM user_prefs WHERE user_id=?", (user_id,))
-        c.execute("DELETE FROM activity_log WHERE user_id=?", (user_id,))
         c.execute("DELETE FROM users WHERE id=?", (user_id,))
     return {"ok": True}
 
