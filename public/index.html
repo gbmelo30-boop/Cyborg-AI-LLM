@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Cyborg AI</title>
 
-    <link rel="stylesheet" href="css/style.css?v=86">
+    <link rel="stylesheet" href="css/style.css?v=87">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -229,15 +229,18 @@
                         <div class="cfg-panel" id="cfg-panel-modelos" data-title="cfg_models">
                             <div class="cfg-seg cfg-seg-col" id="cfg-model-seg">
                                 <button type="button" class="cfg-seg-btn cfg-seg-rich" data-modelo="local" onclick="setModeloConfig('local')">
-                                    <span class="cfg-seg-t" data-i18n="model_local">Modelo local (autônomo)</span>
-                                    <span class="cfg-seg-d" data-i18n="model_local_desc">Roda no próprio servidor da pesquisa. Suas conversas não saem daqui. É a opção padrão e alinhada à proposta do Cyborg AI.</span>
+                                    <span class="cfg-seg-t" data-i18n="model_local">Modelo local</span>
+                                    <span class="cfg-seg-d" data-i18n="model_local_desc">Processado no próprio servidor da pesquisa, sem envio de dados a terceiros. Opção padrão, condizente com a proposta de autonomia do Cyborg AI.</span>
                                 </button>
                                 <button type="button" class="cfg-seg-btn cfg-seg-rich" data-modelo="gemini" onclick="setModeloConfig('gemini')">
-                                    <span class="cfg-seg-t" data-i18n="model_gemini">Gemini (nuvem)</span>
-                                    <span class="cfg-seg-d" data-i18n="model_gemini_desc">Modelo mais potente, processado na nuvem do Google.</span>
+                                    <span class="cfg-seg-t" data-i18n="model_gemini">Gemini</span>
+                                    <span class="cfg-seg-d" data-i18n="model_gemini_desc">Modelo de maior capacidade, processado na infraestrutura em nuvem do Google.</span>
                                 </button>
                             </div>
-                            <p class="cfg-hint cfg-hint-warn" data-i18n="model_gemini_warn">Atenção: ao usar o Gemini, o conteúdo das suas mensagens é enviado para servidores do Google. O modelo local mantém tudo dentro do servidor da pesquisa.</p>
+                            <div class="cfg-warn">
+                                <svg class="cfg-warn-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+                                <p class="cfg-warn-txt" data-i18n="model_gemini_warn">Ao selecionar o Gemini, o conteúdo das mensagens é transmitido aos servidores do Google. O modelo local mantém todo o processamento no ambiente da pesquisa.</p>
+                            </div>
                         </div>
 
                         <div class="cfg-panel" id="cfg-panel-rag" data-title="rag_label">
@@ -447,7 +450,7 @@
         </div>
     </section>
 
-    <script src="js/i18n.js?v=30"></script>
+    <script src="js/i18n.js?v=31"></script>
     <script src="js/config.js?v=8"></script>
     <script src="js/db.js?v=13"></script>
     <script src="js/cyborg.js?v=13"></script>

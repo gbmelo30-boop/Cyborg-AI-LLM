@@ -1570,6 +1570,13 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 .cfg-hint-warn { color: #b58900; opacity: 0.95; }
 .light-theme .cfg-hint-warn { color: #9a6a00; }
 
+/* Aviso com icone de informacao (i em circulo), alinhado e sobrio */
+.cfg-warn { display: flex; align-items: flex-start; gap: 9px; margin: 4px 2px 6px; }
+.cfg-warn-ic { flex: 0 0 auto; width: 17px; height: 17px; margin-top: 1px;
+    fill: var(--secondary-text-color); opacity: 0.65; }
+.cfg-warn-txt { margin: 0; font-size: 0.8rem; line-height: 1.5; text-align: left;
+    color: var(--secondary-text-color); opacity: 0.9; }
+
 .cfg-memory-body { margin-top: 12px; }
 .cfg-memory-status { font-size: 0.82rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
 .mem-badge { font-size: 0.72rem; font-weight: 700; padding: 2px 10px; border-radius: 10px; }
