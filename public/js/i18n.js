@@ -83,6 +83,7 @@ window.I18N = {
     rename_prompt: "Novo nome:",
     name_required: "Digite seu nome para continuar.",
     hist_new_folder: "Nova pasta",
+    voice_mic: "Falar",
     folder_none: "Sem pasta",
     folder_empty: "Pasta vazia. Use o seletor de uma conversa para movê-la para cá.",
     folder_prompt_name: "Nome da pasta:",
@@ -209,6 +210,7 @@ window.I18N = {
     rename_prompt: "New name:",
     name_required: "Enter your name to continue.",
     hist_new_folder: "New folder",
+    voice_mic: "Speak",
     folder_none: "No folder",
     folder_empty: "Empty folder. Use a chat's selector to move it here.",
     folder_prompt_name: "Folder name:",
@@ -335,6 +337,7 @@ window.I18N = {
     rename_prompt: "Nuevo nombre:",
     name_required: "Escribe tu nombre para continuar.",
     hist_new_folder: "Nueva carpeta",
+    voice_mic: "Hablar",
     folder_none: "Sin carpeta",
     folder_empty: "Carpeta vacía. Usa el selector de una conversación para moverla aquí.",
     folder_prompt_name: "Nombre de la carpeta:",
@@ -408,6 +411,7 @@ window.applyLang = function(lang){
   document.documentElement.lang = (window.currentLang === 'en') ? 'en' : (window.currentLang === 'es') ? 'es' : 'pt-BR';
   document.querySelectorAll('[data-i18n]').forEach(function(el){ const v = window.T(el.getAttribute('data-i18n')); if (v != null) el.textContent = v; });
   document.querySelectorAll('[data-i18n-ph]').forEach(function(el){ const v = window.T(el.getAttribute('data-i18n-ph')); if (v != null) el.setAttribute('placeholder', v); });
+  document.querySelectorAll('[data-i18n-title]').forEach(function(el){ const v = window.T(el.getAttribute('data-i18n-title')); if (v != null) el.setAttribute('title', v); });
   document.querySelectorAll('[data-i18n-html]').forEach(function(el){ const v = window.T(el.getAttribute('data-i18n-html')); if (v != null) el.innerHTML = v; });
   if (window.marcarIdioma) window.marcarIdioma();
   try {

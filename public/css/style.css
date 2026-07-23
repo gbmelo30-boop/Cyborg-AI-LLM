@@ -859,6 +859,25 @@ body.neo-theme .side-panel { backdrop-filter: blur(8px); -webkit-backdrop-filter
     background-color: var(--component-hover-bg);
     color: var(--primary-text-color);
 }
+/* Botao de microfone (entrada por voz) */
+#mic-button {
+    background: transparent; border: none; color: var(--secondary-text-color);
+    cursor: pointer; width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    transition: background-color 0.2s, color 0.2s; flex-shrink: 0; position: relative;
+}
+#mic-button:hover { background-color: var(--component-hover-bg); color: var(--primary-text-color); }
+#mic-button.is-listening { color: #ff2e63; }
+#mic-button .ico-mic-live { display: none; align-items: flex-end; gap: 2px; height: 16px; }
+#mic-button.is-listening .ico-mic { display: none; }
+#mic-button.is-listening .ico-mic-live { display: inline-flex; }
+#mic-button .ico-mic-live span {
+    width: 3px; height: 6px; border-radius: 2px; background: #ff2e63; display: inline-block;
+    animation: micWave 0.9s ease-in-out infinite;
+}
+#mic-button .ico-mic-live span:nth-child(2) { animation-delay: 0.15s; }
+#mic-button .ico-mic-live span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes micWave { 0%, 100% { height: 5px; } 50% { height: 15px; } }
 #send-button {
     width: 34px;
     height: 34px;

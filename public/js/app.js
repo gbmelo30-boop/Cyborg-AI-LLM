@@ -663,6 +663,62 @@ window.alternarTemaGlobal = () => {
     window.aplicarTema(ordem[(ordem.indexOf(window.temaAtual()) + 1) % ordem.length]);
 };
 
+// ================= ENTRADA POR VOZ (Web Speech API) =================
+// Transcreve a fala no campo de digitar, no MESMO idioma selecionado (pt/en/es).
+(function () {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let rec = null, ouvindo = false, baseText = '';
+
+    function idiomaVoz() {
+        const l = window.currentLang || 'pt';
+        return l === 'en' ? 'en-US' : (l === 'es' ? 'es-ES' : 'pt-BR');
+    }
+    function setMicUI(on) {
+        const btn = document.getElementById('mic-button');
+        if (btn) btn.classList.toggle('is-listening', on);
+    }
+
+    window.__voiceStop = function () {
+        if (rec && ouvindo) { try { rec.stop(); } catch (e) {} }
+    };
+
+    window.toggleVoiceInput = function () {
+        if (!SR) { return; }
+        if (ouvindo) { window.__voiceStop(); return; }
+        const input = document.getElementById('user-input');
+        if (!input) return;
+
+        rec = new SR();
+        rec.lang = idiomaVoz();
+        rec.interimResults = true;
+        rec.continuous = true;
+        baseText = input.value ? (input.value.replace(/\s+$/, '') + ' ') : '';
+
+        rec.onstart = function () { ouvindo = true; setMicUI(true); };
+        rec.onerror = function () { ouvindo = false; setMicUI(false); };
+        rec.onend = function () { ouvindo = false; setMicUI(false); };
+        rec.onresult = function (ev) {
+            let fin = '', interim = '';
+            for (let i = ev.resultIndex; i < ev.results.length; i++) {
+                const t = ev.results[i][0].transcript;
+                if (ev.results[i].isFinal) fin += t; else interim += t;
+            }
+            if (fin) baseText = (baseText + fin).replace(/\s+/g, ' ') + ' ';
+            input.value = (baseText + interim).replace(/^\s+/, '');
+            input.dispatchEvent(new Event('input'));  // dispara auto-grow do campo
+        };
+        try { rec.start(); } catch (e) {}
+    };
+
+    // Esconde o microfone se o navegador/WebView nao suportar reconhecimento de voz
+    function ajustarMic() {
+        const btn = document.getElementById('mic-button');
+        if (btn && !SR) btn.style.display = 'none';
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ajustarMic);
+    else ajustarMic();
+})();
+
 window.addMessage = function(author, content, isHtml = false, timestamp = null) {
     const historyDiv = document.getElementById('chat-history');
     if(!historyDiv) return;
@@ -708,6 +764,7 @@ window.addMessage = function(author, content, isHtml = false, timestamp = null) 
 window.handleChatSubmit = async (e) => {
     if(e) e.preventDefault();
     if (isProcessing) return;
+    if (window.__voiceStop) window.__voiceStop();  // encerra a captura de voz ao enviar
 
     const userInput = document.getElementById('user-input');
     const sendBtn   = document.getElementById('send-button');
