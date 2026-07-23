@@ -53,15 +53,21 @@ except Exception as e:
 MODEL_FILE = os.getenv("MODEL_FILE", "Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf")
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "models", MODEL_FILE)
 
+# Ajustaveis por ambiente (api/.env) sem mexer no codigo:
+#   N_CTX          -> tamanho do contexto (reduza se faltar VRAM; ex.: 6144)
+#   N_GPU_LAYERS   -> camadas na GPU (-1 = todas; reduza se faltar VRAM; ex.: 40)
+N_CTX = int(os.getenv("N_CTX", "8192"))
+N_GPU_LAYERS = int(os.getenv("N_GPU_LAYERS", "-1"))
 try:
     llm = Llama(
         model_path=MODEL_PATH,
-        n_ctx=8192,
-        n_gpu_layers=-1,
+        n_ctx=N_CTX,
+        n_gpu_layers=N_GPU_LAYERS,
         n_threads=(os.cpu_count() or 8),
         n_threads_batch=(os.cpu_count() or 8),
         verbose=False
     )
+    logger.info(f"Modelo carregado: {MODEL_FILE} | n_ctx={N_CTX} | n_gpu_layers={N_GPU_LAYERS}")
 except Exception as e:
     logger.error(f"Erro ao carregar Llama: {e}")
     llm = None
