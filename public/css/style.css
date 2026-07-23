@@ -55,43 +55,109 @@ body.light-theme {
 /* TEMA NEO — cyberpunk / sci-fi (muda a "pele": fundo, cores, superficies)        */
 /* ============================================================================== */
 body.neo-theme {
-    --bg-color: #070a14;
-    --primary-text-color: #eaf6ff;
-    --secondary-text-color: #a9c7e0;
-    --tertiary-text-color: #7f9dc0;
-    --led-static-blue: #22d3ee;               /* ciano eletrico */
-    --neutral-line: #3a5680;
-    --neutral-fill: #16233f;
-    --neutral-on: #d6ecff;
-    --led-glow: rgba(34, 211, 238, 0.6);
-    --loader-bar-bg: #101a30;
-    --border-color: rgba(120, 180, 255, 0.18);
-    --input-fill: rgba(12, 18, 34, 0.92);
-    --input-border: rgba(120, 200, 255, 0.16);
-    --send-bg: #14203a;
-    --ring-color: #22d3ee;
-    /* Fundo neon reutilizavel (brilhos ciano + magenta e grade sutil) */
+    --neo-cyan: #26e6ff;
+    --neo-red: #ff2e63;
+    --bg-color: #060912;
+    --primary-text-color: #eaf9ff;
+    --secondary-text-color: #b3d4ea;
+    --tertiary-text-color: #85a6c6;
+    --led-static-blue: #26e6ff;               /* ciano eletrico */
+    --neutral-line: #2f74a8;
+    --neutral-fill: #103048;
+    --neutral-on: #eafcff;
+    --led-glow: rgba(38, 230, 255, 0.75);
+    --loader-bar-bg: #0d1a2e;
+    --border-color: rgba(38, 230, 255, 0.28);
+    --input-fill: rgba(9, 16, 30, 0.92);
+    --input-border: rgba(38, 230, 255, 0.30);
+    --send-bg: #0f2740;
+    --ring-color: #26e6ff;
+    /* Fundo neon: brilho ciano + carmim, grade sutil e leve scanline */
     --neo-bg:
-        radial-gradient(1100px 620px at 86% -12%, rgba(217, 70, 239, 0.14), transparent 60%),
-        radial-gradient(1000px 720px at -12% 112%, rgba(34, 211, 238, 0.17), transparent 60%),
-        repeating-linear-gradient(0deg, transparent 0 43px, rgba(120, 180, 255, 0.035) 43px 44px),
-        repeating-linear-gradient(90deg, transparent 0 43px, rgba(120, 180, 255, 0.035) 43px 44px),
-        linear-gradient(160deg, #070a14 0%, #0a1124 55%, #070a14 100%);
+        radial-gradient(1150px 640px at 88% -14%, rgba(255, 46, 99, 0.16), transparent 58%),
+        radial-gradient(1050px 760px at -14% 114%, rgba(38, 230, 255, 0.20), transparent 60%),
+        repeating-linear-gradient(0deg, transparent 0 3px, rgba(0, 0, 0, 0.16) 3px 4px),
+        repeating-linear-gradient(0deg, transparent 0 43px, rgba(38, 230, 255, 0.05) 43px 44px),
+        repeating-linear-gradient(90deg, transparent 0 43px, rgba(38, 230, 255, 0.05) 43px 44px),
+        linear-gradient(160deg, #050810 0%, #0a1526 55%, #060a15 100%);
 }
 
 /* Aplica o fundo neon nas telas de tela cheia */
 body.neo-theme #view-welcome,
 body.neo-theme .view-container { background: var(--neo-bg) fixed; }
 
-/* Acentos neon: leve glow no anel e nos botoes de destaque */
+/* Acentos neon: glow no anel e nos titulos */
 body.neo-theme .led-ring circle,
 body.neo-theme .welcome-ring circle,
-body.neo-theme .header-halo circle { filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.55)); }
-body.neo-theme .sp-newchat:hover,
-body.neo-theme .welcome-advance { box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.25), 0 0 18px rgba(34, 211, 238, 0.12); }
+body.neo-theme .header-halo circle { filter: drop-shadow(0 0 6px rgba(38, 230, 255, 0.8)); }
 body.neo-theme .cyborg-brand,
 body.neo-theme .welcome-brand,
-body.neo-theme .cyborg-title { text-shadow: 0 0 14px rgba(34, 211, 238, 0.35); }
+body.neo-theme .cyborg-title { text-shadow: 0 0 16px rgba(38, 230, 255, 0.5), 0 0 2px rgba(38,230,255,0.6); letter-spacing: 1px; }
+
+/* ============================================================================== */
+/* NEO — GEOMETRIA (chanfros, colchetes de canto, bordas neon)                     */
+/* ============================================================================== */
+/* Cantos chanfrados (corte diagonal HUD) em cards, modais e botoes principais */
+body.neo-theme .login-card,
+body.neo-theme .modal-box {
+    border-radius: 2px !important;
+    clip-path: polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px);
+    border-top: 2px solid var(--neo-cyan);
+    position: relative;
+}
+/* Colchetes de canto (⌐ ¬) nos cantos livres do card de login */
+body.neo-theme .login-card::before,
+body.neo-theme .login-card::after {
+    content: ''; position: absolute; width: 16px; height: 16px; pointer-events: none; z-index: 3;
+}
+body.neo-theme .login-card::before { top: 8px; right: 8px; border-top: 2px solid var(--neo-red); border-right: 2px solid var(--neo-red); }
+body.neo-theme .login-card::after { bottom: 8px; left: 8px; border-bottom: 2px solid var(--neo-cyan); border-left: 2px solid var(--neo-cyan); }
+
+/* Botoes principais chanfrados + borda neon */
+body.neo-theme .sp-newchat,
+body.neo-theme .welcome-advance,
+body.neo-theme .btn-start-research,
+body.neo-theme .cfg-btn,
+body.neo-theme .cfg-btn-full {
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    border: 1px solid rgba(38, 230, 255, 0.45) !important;
+    border-radius: 0 !important;
+}
+body.neo-theme .welcome-advance,
+body.neo-theme .btn-start-research { background: rgba(38, 230, 255, 0.12); color: var(--neo-cyan); }
+body.neo-theme .sp-newchat:hover,
+body.neo-theme .welcome-advance:hover,
+body.neo-theme .btn-start-research:hover { filter: drop-shadow(0 0 8px rgba(38, 230, 255, 0.45)); background: rgba(38, 230, 255, 0.18); }
+
+/* Composer (barra de digitar) chanfrado */
+body.neo-theme .input-pill {
+    clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+    border: 1px solid rgba(38, 230, 255, 0.35) !important;
+    border-radius: 0 !important;
+}
+
+/* Baloes de mensagem: canto chanfrado + barra neon lateral (ciano bot / carmim usuario) */
+body.neo-theme .bot-container .message-bubble,
+body.neo-theme .user-container .message-bubble {
+    border-radius: 2px;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 11px), calc(100% - 11px) 100%, 0 100%);
+    border: 1px solid rgba(38, 230, 255, 0.14);
+}
+body.neo-theme .bot-container .message-bubble { border-left: 2px solid var(--neo-cyan); }
+body.neo-theme .user-container .message-bubble { border-left: 2px solid var(--neo-red); }
+
+/* Campo de busca e segmentos tambem chanfrados */
+body.neo-theme .history-search,
+body.neo-theme .cfg-seg-btn { border-radius: 0 !important; }
+body.neo-theme .history-search {
+    clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+    border: 1px solid rgba(38, 230, 255, 0.30) !important;
+}
+/* Pasta do historico com borda neon e canto cortado */
+body.neo-theme .hist-folder {
+    border: 1px solid rgba(38, 230, 255, 0.22);
+    clip-path: polygon(12px 0, 100% 0, 100% 100%, 0 100%, 0 12px);
+}
 
 html, body {
     height: 100vh;
