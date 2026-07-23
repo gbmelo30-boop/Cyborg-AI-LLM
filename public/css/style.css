@@ -86,10 +86,15 @@ body.neo-theme {
 body.neo-theme #view-welcome,
 body.neo-theme .view-container { background: var(--neo-bg) fixed; }
 
-/* Acentos neon: glow no anel e nos titulos */
+/* Acentos neon: glow no anel e nos titulos.
+   overflow visivel evita que o brilho seja cortado no quadrado do SVG. */
+body.neo-theme .led-ring,
+body.neo-theme .welcome-ring,
+body.neo-theme .header-halo,
+body.neo-theme #view-intro svg { overflow: visible; }
 body.neo-theme .led-ring circle,
 body.neo-theme .welcome-ring circle,
-body.neo-theme .header-halo circle { filter: drop-shadow(0 0 6px rgba(38, 230, 255, 0.8)); }
+body.neo-theme .header-halo circle { filter: drop-shadow(0 0 9px rgba(38, 230, 255, 0.65)) drop-shadow(0 0 3px rgba(38, 230, 255, 0.9)); }
 body.neo-theme .cyborg-brand,
 body.neo-theme .welcome-brand,
 body.neo-theme .cyborg-title { text-shadow: 0 0 16px rgba(38, 230, 255, 0.5), 0 0 2px rgba(38,230,255,0.6); letter-spacing: 1px; }
@@ -141,10 +146,8 @@ body.neo-theme .bot-container .message-bubble,
 body.neo-theme .user-container .message-bubble {
     border-radius: 2px;
     clip-path: polygon(0 0, 100% 0, 100% calc(100% - 11px), calc(100% - 11px) 100%, 0 100%);
-    border: 1px solid rgba(38, 230, 255, 0.14);
+    border: 1px solid rgba(38, 230, 255, 0.16);
 }
-body.neo-theme .bot-container .message-bubble { border-left: 2px solid var(--neo-cyan); }
-body.neo-theme .user-container .message-bubble { border-left: 2px solid var(--neo-red); }
 
 /* Campo de busca e segmentos tambem chanfrados */
 body.neo-theme .history-search,
@@ -158,6 +161,15 @@ body.neo-theme .hist-folder {
     border: 1px solid rgba(38, 230, 255, 0.22);
     clip-path: polygon(12px 0, 100% 0, 100% 100%, 0 100%, 0 12px);
 }
+
+/* Polimento: linhas de luz no cabecalho e brilho ao focar/enviar */
+body.neo-theme .chat-header { border-bottom: 1px solid rgba(38, 230, 255, 0.26); box-shadow: 0 2px 16px -9px rgba(38, 230, 255, 0.7); }
+body.neo-theme .side-panel-header { border-bottom: 1px solid rgba(38, 230, 255, 0.20); }
+body.neo-theme .side-panel-top { border-bottom-color: rgba(38, 230, 255, 0.14); }
+body.neo-theme .input-pill:focus-within { border-color: var(--neo-cyan) !important; filter: drop-shadow(0 0 7px rgba(38, 230, 255, 0.4)); }
+body.neo-theme #send-button { box-shadow: 0 0 12px -3px rgba(38, 230, 255, 0.6); }
+/* Avatar/halo da mensagem do bot com leve pulso de luz */
+body.neo-theme .message-meta .header-halo circle { filter: drop-shadow(0 0 6px rgba(38, 230, 255, 0.8)); }
 
 html, body {
     height: 100vh;
