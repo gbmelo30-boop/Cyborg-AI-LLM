@@ -497,6 +497,22 @@ def atualizar_conta():
     return jsonify(res)
 
 
+@app.route('/api/account/delete', methods=['POST'])
+def excluir_conta():
+    """Exclui permanentemente a conta e todos os dados vinculados.
+    Exige a senha atual como confirmacao."""
+    d = request.json or {}
+    uid = (d.get('user_id') or '').strip()
+    atual = d.get('current_password') or ''
+    if not uid or not db_local.verify_user_by_id(uid, atual):
+        return jsonify({"error": "senha_atual_incorreta"}), 401
+    res = db_local.delete_user(uid)
+    if res.get('error'):
+        return jsonify(res), 400
+    logger.info(f"Conta excluida a pedido do usuario: {uid[:8]}...")
+    return jsonify({"ok": True})
+
+
 @app.route('/api/prefs', methods=['GET'])
 def obter_prefs():
     uid = request.args.get('user_id')

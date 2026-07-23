@@ -171,6 +171,17 @@ const DB = {
         } catch (e) { return { error: 'conexao' }; }
     },
 
+    excluirConta: async (current_password) => {
+        if (!DB.user) return { error: 'sem_usuario' };
+        try {
+            const r = await fetch(`${API_BASE_URL}/api/account/delete`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: DB.user.id, current_password })
+            });
+            return await r.json();
+        } catch (e) { return { error: 'conexao' }; }
+    },
+
     // Registra um ajuste do usuario (RAG/memoria/estilo) para o historico do admin
     registrarAtividade: async (tipo, detalhe) => {
         if (!DB.user) return;

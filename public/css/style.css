@@ -1956,6 +1956,26 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 .cfg-btn-sair:hover { background: var(--component-hover-bg); border-color: var(--neutral-line, var(--border-color)); color: var(--primary-text-color); }
 .cfg-btn-sair svg { fill: currentColor; flex-shrink: 0; }
 
+/* "Excluir minha conta": botao discreto em vermelho, dentro de "Sua conta" */
+.cfg-btn-excluir {
+    width: 100%; margin-top: 10px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    background: transparent; color: #d93025;
+    border: 1px solid transparent; border-radius: 8px;
+    padding: 10px 16px; cursor: pointer; font-family: inherit; font-size: 0.85rem; font-weight: 600;
+    transition: background 0.18s;
+}
+.cfg-btn-excluir:hover { background: rgba(217,48,37,0.10); }
+.cfg-btn-excluir svg { fill: currentColor; flex-shrink: 0; }
+
+/* Botao de confirmacao da exclusao (vermelho preenchido) */
+.cfg-btn-danger { background: #d93025; color: #fff; border: none; }
+.cfg-btn-danger:hover { background: #b3261e; }
+
+/* Aviso de perigo (vermelho) reaproveitando o layout do .cfg-warn */
+.cfg-warn-danger .cfg-warn-ic { fill: #d93025; opacity: 0.9; }
+.cfg-warn-danger .cfg-warn-txt { color: #d93025; opacity: 0.95; }
+.light-theme .cfg-warn-danger .cfg-warn-txt { color: #b3261e; }
+
 /* Icone do "Fechar aplicativo" em vermelho (apenas o icone) */
 #sp-link-exit svg { fill: #d93025; }
 

@@ -1172,6 +1172,41 @@ window.salvarConta = async (btn) => {
     msg.textContent = window.T ? window.T('cfg_account_ok') : 'Dados atualizados!'; msg.classList.add('ok');
 };
 
+// Exclusao permanente da conta: confirma com a senha atual, apaga tudo e
+// leva o usuario de volta para a tela inicial (com transicao suave).
+window.excluirConta = async (btn) => {
+    const msg = document.getElementById('acc-del-msg');
+    const pass = (document.getElementById('acc-del-pass').value || '');
+    msg.className = 'cfg-acc-msg';
+    if (!pass) {
+        msg.textContent = window.T ? window.T('cfg_need_curpass') : 'Digite sua senha atual para confirmar.';
+        msg.classList.add('err'); return;
+    }
+    const orig = btn.innerText; btn.innerText = '...'; btn.disabled = true;
+    const res = (DB.excluirConta ? await DB.excluirConta(pass) : { error: 'indisponivel' });
+    if (res && res.error) {
+        btn.innerText = orig; btn.disabled = false;
+        msg.textContent = (res.error === 'senha_atual_incorreta')
+            ? (window.T ? window.T('cfg_wrong_pass') : 'Senha incorreta.')
+            : (window.T ? window.T('cfg_delete_fail') : 'Não foi possível excluir a conta.');
+        msg.classList.add('err'); return;
+    }
+    // Sucesso: limpa a sessao local e volta para a tela inicial
+    document.getElementById('acc-del-pass').value = '';
+    ['modal-config', 'modal-guest', 'modal-historico', 'modal-autores', 'modal-sobre', 'modal-idioma']
+        .forEach(id => { const m = document.getElementById(id); if (m) m.classList.remove('active'); });
+    if (typeof DB !== 'undefined') DB.user = null;
+    localStorage.removeItem('cyborg_current_session');
+    localStorage.setItem('cyborg_estilo', 'equilibrado');
+    localStorage.setItem('cyborg_modelo', 'local');
+    const ch = document.getElementById('chat-history'); if (ch) ch.innerHTML = '';
+    if (window.esconderBoasVindas) window.esconderBoasVindas();
+    currentSessionId = null;
+    const sp = document.getElementById('side-panel'); if (sp) sp.classList.remove('is-open');
+    btn.innerText = orig; btn.disabled = false;
+    window.gsapSwitch('view-chat', 'view-welcome', 'fade-elegant');
+};
+
 
 // Mostrar/ocultar senha
 window.togglePw = (btn) => {
