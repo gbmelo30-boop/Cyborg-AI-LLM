@@ -45,12 +45,12 @@ const DB = {
         }
     },
 
-    salvarMensagem: async (sessionId, role, content, usedRag = false, estilo = null) => {
+    salvarMensagem: async (sessionId, role, content, usedRag = false, estilo = null, modelo = null) => {
         try {
             await fetch(`${API_BASE_URL}/api/messages`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ session_id: sessionId, role: role, content: content, used_rag: usedRag, estilo: estilo })
+                body: JSON.stringify({ session_id: sessionId, role: role, content: content, used_rag: usedRag, estilo: estilo, modelo: modelo })
             });
         } catch (e) {
             window.systemLog(`Erro salvarMensagem: ${e.message}`, "ERRO");

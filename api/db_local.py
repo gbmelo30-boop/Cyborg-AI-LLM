@@ -127,6 +127,13 @@ def init_db():
                 c.execute("ALTER TABLE chat_messages ADD COLUMN estilo TEXT")
         except Exception:
             pass
+        # Migracao leve: coluna modelo em chat_messages (local x gemini, por resposta)
+        try:
+            mcols2 = [r[1] for r in c.execute("PRAGMA table_info(chat_messages)").fetchall()]
+            if "modelo" not in mcols2:
+                c.execute("ALTER TABLE chat_messages ADD COLUMN modelo TEXT")
+        except Exception:
+            pass
         # Migracao leve: coluna estilo em user_prefs (estilo de resposta por conta)
         try:
             pcols = [r[1] for r in c.execute("PRAGMA table_info(user_prefs)").fetchall()]
@@ -498,7 +505,7 @@ def set_session_folder(session_id, folder_id):
 
 
 # ----------------------------------------------------------------- Mensagens
-def add_message(session_id, role, content, used_rag=False, estilo=None):
+def add_message(session_id, role, content, used_rag=False, estilo=None, modelo=None):
     if role not in ("user", "assistant"):
         role = "assistant"
     mid = str(uuid.uuid4())
@@ -507,9 +514,9 @@ def add_message(session_id, role, content, used_rag=False, estilo=None):
         return {"id": mid, "created_at": ts, "gravado": False}
     with _lock, _conn() as c:
         c.execute(
-            "INSERT INTO chat_messages (id,session_id,role,content,used_rag,estilo,created_at)"
-            " VALUES (?,?,?,?,?,?,?)",
-            (mid, session_id, role, content, 1 if used_rag else 0, estilo, ts),
+            "INSERT INTO chat_messages (id,session_id,role,content,used_rag,estilo,modelo,created_at)"
+            " VALUES (?,?,?,?,?,?,?,?)",
+            (mid, session_id, role, content, 1 if used_rag else 0, estilo, modelo, ts),
         )
     return {"id": mid, "created_at": ts}
 
@@ -517,7 +524,7 @@ def add_message(session_id, role, content, used_rag=False, estilo=None):
 def get_messages(session_id):
     with _conn() as c:
         rows = c.execute(
-            "SELECT role,content,used_rag,estilo,created_at FROM chat_messages WHERE session_id=? ORDER BY created_at ASC",
+            "SELECT role,content,used_rag,estilo,modelo,created_at FROM chat_messages WHERE session_id=? ORDER BY created_at ASC",
             (session_id,),
         ).fetchall()
     return [dict(r) for r in rows]
@@ -541,19 +548,19 @@ def _fmt_dt(iso_str):
 
 def export_rows(user_id=None):
     """Retorna [cabecalho] + linhas, pareando cada pergunta com a resposta seguinte.
-    Colunas: session_id, participante, pergunta, resposta, rag, estilo, data_hora."""
+    Colunas: session_id, participante, pergunta, resposta, rag, estilo, modelo, data_hora."""
     q = "SELECT id,user_id,user_name,created_at FROM chat_sessions"
     params = []
     if user_id:
         q += " WHERE user_id=?"; params.append(user_id)
     q += " ORDER BY created_at ASC"
-    rows = [["session_id", "participante", "pergunta", "resposta", "rag", "estilo", "data_hora"]]
+    rows = [["session_id", "participante", "pergunta", "resposta", "rag", "estilo", "modelo", "data_hora"]]
     with _conn() as c:
         sessions = c.execute(q, params).fetchall()
         for s in sessions:
             participante = s["user_name"] or anon_label(s["user_id"])
             msgs = c.execute(
-                "SELECT role,content,used_rag,estilo,created_at FROM chat_messages WHERE session_id=? ORDER BY created_at ASC",
+                "SELECT role,content,used_rag,estilo,modelo,created_at FROM chat_messages WHERE session_id=? ORDER BY created_at ASC",
                 (s["id"],),
             ).fetchall()
             i = 0
@@ -564,14 +571,16 @@ def export_rows(user_id=None):
                     resposta = ""
                     rag_flag = ""
                     estilo_v = ""
+                    modelo_v = ""
                     if i + 1 < len(msgs) and msgs[i + 1]["role"] == "assistant":
                         resposta = msgs[i + 1]["content"]
                         rag_flag = "sim" if msgs[i + 1]["used_rag"] else "nao"
                         estilo_v = msgs[i + 1]["estilo"] or "equilibrado"
+                        modelo_v = msgs[i + 1]["modelo"] or "local"
                         i += 2
                     else:
                         i += 1
-                    rows.append([s["id"], participante, pergunta, resposta, rag_flag, estilo_v, data_hora])
+                    rows.append([s["id"], participante, pergunta, resposta, rag_flag, estilo_v, modelo_v, data_hora])
                 else:
                     i += 1
     return rows

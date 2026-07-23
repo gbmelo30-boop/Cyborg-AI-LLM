@@ -1560,6 +1560,16 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 .cfg-seg-btn:hover { color: var(--primary-text-color); }
 .cfg-seg-btn.active { background: var(--neutral-fill); color: var(--neutral-on); }
 
+/* Opcoes "ricas" (titulo + descricao), usadas no painel Modelos */
+.cfg-seg-rich { display: flex; flex-direction: column; gap: 3px; padding: 11px 13px; margin-bottom: 6px;
+    border: 1px solid var(--border-color, rgba(127,127,127,0.18)); border-radius: 10px; }
+.cfg-seg-rich .cfg-seg-t { font-size: 0.9rem; font-weight: 700; }
+.cfg-seg-rich .cfg-seg-d { font-size: 0.78rem; font-weight: 500; opacity: 0.72; line-height: 1.4; white-space: normal; }
+.cfg-seg-rich.active { background: var(--neutral-fill); color: var(--neutral-on); border-color: transparent; }
+.cfg-seg-rich.active .cfg-seg-d { opacity: 0.85; }
+.cfg-hint-warn { color: #b58900; opacity: 0.95; }
+.light-theme .cfg-hint-warn { color: #9a6a00; }
+
 .cfg-memory-body { margin-top: 12px; }
 .cfg-memory-status { font-size: 0.82rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
 .mem-badge { font-size: 0.72rem; font-weight: 700; padding: 2px 10px; border-radius: 10px; }

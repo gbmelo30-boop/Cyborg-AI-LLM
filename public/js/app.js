@@ -817,6 +817,10 @@ $(document).ready(function() {
     if (themeSwitcher) themeSwitcher.addEventListener('click', toggleTheme);
     applySavedTheme();
 
+    // O modelo SEMPRE comeca em 'local' a cada abertura do app; para trocar,
+    // o usuario precisa entrar em Configuracoes > Modelos.
+    localStorage.setItem('cyborg_modelo', 'local');
+
     // Splash: mantem o anel + nome por um instante e avanca sozinho
     const ctxBoot = JSON.parse(localStorage.getItem('cyborg_current_session') || '{}');
     const jaLogado = !!(ctxBoot.registered && ctxBoot.userId);
@@ -1001,6 +1005,8 @@ function __cfgRowVals() {
     if (tv) tv.textContent = window.T ? window.T(isLight ? 'cfg_theme_light' : 'cfg_theme_dark') : '';
     const lv = document.getElementById('cfg-row-lang-val');
     if (lv) { const L = { pt: 'Português', en: 'English', es: 'Español' }; lv.textContent = L[window.currentLang || 'pt'] || 'Português'; }
+    const mv = document.getElementById('cfg-row-modelo-val');
+    if (mv) { const modo = localStorage.getItem('cyborg_modelo') || 'local'; mv.textContent = window.T ? window.T(modo === 'gemini' ? 'model_gemini_short' : 'model_local_short') : (modo === 'gemini' ? 'Gemini' : 'Local'); }
 }
 
 function __showCfgPanel(id, dir) {
@@ -1055,6 +1061,7 @@ window.initConfigModal = async () => {
     __marcarSeg('cfg-theme-seg', 'theme', isLight ? 'light' : 'dark');
     __marcarSeg('cfg-lang-seg', 'lang', window.currentLang || 'pt');
     __marcarSeg('cfg-style-seg', 'estilo', localStorage.getItem('cyborg_estilo') || 'equilibrado');
+    __marcarSeg('cfg-model-seg', 'modelo', localStorage.getItem('cyborg_modelo') || 'local');
     __cfgRowVals();
 
     // Reflete o estado atual do RAG no toggle "Respostas aprimoradas" (ativo por padrao)
@@ -1094,6 +1101,15 @@ window.setIdiomaConfig = (lang) => {
 window.setEstiloConfig = (estilo) => {
     localStorage.setItem('cyborg_estilo', estilo);
     __marcarSeg('cfg-style-seg', 'estilo', estilo);
+};
+
+// Modelo: local (padrao) x Gemini (nuvem). So muda dentro das Configuracoes;
+// a cada abertura do app volta para 'local' (ver boot).
+window.setModeloConfig = (modelo) => {
+    const m = (modelo === 'gemini') ? 'gemini' : 'local';
+    localStorage.setItem('cyborg_modelo', m);
+    __marcarSeg('cfg-model-seg', 'modelo', m);
+    if (typeof __cfgRowVals === 'function') __cfgRowVals();
 };
 
 function __aplicarPrefsUI(prefs){

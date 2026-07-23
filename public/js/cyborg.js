@@ -57,7 +57,8 @@ const CYBORG = {
                     session_id: currentSessionId,
                     userName: (contextData.userName || ''),
                     user_id: DB.user.id,
-                    estilo: (localStorage.getItem('cyborg_estilo') || 'equilibrado')
+                    estilo: (localStorage.getItem('cyborg_estilo') || 'equilibrado'),
+                    modelo: (localStorage.getItem('cyborg_modelo') || 'local')
                 })
             });
 
@@ -81,9 +82,10 @@ const CYBORG = {
 
             const text = (result.response || "").replace("<<FIM>>", "").trim();
 
-            // 3. Salva a resposta da IA (registrando se o RAG foi usado e qual estilo)
+            // 3. Salva a resposta da IA (registrando se o RAG foi usado, o estilo e o modelo)
             const estiloUsado = (localStorage.getItem('cyborg_estilo') || 'equilibrado');
-            await DB.salvarMensagem(currentSessionId, "assistant", text, !!result.used_rag, estiloUsado);
+            const modeloUsado = (result.modelo || localStorage.getItem('cyborg_modelo') || 'local');
+            await DB.salvarMensagem(currentSessionId, "assistant", text, !!result.used_rag, estiloUsado, modeloUsado);
             window.systemLog("Resposta salva.");
 
             return { response: text, sessionId: currentSessionId };

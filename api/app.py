@@ -135,7 +135,51 @@ def buscar_contexto(pergunta):
         return "", False
 
 
-def generate_llm_response(messages, use_rag=True, tema_pesquisa="Geral", user_name="", idioma="pt", estilo="equilibrado", memoria=""):
+# ============================================================================
+# Backend Gemini (nuvem) — alternativa selecionável em Configurações > Modelos.
+# A chave fica SÓ no api/.env (GEMINI_API_KEY), nunca no código nem no Git.
+# Reaproveita exatamente o mesmo prompt/estilo/RAG do modelo local.
+# ============================================================================
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite")
+_genai = None
+_gemini_ok = False
+try:
+    if GEMINI_API_KEY:
+        import google.generativeai as _genai
+        _genai.configure(api_key=GEMINI_API_KEY)
+        _gemini_ok = True
+        logger.info(f"Gemini disponivel (modelo: {GEMINI_MODEL}).")
+    else:
+        logger.info("GEMINI_API_KEY nao definida; a opcao Gemini ficara indisponivel (usa-se o local).")
+except Exception as e:
+    logger.warning(f"Gemini indisponivel: {e}")
+    _gemini_ok = False
+
+
+def _gerar_via_gemini(system_content, formatted_messages):
+    """Gera a resposta pela API do Gemini usando o MESMO prompt/RAG do modelo local.
+    formatted_messages = [system, ...historico..., usuario_final]. Retorna o texto."""
+    if not _gemini_ok or _genai is None:
+        raise RuntimeError("gemini_indisponivel")
+    model = _genai.GenerativeModel(model_name=GEMINI_MODEL, system_instruction=system_content)
+    history = []
+    for m in formatted_messages[1:-1]:
+        papel = "user" if m.get("role") == "user" else "model"
+        history.append({"role": papel, "parts": [m.get("content", "")]})
+    user_input = formatted_messages[-1].get("content", "")
+    chat = model.start_chat(history=history)
+    resp = chat.send_message(
+        user_input,
+        generation_config=_genai.types.GenerationConfig(temperature=0.9, stop_sequences=["<<FIM>>"])
+    )
+    try:
+        return resp.text
+    except Exception:
+        return "Minhas redes neurais sentiram um distúrbio. Podemos recomeçar?"
+
+
+def generate_llm_response(messages, use_rag=True, tema_pesquisa="Geral", user_name="", idioma="pt", estilo="equilibrado", memoria="", modelo="local"):
     try:
         last_user_msg = (messages[-1].get('content') or '')[:8000]  # limite anti-abuso
         contexto_rag = ""
@@ -309,6 +353,17 @@ FECHAMENTO:
         
         formatted_messages.append({"role": "user", "content": final_content})
 
+        # Backend de geracao: Gemini (nuvem) se o usuario escolheu; senao, modelo local.
+        if modelo == "gemini":
+            try:
+                response_text = _gerar_via_gemini(system_content, formatted_messages)
+            except Exception as ge:
+                logger.error(f"Erro no Gemini: {ge}")
+                response_text = ("Nao consegui usar o modelo Gemini agora. Verifique a "
+                                 "configuracao no servidor ou volte para o modelo local em "
+                                 "Configuracoes > Modelos.")
+            return ((response_text or "").replace("<<FIM>>", "").strip()), rag_utilizado
+
         if not llm:
             return "Modelo LLaMA não inicializado.", False
 
@@ -339,6 +394,13 @@ def chat():
     session_id = data.get('session_id')
     user_id = (data.get('user_id') or '').strip()
     estilo = (data.get('estilo') or 'equilibrado').strip()
+    modelo = (data.get('modelo') or 'local').strip().lower()
+    if modelo not in ('local', 'gemini'):
+        modelo = 'local'
+    # Se o usuario pediu Gemini mas ele nao esta configurado no servidor, cai para o local
+    if modelo == 'gemini' and not _gemini_ok:
+        logger.warning("Gemini solicitado, mas indisponivel no servidor; usando modelo local.")
+        modelo = 'local'
 
     if not messages:
         return jsonify({"error": "Nenhuma mensagem enviada"}), 400
@@ -359,7 +421,7 @@ def chat():
 
     try:
         # 1. Chama a função que você já tem para rodar o Llama local e RAG
-        response_text, rag_foi_usado = generate_llm_response(messages, use_rag, tema_pesquisa, user_name, idioma, estilo, memoria)
+        response_text, rag_foi_usado = generate_llm_response(messages, use_rag, tema_pesquisa, user_name, idioma, estilo, memoria, modelo)
 
         # 2. Limpa a tag de parada caso o modelo gere
         response_text = response_text.replace("<<FIM>>", "").strip()
@@ -378,6 +440,7 @@ def chat():
             "response": response_text,
             "session_id": session_id,
             "used_rag": rag_foi_usado,
+            "modelo": modelo,
             "memory_should_refresh": memory_should_refresh
         })
 
@@ -583,7 +646,7 @@ def salvar_mensagem():
     d = request.json or {}
     if not d.get('session_id') or not d.get('role'):
         return jsonify({"error": "session_id e role são obrigatórios"}), 400
-    m = db_local.add_message(d['session_id'], d['role'], d.get('content', ''), d.get('used_rag', False), d.get('estilo'))
+    m = db_local.add_message(d['session_id'], d['role'], d.get('content', ''), d.get('used_rag', False), d.get('estilo'), d.get('modelo'))
     return jsonify(m)
 
 
@@ -679,7 +742,7 @@ def admin_export_xlsx():
     for cell in ws[1]:
         cell.font = Font(bold=True, color="FFFFFF"); cell.fill = fill
         cell.alignment = Alignment(vertical="center")
-    for i, wdt in enumerate([18, 18, 58, 58, 8, 16, 18], start=1):  # session,participante,pergunta,resposta,rag,estilo,data
+    for i, wdt in enumerate([18, 18, 58, 58, 8, 16, 12, 18], start=1):  # session,participante,pergunta,resposta,rag,estilo,modelo,data
         ws.column_dimensions[get_column_letter(i)].width = wdt
     for row in ws.iter_rows(min_row=2):
         for cell in row:
