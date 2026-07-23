@@ -51,6 +51,48 @@ body.light-theme {
     --ring-color: #0056b3;
 }
 
+/* ============================================================================== */
+/* TEMA NEO — cyberpunk / sci-fi (muda a "pele": fundo, cores, superficies)        */
+/* ============================================================================== */
+body.neo-theme {
+    --bg-color: #070a14;
+    --primary-text-color: #eaf6ff;
+    --secondary-text-color: #a9c7e0;
+    --tertiary-text-color: #7f9dc0;
+    --led-static-blue: #22d3ee;               /* ciano eletrico */
+    --neutral-line: #3a5680;
+    --neutral-fill: #16233f;
+    --neutral-on: #d6ecff;
+    --led-glow: rgba(34, 211, 238, 0.6);
+    --loader-bar-bg: #101a30;
+    --border-color: rgba(120, 180, 255, 0.18);
+    --input-fill: rgba(12, 18, 34, 0.92);
+    --input-border: rgba(120, 200, 255, 0.16);
+    --send-bg: #14203a;
+    --ring-color: #22d3ee;
+    /* Fundo neon reutilizavel (brilhos ciano + magenta e grade sutil) */
+    --neo-bg:
+        radial-gradient(1100px 620px at 86% -12%, rgba(217, 70, 239, 0.14), transparent 60%),
+        radial-gradient(1000px 720px at -12% 112%, rgba(34, 211, 238, 0.17), transparent 60%),
+        repeating-linear-gradient(0deg, transparent 0 43px, rgba(120, 180, 255, 0.035) 43px 44px),
+        repeating-linear-gradient(90deg, transparent 0 43px, rgba(120, 180, 255, 0.035) 43px 44px),
+        linear-gradient(160deg, #070a14 0%, #0a1124 55%, #070a14 100%);
+}
+
+/* Aplica o fundo neon nas telas de tela cheia */
+body.neo-theme #view-welcome,
+body.neo-theme .view-container { background: var(--neo-bg) fixed; }
+
+/* Acentos neon: leve glow no anel e nos botoes de destaque */
+body.neo-theme .led-ring circle,
+body.neo-theme .welcome-ring circle,
+body.neo-theme .header-halo circle { filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.55)); }
+body.neo-theme .sp-newchat:hover,
+body.neo-theme .welcome-advance { box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.25), 0 0 18px rgba(34, 211, 238, 0.12); }
+body.neo-theme .cyborg-brand,
+body.neo-theme .welcome-brand,
+body.neo-theme .cyborg-title { text-shadow: 0 0 14px rgba(34, 211, 238, 0.35); }
+
 html, body {
     height: 100vh;
     width: 100vw;
@@ -516,6 +558,23 @@ body.light-theme #view-chat {
     --primary-text-color: #000000;
     --secondary-text-color: #555555;
 }
+
+/* TEMA NEO no chat: superficies escuras translucidas sobre o fundo neon */
+body.neo-theme #view-chat {
+    --chat-bg: #070a14;
+    --chat-header-bg: rgba(10, 16, 34, 0.82);
+    --bot-message-bg: rgba(18, 27, 50, 0.72);
+    --user-message-bg: rgba(32, 46, 82, 0.70);
+    --component-hover-bg: rgba(40, 60, 100, 0.45);
+    --border-color: rgba(120, 180, 255, 0.16);
+    --icon-fill: #cfe8ff;
+    --primary-text-color: #eaf6ff;
+    --secondary-text-color: #9fbfe0;
+    background: var(--neo-bg) fixed;
+}
+/* Cabecalho e sidebar com um leve desfoque pra o brilho aparecer atras */
+body.neo-theme .chat-header { backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+body.neo-theme .side-panel { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
 
 .cyborg-chat-wrapper {
     display: flex;
@@ -1560,6 +1619,7 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 .cfg-seg-col .cfg-seg-btn { text-align: left; }
 .cfg-seg-btn:hover { color: var(--primary-text-color); }
 .cfg-seg-btn.active { background: var(--neutral-fill); color: var(--neutral-on); }
+.cfg-seg-neo.active { background: rgba(34,211,238,0.18); color: #22d3ee; text-shadow: 0 0 10px rgba(34,211,238,0.5); }
 
 /* Opcoes "ricas" (titulo + descricao), usadas no painel Modelos */
 .cfg-seg-rich { display: flex; flex-direction: column; gap: 3px; padding: 11px 13px; margin-bottom: 6px;

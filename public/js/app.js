@@ -646,9 +646,21 @@ window.toggleInputSize = () => {
     }
 };
 
+// Temas: 'dark' (padrao), 'light', 'neo' (cyberpunk)
+window.temaAtual = () => document.body.classList.contains('neo-theme') ? 'neo'
+    : (document.body.classList.contains('light-theme') ? 'light' : 'dark');
+
+window.aplicarTema = (nome) => {
+    const b = document.body;
+    b.classList.remove('light-theme', 'neo-theme');
+    if (nome === 'light') b.classList.add('light-theme');
+    else if (nome === 'neo') b.classList.add('neo-theme');
+    localStorage.setItem('cyborgTheme', (nome === 'light' || nome === 'neo') ? nome : 'dark');
+};
+
 window.alternarTemaGlobal = () => {
-    document.body.classList.toggle('light-theme');
-    localStorage.setItem('cyborgTheme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
+    const ordem = ['dark', 'light', 'neo'];
+    window.aplicarTema(ordem[(ordem.indexOf(window.temaAtual()) + 1) % ordem.length]);
 };
 
 window.addMessage = function(author, content, isHtml = false, timestamp = null) {
@@ -804,15 +816,13 @@ $(document).ready(function() {
 
     const applySavedTheme = () => {
         const savedTheme = localStorage.getItem('cyborgTheme');
-        if (savedTheme === 'light' || (!savedTheme && window.matchMedia('(prefers-color-scheme: light)').matches)) {
-            body.classList.add('light-theme');
+        if (savedTheme === 'light' || savedTheme === 'neo') {
+            window.aplicarTema(savedTheme);
+        } else if (!savedTheme && window.matchMedia('(prefers-color-scheme: light)').matches) {
+            window.aplicarTema('light');
         }
     };
-    const toggleTheme = () => {
-        body.classList.toggle('light-theme');
-        const currentTheme = body.classList.contains('light-theme') ? 'light' : 'dark';
-        localStorage.setItem('cyborgTheme', currentTheme);
-    };
+    const toggleTheme = () => { window.alternarTemaGlobal(); };
 
     if (themeSwitcher) themeSwitcher.addEventListener('click', toggleTheme);
     applySavedTheme();
@@ -1002,7 +1012,7 @@ function __marcarSeg(segId, attr, val){
 function __cfgRowVals() {
     const isLight = document.body.classList.contains('light-theme');
     const tv = document.getElementById('cfg-row-tema-val');
-    if (tv) tv.textContent = window.T ? window.T(isLight ? 'cfg_theme_light' : 'cfg_theme_dark') : '';
+    if (tv) { const th = window.temaAtual(); const tk = th === 'neo' ? 'cfg_theme_neo' : (th === 'light' ? 'cfg_theme_light' : 'cfg_theme_dark'); tv.textContent = window.T ? window.T(tk) : ''; }
     const lv = document.getElementById('cfg-row-lang-val');
     if (lv) { const L = { pt: 'Português', en: 'English', es: 'Español' }; lv.textContent = L[window.currentLang || 'pt'] || 'Português'; }
     const mv = document.getElementById('cfg-row-modelo-val');
@@ -1058,7 +1068,7 @@ window.initConfigModal = async () => {
     __showCfgPanel('main', -1);
 
     const isLight = document.body.classList.contains('light-theme');
-    __marcarSeg('cfg-theme-seg', 'theme', isLight ? 'light' : 'dark');
+    __marcarSeg('cfg-theme-seg', 'theme', window.temaAtual());
     __marcarSeg('cfg-lang-seg', 'lang', window.currentLang || 'pt');
     __marcarSeg('cfg-style-seg', 'estilo', localStorage.getItem('cyborg_estilo') || 'equilibrado');
     __marcarSeg('cfg-model-seg', 'modelo', localStorage.getItem('cyborg_modelo') || 'local');
@@ -1083,11 +1093,7 @@ window.initConfigModal = async () => {
 };
 
 window.setTemaConfig = (mode) => {
-    const isLight = document.body.classList.contains('light-theme');
-    if ((mode === 'light') !== isLight) {
-        document.body.classList.toggle('light-theme');
-        localStorage.setItem('cyborgTheme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
-    }
+    window.aplicarTema(mode);
     __marcarSeg('cfg-theme-seg', 'theme', mode);
     if (typeof __cfgRowVals === 'function') __cfgRowVals();
 };
