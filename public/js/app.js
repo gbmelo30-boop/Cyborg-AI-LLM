@@ -712,13 +712,24 @@ window.alternarTemaGlobal = () => {
         if (rec && gravando) { try { rec.stop(); } catch (e) {} }
     };
 
-    window.toggleVoiceInput = function () {
+    window.toggleVoiceInput = async function () {
         if (gravando) { window.__voiceStop(); return; }  // 2o toque: para e transcreve
         if (!SR) { voiceToast(window.T ? window.T('voice_unsupported') : 'Reconhecimento de voz indisponivel neste navegador.'); return; }
         const secure = (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1');
         if (!secure) { voiceToast(window.T ? window.T('voice_https') : 'O microfone precisa de HTTPS. Abra pelo endereco https.'); return; }
         const input = document.getElementById('user-input');
         if (!input) return;
+
+        // Garante a permissao do microfone (dispara o pedido no navegador/WebView)
+        try {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                const s = await navigator.mediaDevices.getUserMedia({ audio: true });
+                s.getTracks().forEach(function (t) { t.stop(); });
+            }
+        } catch (e) {
+            voiceToast(window.T ? window.T('voice_denied') : 'Permita o acesso ao microfone para usar a voz.');
+            return;
+        }
 
         rec = new SR();
         rec.lang = idiomaVoz();

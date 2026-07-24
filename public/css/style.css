@@ -55,133 +55,155 @@ body.light-theme {
 /* TEMA NEO — futurista premium (vidro fosco + brilho suave, sem grade/chanfros)    */
 /* ============================================================================== */
 body.neo-theme {
-    --neo-accent: #35c9ff;                      /* azul-ciano eletrico (acento) */
-    --neo-glass: rgba(18, 25, 38, 0.66);        /* superficie de vidro */
-    --neo-edge: rgba(120, 195, 255, 0.16);      /* borda luminosa fina */
-    --bg-color: #0a0e17;
-    --primary-text-color: #eaf3ff;
-    --secondary-text-color: #9db2cf;
-    --tertiary-text-color: #74879f;
-    --led-static-blue: #35c9ff;
-    --neutral-line: #3a4a66;
-    --neutral-fill: #1a2333;
-    --neutral-on: #eaf3ff;
-    --led-glow: rgba(53, 201, 255, 0.6);
-    --loader-bar-bg: #141b28;
-    --border-color: rgba(120, 195, 255, 0.16);
-    --input-fill: rgba(18, 25, 38, 0.6);
-    --input-border: rgba(120, 195, 255, 0.18);
-    --send-bg: #16243a;
-    --ring-color: #1E40AF;                       /* anel azul escuro (original) */
-    /* Fundo: aurora suave (ciano + indigo) sobre charcoal-navy, sem grade */
+    --neo-teal: #4fd8cb;                         /* teal HUD (acento principal) */
+    --neo-red: #ff4f5e;                          /* vermelho de alerta (secundario) */
+    --neo-glass: rgba(14, 18, 21, 0.74);
+    --neo-edge: rgba(79, 216, 203, 0.34);        /* borda fina teal */
+    --bg-color: #0b0d11;                          /* cinza escuro / quase preto */
+    --primary-text-color: #dfeeec;
+    --secondary-text-color: #8aa3a3;
+    --tertiary-text-color: #67807f;
+    --led-static-blue: #4fd8cb;                   /* acento teal */
+    --neutral-line: #2c5551;
+    --neutral-fill: #10201e;
+    --neutral-on: #e9fbf7;
+    --led-glow: rgba(79, 216, 203, 0.6);
+    --loader-bar-bg: #10161a;
+    --border-color: rgba(79, 216, 203, 0.30);
+    --input-fill: rgba(12, 16, 19, 0.9);
+    --input-border: rgba(79, 216, 203, 0.34);
+    --send-bg: #113330;
+    --ring-color: #1E40AF;                         /* anel azul escuro (mantido) */
+    /* Fundo cinza escuro com leve brilho vermelho (baixo) e teal (topo), sem grade */
     --neo-bg:
-        radial-gradient(1200px 820px at 78% -12%, rgba(53, 201, 255, 0.11), transparent 56%),
-        radial-gradient(1050px 760px at 8% 112%, rgba(52, 92, 200, 0.12), transparent 56%),
-        radial-gradient(700px 500px at 50% 50%, rgba(120, 160, 220, 0.04), transparent 70%),
-        linear-gradient(165deg, #0a0e18 0%, #0d1420 55%, #080c14 100%);
+        radial-gradient(1000px 720px at 84% 114%, rgba(255, 79, 94, 0.10), transparent 55%),
+        radial-gradient(880px 600px at 10% -8%, rgba(79, 216, 203, 0.06), transparent 55%),
+        linear-gradient(180deg, #0c0e12 0%, #090b0e 100%);
 }
 
-/* Fundo aurora aplicado nas telas de tela cheia */
+/* Fundo aplicado nas telas de tela cheia */
 body.neo-theme #view-welcome,
 body.neo-theme .view-container { background: var(--neo-bg) fixed; }
 
-/* Anel azul escuro com brilho azul suave (overflow visivel evita corte quadrado) */
+/* Anel azul escuro com brilho suave (overflow evita corte quadrado) */
 body.neo-theme .led-ring,
 body.neo-theme .welcome-ring,
 body.neo-theme .header-halo,
 body.neo-theme #view-intro svg { overflow: visible; }
 body.neo-theme .led-ring circle,
 body.neo-theme .welcome-ring circle,
-body.neo-theme .header-halo circle { filter: drop-shadow(0 0 11px rgba(41, 98, 220, 0.6)); }
+body.neo-theme .header-halo circle { filter: drop-shadow(0 0 11px rgba(41, 98, 220, 0.55)); }
 
-/* Titulos com brilho azul-ciano sutil */
+/* Titulos com leve brilho teal e espacamento tech */
 body.neo-theme .cyborg-brand,
 body.neo-theme .welcome-brand,
-body.neo-theme .cyborg-title { text-shadow: 0 0 18px rgba(53, 201, 255, 0.28), 0 0 2px rgba(120, 195, 255, 0.5); letter-spacing: 1px; }
+body.neo-theme .cyborg-title { text-shadow: 0 0 16px rgba(79, 216, 203, 0.30); letter-spacing: 2px; }
 
-/* ---- Superficies de vidro fosco (glassmorphism) + borda luminosa ---- */
+/* Rotulos pequenos em fonte monoespacada (cara de terminal) */
+body.neo-theme .message-time,
+body.neo-theme .am-tag,
+body.neo-theme .voice-timer { font-family: 'Courier New', ui-monospace, monospace; letter-spacing: .5px; }
+
+/* ---- HUD: cards e modais com cantos recortados + borda teal + colchetes ---- */
 body.neo-theme .login-card,
 body.neo-theme .modal-box {
     background-color: var(--neo-glass);
-    -webkit-backdrop-filter: blur(16px) saturate(125%);
-    backdrop-filter: blur(16px) saturate(125%);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
     border: 1px solid var(--neo-edge);
-    box-shadow: 0 18px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06), 0 0 26px rgba(53,201,255,0.06);
-    border-radius: 18px !important;
+    border-radius: 2px !important;
+    clip-path: polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px);
+    position: relative;
+    box-shadow: 0 16px 44px rgba(0,0,0,0.55);
 }
+/* colchetes de canto (teal e vermelho, como na referencia) nos cantos livres do login */
+body.neo-theme .login-card::before,
+body.neo-theme .login-card::after {
+    content: ''; position: absolute; width: 18px; height: 18px; pointer-events: none; z-index: 4;
+}
+body.neo-theme .login-card::before { top: 9px; right: 9px; border-top: 2px solid var(--neo-teal); border-right: 2px solid var(--neo-teal); }
+body.neo-theme .login-card::after { bottom: 9px; left: 9px; border-bottom: 2px solid var(--neo-red); border-left: 2px solid var(--neo-red); }
+
+/* Sidebar e cabecalho com linha teal */
 body.neo-theme .side-panel {
-    background-color: rgba(12, 18, 30, 0.74);
-    -webkit-backdrop-filter: blur(18px) saturate(125%);
-    backdrop-filter: blur(18px) saturate(125%);
+    background-color: rgba(11, 14, 17, 0.9);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
     border-right: 1px solid var(--neo-edge);
 }
 body.neo-theme .chat-header {
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--neo-edge);
+    box-shadow: 0 1px 0 rgba(79,216,203,0.10);
 }
 body.neo-theme .side-panel-header { border-bottom: 1px solid var(--neo-edge); }
 
-/* Baloes de mensagem: vidro com borda luminosa fina (cantos arredondados) */
-body.neo-theme .bot-container .message-bubble {
-    border: 1px solid rgba(120,195,255,0.15);
-    box-shadow: 0 0 16px rgba(53,201,255,0.05), inset 0 1px 0 rgba(255,255,255,0.04);
-}
+/* Baloes de mensagem: canto recortado + borda fina (bot teal, usuario vermelho) */
+body.neo-theme .bot-container .message-bubble,
 body.neo-theme .user-container .message-bubble {
-    border: 1px solid rgba(255,255,255,0.07);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    border-radius: 2px;
+    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
 }
+body.neo-theme .bot-container .message-bubble { border: 1px solid rgba(79, 216, 203, 0.22); }
+body.neo-theme .user-container .message-bubble { border: 1px solid rgba(255, 79, 94, 0.20); }
 
-/* Botoes de vidro com borda ciano e glow no hover */
+/* Botoes HUD: canto recortado no topo-direito + borda teal */
 body.neo-theme .sp-newchat,
+body.neo-theme .welcome-advance,
+body.neo-theme .btn-start-research,
 body.neo-theme .cfg-btn,
 body.neo-theme .cfg-btn-full {
+    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
     border: 1px solid var(--neo-edge) !important;
-    background-image: linear-gradient(180deg, rgba(120,195,255,0.05), rgba(120,195,255,0));
+    border-radius: 0 !important;
     transition: border-color .2s, box-shadow .2s, background-color .2s;
 }
 body.neo-theme .sp-newchat:hover,
 body.neo-theme .cfg-btn:hover,
-body.neo-theme .cfg-btn-full:hover { border-color: rgba(53,201,255,0.5) !important; box-shadow: 0 0 16px rgba(53,201,255,0.16); }
+body.neo-theme .cfg-btn-full:hover { border-color: rgba(79,216,203,0.65) !important; box-shadow: 0 0 14px rgba(79,216,203,0.16); }
 
-/* Botoes primarios (Iniciar / Entrar): acento ciano com glow */
+/* Botoes primarios (Iniciar / Entrar): preenchimento teal */
 body.neo-theme .welcome-advance,
 body.neo-theme .btn-start-research {
-    border: 1px solid rgba(53,201,255,0.45) !important;
-    background: linear-gradient(180deg, rgba(53,201,255,0.16), rgba(53,201,255,0.06));
-    color: #dff4ff;
-    box-shadow: 0 0 18px rgba(53,201,255,0.14), inset 0 1px 0 rgba(255,255,255,0.08);
+    background: linear-gradient(180deg, rgba(79,216,203,0.16), rgba(79,216,203,0.05));
+    color: #dffaf5;
+    box-shadow: 0 0 16px rgba(79,216,203,0.14);
 }
 body.neo-theme .welcome-advance:hover,
-body.neo-theme .btn-start-research:hover { box-shadow: 0 0 26px rgba(53,201,255,0.28); }
+body.neo-theme .btn-start-research:hover { box-shadow: 0 0 24px rgba(79,216,203,0.26); }
 
-/* Campo de digitar e busca: vidro + glow no foco */
+/* Composer e busca: canto recortado + borda teal + glow no foco */
 body.neo-theme .input-pill {
     background-color: var(--input-fill);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
     border: 1px solid var(--neo-edge) !important;
+    border-radius: 0 !important;
+    clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
 }
-body.neo-theme .input-pill:focus-within {
-    border-color: rgba(53,201,255,0.55) !important;
-    box-shadow: 0 0 0 1px rgba(53,201,255,0.22), 0 0 20px rgba(53,201,255,0.16);
+body.neo-theme .input-pill:focus-within { border-color: rgba(79,216,203,0.6) !important; box-shadow: 0 0 18px rgba(79,216,203,0.16); }
+body.neo-theme .history-search {
+    background: var(--input-fill); border: 1px solid var(--neo-edge); border-radius: 0 !important;
+    clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 0 100%);
 }
-body.neo-theme .history-search { background: var(--input-fill); border: 1px solid var(--neo-edge); }
-body.neo-theme .history-search:focus { border-color: rgba(53,201,255,0.5); box-shadow: 0 0 14px rgba(53,201,255,0.14); }
+body.neo-theme .cfg-seg-btn { border-radius: 0 !important; }
 
-/* Pastas do historico e botao de enviar */
-body.neo-theme .hist-folder { border: 1px solid rgba(120,195,255,0.14); background: rgba(255,255,255,0.02); }
-body.neo-theme #send-button { box-shadow: 0 0 16px rgba(53,201,255,0.4); }
+/* Pastas e botao enviar */
+body.neo-theme .hist-folder {
+    border: 1px solid rgba(79,216,203,0.20); background: rgba(79,216,203,0.03);
+    clip-path: polygon(0 0, calc(100% - 11px) 0, 100% 11px, 100% 100%, 0 100%);
+}
+body.neo-theme #send-button { box-shadow: 0 0 14px rgba(79,216,203,0.4); }
 
-/* Icones com tom azul-ciano frio + brilho (nao recolore os do composer,
-   para nao quebrar o vermelho do microfone gravando) */
+/* Icones em teal com brilho (nao recolore os do composer p/ nao quebrar o vermelho do mic) */
 body.neo-theme .sp-link svg,
-body.neo-theme .cfg-ic { color: #bcd9f5; }
+body.neo-theme .cfg-ic { color: #9fe6dd; }
 body.neo-theme .sp-link svg,
 body.neo-theme .cfg-ic,
 body.neo-theme .chat-header svg,
 body.neo-theme #sidebar-toggle-button svg,
-body.neo-theme .input-actions svg { filter: drop-shadow(0 0 4px rgba(53,201,255,0.45)); }
+body.neo-theme .input-actions svg { filter: drop-shadow(0 0 4px rgba(79,216,203,0.45)); }
 
 html, body {
     height: 100vh;
@@ -649,17 +671,17 @@ body.light-theme #view-chat {
     --secondary-text-color: #555555;
 }
 
-/* TEMA NEO no chat: superficies de vidro azul-charcoal (glass premium) */
+/* TEMA NEO no chat: HUD cinza escuro com teal (cyberpunk) */
 body.neo-theme #view-chat {
-    --chat-bg: #0a0e17;
-    --chat-header-bg: rgba(14, 20, 32, 0.78);
-    --bot-message-bg: rgba(20, 28, 44, 0.66);
-    --user-message-bg: rgba(30, 42, 66, 0.62);
-    --component-hover-bg: rgba(53, 201, 255, 0.10);
-    --border-color: rgba(120, 195, 255, 0.14);
-    --icon-fill: #cfe2fa;
-    --primary-text-color: #eaf3ff;
-    --secondary-text-color: #9db2cf;
+    --chat-bg: #0b0d11;
+    --chat-header-bg: rgba(12, 15, 18, 0.85);
+    --bot-message-bg: rgba(16, 26, 25, 0.72);
+    --user-message-bg: rgba(26, 20, 22, 0.72);
+    --component-hover-bg: rgba(79, 216, 203, 0.10);
+    --border-color: rgba(79, 216, 203, 0.20);
+    --icon-fill: #bfe8e2;
+    --primary-text-color: #dfeeec;
+    --secondary-text-color: #8aa3a3;
     background: var(--neo-bg) fixed;
 }
 
@@ -1748,7 +1770,7 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 .cfg-seg-col .cfg-seg-btn { text-align: left; }
 .cfg-seg-btn:hover { color: var(--primary-text-color); }
 .cfg-seg-btn.active { background: var(--neutral-fill); color: var(--neutral-on); }
-.cfg-seg-neo.active { background: rgba(53, 201, 255, 0.18); color: #bfeaff; box-shadow: 0 0 12px rgba(53,201,255,0.2); }
+.cfg-seg-neo.active { background: rgba(79, 216, 203, 0.18); color: #bff5ee; box-shadow: 0 0 12px rgba(79,216,203,0.22); }
 
 /* Opcoes "ricas" (titulo + descricao), usadas no painel Modelos */
 .cfg-seg-rich { display: flex; flex-direction: column; gap: 3px; padding: 11px 13px; margin-bottom: 6px;
