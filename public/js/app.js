@@ -701,13 +701,22 @@ window.alternarTemaGlobal = () => {
         try { input.focus(); } catch (e) {}
     }
 
+    function voiceToast(msg) {
+        let t = document.getElementById('cyborg-toast');
+        if (!t) { t = document.createElement('div'); t.id = 'cyborg-toast'; document.body.appendChild(t); }
+        t.textContent = msg; t.classList.add('show');
+        clearTimeout(t.__h); t.__h = setTimeout(function () { t.classList.remove('show'); }, 3800);
+    }
+
     window.__voiceStop = function () {
         if (rec && gravando) { try { rec.stop(); } catch (e) {} }
     };
 
     window.toggleVoiceInput = function () {
-        if (!SR) return;
         if (gravando) { window.__voiceStop(); return; }  // 2o toque: para e transcreve
+        if (!SR) { voiceToast(window.T ? window.T('voice_unsupported') : 'Reconhecimento de voz indisponivel neste navegador.'); return; }
+        const secure = (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+        if (!secure) { voiceToast(window.T ? window.T('voice_https') : 'O microfone precisa de HTTPS. Abra pelo endereco https.'); return; }
         const input = document.getElementById('user-input');
         if (!input) return;
 
@@ -723,7 +732,13 @@ window.alternarTemaGlobal = () => {
             t0 = Date.now(); tick();
             timerId = setInterval(tick, 500);
         };
-        rec.onerror = function () { finalizar(); };
+        rec.onerror = function (e) {
+            const code = (e && e.error) || '';
+            if (code === 'not-allowed' || code === 'service-not-allowed') voiceToast(window.T ? window.T('voice_denied') : 'Permita o acesso ao microfone para usar a voz.');
+            else if (code === 'audio-capture') voiceToast('Microfone nao encontrado.');
+            else if (code === 'network') voiceToast('Sem conexao para o reconhecimento de voz.');
+            finalizar();
+        };
         rec.onend = function () { finalizar(); };
         rec.onresult = function (ev) {
             let fin = '';
@@ -735,13 +750,8 @@ window.alternarTemaGlobal = () => {
         try { rec.start(); } catch (e) {}
     };
 
-    // Esconde o microfone se o navegador/WebView nao suportar reconhecimento de voz
-    function ajustarMic() {
-        const btn = document.getElementById('mic-button');
-        if (btn && !SR) btn.style.display = 'none';
-    }
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ajustarMic);
-    else ajustarMic();
+    // O botao fica sempre visivel: se nao houver suporte, o clique mostra um aviso claro
+    // (assim o usuario entende o motivo em vez de ver um icone "morto").
 })();
 
 window.addMessage = function(author, content, isHtml = false, timestamp = null) {
