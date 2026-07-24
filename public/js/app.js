@@ -751,12 +751,14 @@ window.alternarTemaGlobal = () => {
             finalizar();
         };
         rec.onend = function () { finalizar(); };
+        // Reconstroi o texto a partir de TODOS os resultados finais (evita
+        // duplicar/triplicar quando o reconhecimento re-emite segmentos).
         rec.onresult = function (ev) {
-            let fin = '';
-            for (let i = ev.resultIndex; i < ev.results.length; i++) {
-                if (ev.results[i].isFinal) fin += ev.results[i][0].transcript;
+            let full = '';
+            for (let i = 0; i < ev.results.length; i++) {
+                if (ev.results[i].isFinal) full += ev.results[i][0].transcript + ' ';
             }
-            if (fin) finalBuf = (finalBuf + ' ' + fin).replace(/\s+/g, ' ').trim();
+            finalBuf = full.replace(/\s+/g, ' ').trim();
         };
         try { rec.start(); } catch (e) {}
     };

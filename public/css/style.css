@@ -55,28 +55,28 @@ body.light-theme {
 /* TEMA NEO — futurista premium (vidro fosco + brilho suave, sem grade/chanfros)    */
 /* ============================================================================== */
 body.neo-theme {
-    --neo-teal: #55dccf;                         /* teal HUD (acento principal) */
-    --neo-edge: rgba(85, 220, 207, 0.32);        /* borda fina teal */
-    --neo-edge-solid: #3f938c;                    /* borda teal solida (contorno recorte) */
+    --neo-teal: #a6b0bc;                         /* teal HUD (acento principal) */
+    --neo-edge: rgba(166, 176, 188, 0.32);        /* borda fina teal */
+    --neo-edge-solid: #5c646e;                    /* borda teal solida (contorno recorte) */
     --neo-glass: rgba(26, 29, 34, 0.82);
     --bg-color: #16181d;                          /* cinza escuro (dark gray) */
     --primary-text-color: #e2eae9;
     --secondary-text-color: #93a3a3;
     --tertiary-text-color: #74847f;
-    --led-static-blue: #55dccf;                   /* acento teal */
+    --led-static-blue: #a6b0bc;                   /* acento teal */
     --neutral-line: #33524f;
     --neutral-fill: #1c2a28;
     --neutral-on: #e9fbf7;
-    --led-glow: rgba(85, 220, 207, 0.55);
+    --led-glow: rgba(166, 176, 188, 0.55);
     --loader-bar-bg: #1b1e23;
-    --border-color: rgba(85, 220, 207, 0.26);
+    --border-color: rgba(166, 176, 188, 0.26);
     --input-fill: #14171c;
-    --input-border: rgba(85, 220, 207, 0.30);
-    --send-bg: #17302e;
+    --input-border: rgba(166, 176, 188, 0.30);
+    --send-bg: #2a2f36;
     --ring-color: #1E40AF;                         /* anel azul escuro (mantido) */
     /* Fundo cinza dark, limpo, com um leve halo teal no topo (sem vermelho, sem grade) */
     --neo-bg:
-        radial-gradient(900px 640px at 15% -10%, rgba(85, 220, 207, 0.05), transparent 55%),
+        radial-gradient(900px 640px at 15% -10%, rgba(166, 176, 188, 0.05), transparent 55%),
         linear-gradient(180deg, #191c21 0%, #131519 100%);
 }
 
@@ -96,7 +96,7 @@ body.neo-theme .header-halo circle { filter: drop-shadow(0 0 11px rgba(41, 98, 2
 /* Titulos com espacamento tech e brilho bem discreto */
 body.neo-theme .cyborg-brand,
 body.neo-theme .welcome-brand,
-body.neo-theme .cyborg-title { text-shadow: 0 0 10px rgba(85, 220, 207, 0.18); letter-spacing: 2px; }
+body.neo-theme .cyborg-title { text-shadow: 0 0 10px rgba(166, 176, 188, 0.18); letter-spacing: 2px; }
 
 /* Rotulos pequenos em fonte monoespacada (cara de terminal) */
 body.neo-theme .message-time,
@@ -158,12 +158,12 @@ body.neo-theme .hist-folder::before {
     background: #14171c;
 }
 /* cor de fundo (surface) por tipo de elemento */
-body.neo-theme .bot-container .message-bubble::before { background: #171e1d; }
+body.neo-theme .bot-container .message-bubble::before { background: #1b1f24; }
 body.neo-theme .user-container .message-bubble::before { background: #1b1f24; }
 body.neo-theme .input-pill::before,
 body.neo-theme .history-search::before { background: #14171c; }
 body.neo-theme .welcome-advance::before,
-body.neo-theme .btn-start-research::before { background: #16302d; }  /* primario: teal escuro */
+body.neo-theme .btn-start-research::before { background: #232830; }  /* primario: teal escuro */
 /* hover dos botoes: contorno mais forte */
 body.neo-theme .sp-newchat:hover,
 body.neo-theme .cfg-btn:hover,
@@ -173,13 +173,13 @@ body.neo-theme .input-pill:focus-within,
 body.neo-theme .history-search:focus { background: var(--neo-teal) !important; }
 
 body.neo-theme .cfg-seg-btn { border-radius: 0 !important; }
-body.neo-theme #send-button { box-shadow: 0 0 12px rgba(85,220,207,0.35); }
+body.neo-theme #send-button { box-shadow: none; }
 body.neo-theme .welcome-advance,
-body.neo-theme .btn-start-research { color: #dffaf5; }
+body.neo-theme .btn-start-research { color: #eef2f6; }
 
 /* Icones em teal, SEM brilho (removido o glow excessivo) */
 body.neo-theme .sp-link svg,
-body.neo-theme .cfg-ic { color: #a9ebe3; }
+body.neo-theme .cfg-ic { color: #c6ced8; }
 
 html, body {
     height: 100vh;
