@@ -109,16 +109,77 @@ body.neo-theme .welcome-advance:hover,
 body.neo-theme .btn-start-research:hover { border-color: rgba(180, 190, 205, 0.4); }
 body.neo-theme .input-pill:focus-within { border-color: rgba(180, 190, 205, 0.4) !important; }
 
-/* Icones com um tom prateado/aco sutil e um brilho leve (mais sci-fi) */
+/* Icones com tom prateado/aco e brilho sci-fi (glow nao recolore os do composer,
+   para nao quebrar o vermelho do microfone gravando) */
+body.neo-theme .sp-link svg,
+body.neo-theme .cfg-ic { color: #c3ccdb; }
 body.neo-theme .sp-link svg,
 body.neo-theme .cfg-ic,
 body.neo-theme .chat-header svg,
 body.neo-theme #sidebar-toggle-button svg,
-body.neo-theme .input-actions svg { filter: drop-shadow(0 0 2px rgba(174, 184, 200, 0.35)); }
+body.neo-theme .input-actions svg { filter: drop-shadow(0 0 3px rgba(120, 145, 190, 0.5)); }
 
-/* Linhas de separacao discretas em prata (nada de neon) */
+/* Linhas de separacao discretas em prata */
 body.neo-theme .chat-header { border-bottom: 1px solid rgba(180, 190, 205, 0.12); }
 body.neo-theme .side-panel-header { border-bottom: 1px solid rgba(180, 190, 205, 0.10); }
+
+/* ============================================================================== */
+/* NEO — GEOMETRIA sci-fi (chanfros + colchetes de canto), em tom prateado         */
+/* ============================================================================== */
+/* Cards e modais: canto chanfrado + fina borda de topo prateada + colchetes */
+body.neo-theme .login-card,
+body.neo-theme .modal-box {
+    border-radius: 2px !important;
+    clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+    border-top: 1px solid rgba(174, 184, 200, 0.5);
+    position: relative;
+}
+body.neo-theme .login-card::before,
+body.neo-theme .login-card::after {
+    content: ''; position: absolute; width: 16px; height: 16px; pointer-events: none; z-index: 3;
+}
+body.neo-theme .login-card::before { top: 8px; right: 8px; border-top: 2px solid var(--steel); border-right: 2px solid var(--steel); }
+body.neo-theme .login-card::after { bottom: 8px; left: 8px; border-bottom: 2px solid var(--steel); border-left: 2px solid var(--steel); }
+
+/* Botoes principais: chanfro + borda prateada */
+body.neo-theme .sp-newchat,
+body.neo-theme .welcome-advance,
+body.neo-theme .btn-start-research,
+body.neo-theme .cfg-btn,
+body.neo-theme .cfg-btn-full {
+    clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+    border: 1px solid rgba(174, 184, 200, 0.32) !important;
+    border-radius: 0 !important;
+}
+body.neo-theme .sp-newchat:hover,
+body.neo-theme .welcome-advance:hover,
+body.neo-theme .btn-start-research:hover { border-color: rgba(174, 184, 200, 0.6) !important; }
+
+/* Composer e busca chanfrados */
+body.neo-theme .input-pill {
+    clip-path: polygon(11px 0, 100% 0, 100% calc(100% - 11px), calc(100% - 11px) 100%, 0 100%, 0 11px);
+    border: 1px solid rgba(174, 184, 200, 0.28) !important;
+    border-radius: 0 !important;
+}
+body.neo-theme .history-search {
+    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+    border: 1px solid rgba(174, 184, 200, 0.24) !important;
+    border-radius: 0 !important;
+}
+body.neo-theme .cfg-seg-btn { border-radius: 0 !important; }
+
+/* Baloes de mensagem chanfrados (sem barra colorida) */
+body.neo-theme .bot-container .message-bubble,
+body.neo-theme .user-container .message-bubble {
+    border-radius: 2px;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+}
+
+/* Pastas do historico com canto cortado */
+body.neo-theme .hist-folder {
+    border: 1px solid rgba(174, 184, 200, 0.22);
+    clip-path: polygon(11px 0, 100% 0, 100% 100%, 0 100%, 0 11px);
+}
 
 html, body {
     height: 100vh;
