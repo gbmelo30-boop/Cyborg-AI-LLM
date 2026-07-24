@@ -646,21 +646,18 @@ window.toggleInputSize = () => {
     }
 };
 
-// Temas: 'dark' (padrao), 'light', 'neo' (cyberpunk)
-window.temaAtual = () => document.body.classList.contains('neo-theme') ? 'neo'
-    : (document.body.classList.contains('light-theme') ? 'light' : 'dark');
+// Temas: 'dark' (padrao) e 'light'
+window.temaAtual = () => document.body.classList.contains('light-theme') ? 'light' : 'dark';
 
 window.aplicarTema = (nome) => {
     const b = document.body;
     b.classList.remove('light-theme', 'neo-theme');
     if (nome === 'light') b.classList.add('light-theme');
-    else if (nome === 'neo') b.classList.add('neo-theme');
-    localStorage.setItem('cyborgTheme', (nome === 'light' || nome === 'neo') ? nome : 'dark');
+    localStorage.setItem('cyborgTheme', (nome === 'light') ? 'light' : 'dark');
 };
 
 window.alternarTemaGlobal = () => {
-    const ordem = ['dark', 'light', 'neo'];
-    window.aplicarTema(ordem[(ordem.indexOf(window.temaAtual()) + 1) % ordem.length]);
+    window.aplicarTema(window.temaAtual() === 'light' ? 'dark' : 'light');
 };
 
 // ============ ENTRADA POR VOZ (Web Speech API) — estilo ChatGPT ============
@@ -921,9 +918,7 @@ $(document).ready(function() {
 
     const applySavedTheme = () => {
         const savedTheme = localStorage.getItem('cyborgTheme');
-        if (savedTheme === 'light' || savedTheme === 'neo') {
-            window.aplicarTema(savedTheme);
-        } else if (!savedTheme && window.matchMedia('(prefers-color-scheme: light)').matches) {
+        if (savedTheme === 'light' || (!savedTheme && window.matchMedia('(prefers-color-scheme: light)').matches)) {
             window.aplicarTema('light');
         }
     };
@@ -1117,7 +1112,7 @@ function __marcarSeg(segId, attr, val){
 function __cfgRowVals() {
     const isLight = document.body.classList.contains('light-theme');
     const tv = document.getElementById('cfg-row-tema-val');
-    if (tv) { const th = window.temaAtual(); const tk = th === 'neo' ? 'cfg_theme_neo' : (th === 'light' ? 'cfg_theme_light' : 'cfg_theme_dark'); tv.textContent = window.T ? window.T(tk) : ''; }
+    if (tv) { const tk = window.temaAtual() === 'light' ? 'cfg_theme_light' : 'cfg_theme_dark'; tv.textContent = window.T ? window.T(tk) : ''; }
     const lv = document.getElementById('cfg-row-lang-val');
     if (lv) { const L = { pt: 'Português', en: 'English', es: 'Español' }; lv.textContent = L[window.currentLang || 'pt'] || 'Português'; }
     const mv = document.getElementById('cfg-row-modelo-val');
