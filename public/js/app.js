@@ -663,28 +663,51 @@ window.alternarTemaGlobal = () => {
     window.aplicarTema(ordem[(ordem.indexOf(window.temaAtual()) + 1) % ordem.length]);
 };
 
-// ================= ENTRADA POR VOZ (Web Speech API) =================
-// Transcreve a fala no campo de digitar, no MESMO idioma selecionado (pt/en/es).
+// ============ ENTRADA POR VOZ (Web Speech API) — estilo ChatGPT ============
+// Ao gravar: mostra onda sonora + tempo no campo. O texto so aparece quando
+// o usuario TOCA de novo para parar. Transcricao no idioma selecionado (pt/en/es).
 (function () {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    let rec = null, ouvindo = false, baseText = '';
+    let rec = null, gravando = false, baseText = '', finalBuf = '', timerId = null, t0 = 0;
 
     function idiomaVoz() {
         const l = window.currentLang || 'pt';
         return l === 'en' ? 'en-US' : (l === 'es' ? 'es-ES' : 'pt-BR');
     }
-    function setMicUI(on) {
+    function fmtTempo(ms) {
+        const s = Math.floor(ms / 1000);
+        return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+    }
+    function tick() {
+        const el = document.getElementById('voice-timer');
+        if (el) el.textContent = fmtTempo(Date.now() - t0);
+    }
+    function setUI(on) {
         const btn = document.getElementById('mic-button');
+        const pill = document.querySelector('.input-pill');
         if (btn) btn.classList.toggle('is-listening', on);
+        if (pill) pill.classList.toggle('is-recording', on);
+    }
+    function finalizar() {
+        if (!gravando) return;
+        gravando = false;
+        setUI(false);
+        if (timerId) { clearInterval(timerId); timerId = null; }
+        const input = document.getElementById('user-input');
+        if (!input) return;
+        const txt = (baseText ? baseText.replace(/\s+$/, '') + ' ' : '') + finalBuf;
+        input.value = txt.replace(/\s+/g, ' ').replace(/^\s+/, '');
+        input.dispatchEvent(new Event('input'));  // dispara auto-grow do campo
+        try { input.focus(); } catch (e) {}
     }
 
     window.__voiceStop = function () {
-        if (rec && ouvindo) { try { rec.stop(); } catch (e) {} }
+        if (rec && gravando) { try { rec.stop(); } catch (e) {} }
     };
 
     window.toggleVoiceInput = function () {
-        if (!SR) { return; }
-        if (ouvindo) { window.__voiceStop(); return; }
+        if (!SR) return;
+        if (gravando) { window.__voiceStop(); return; }  // 2o toque: para e transcreve
         const input = document.getElementById('user-input');
         if (!input) return;
 
@@ -692,20 +715,22 @@ window.alternarTemaGlobal = () => {
         rec.lang = idiomaVoz();
         rec.interimResults = true;
         rec.continuous = true;
-        baseText = input.value ? (input.value.replace(/\s+$/, '') + ' ') : '';
+        baseText = input.value || '';
+        finalBuf = '';
 
-        rec.onstart = function () { ouvindo = true; setMicUI(true); };
-        rec.onerror = function () { ouvindo = false; setMicUI(false); };
-        rec.onend = function () { ouvindo = false; setMicUI(false); };
+        rec.onstart = function () {
+            gravando = true; setUI(true);
+            t0 = Date.now(); tick();
+            timerId = setInterval(tick, 500);
+        };
+        rec.onerror = function () { finalizar(); };
+        rec.onend = function () { finalizar(); };
         rec.onresult = function (ev) {
-            let fin = '', interim = '';
+            let fin = '';
             for (let i = ev.resultIndex; i < ev.results.length; i++) {
-                const t = ev.results[i][0].transcript;
-                if (ev.results[i].isFinal) fin += t; else interim += t;
+                if (ev.results[i].isFinal) fin += ev.results[i][0].transcript;
             }
-            if (fin) baseText = (baseText + fin).replace(/\s+/g, ' ') + ' ';
-            input.value = (baseText + interim).replace(/^\s+/, '');
-            input.dispatchEvent(new Event('input'));  // dispara auto-grow do campo
+            if (fin) finalBuf = (finalBuf + ' ' + fin).replace(/\s+/g, ' ').trim();
         };
         try { rec.start(); } catch (e) {}
     };

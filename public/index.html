@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Cyborg AI</title>
 
-    <link rel="stylesheet" href="css/style.css?v=94">
+    <link rel="stylesheet" href="css/style.css?v=95">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -165,13 +165,17 @@
                 <form class="input-area" id="chat-form" onsubmit="handleChatSubmit(event)">
                     <div class="input-pill">
                         <textarea id="user-input" placeholder="Converse com o Cyborg AI..." data-i18n-ph="chat_ph" rows="1"></textarea>
+                        <div class="voice-overlay" id="voice-overlay" aria-hidden="true">
+                            <span class="voice-wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                            <span class="voice-timer" id="voice-timer">0:00</span>
+                        </div>
                         <div class="input-actions">
                             <button type="button" id="expand-button" title="Expandir/Recolher" onclick="toggleInputSize()">
                                 <svg id="icon-expand" width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15 3l2.3 2.3-2.89 2.87 1.42 1.42L18.7 6.7 21 9V3zM3 9l2.3-2.3 2.87 2.89 1.42-1.42L6.7 5.3 9 3H3zM9 21l-2.3-2.3 2.89-2.87-1.42-1.42L5.3 17.3 3 15v6zM21 15l-2.3 2.3-2.87-2.89-1.42 1.42L17.3 18.7 15 21h6z"/></svg>
                             </button>
                             <button type="button" id="mic-button" title="Falar" aria-label="Ditar por voz" data-i18n-title="voice_mic" onclick="toggleVoiceInput()">
                                 <span class="ico-mic"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 14a3 3 0 003-3V6a3 3 0 00-6 0v5a3 3 0 003 3zm5-3a5 5 0 01-10 0H5a7 7 0 006 6.92V21h2v-3.08A7 7 0 0019 11h-2z"/></svg></span>
-                                <span class="ico-mic-live" aria-hidden="true"><span></span><span></span><span></span></span>
+                                <span class="ico-mic-stop" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg></span>
                             </button>
                             <button type="submit" id="send-button" title="Enviar">
                                 <span class="ico-send"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" transform="rotate(-90 12 12)"/></svg></span>
@@ -470,7 +474,7 @@
     <script src="js/db.js?v=14"></script>
     <script src="js/cyborg.js?v=13"></script>
     <script src="js/orb.js?v=11"></script>
-    <script src="js/app.js?v=62"></script>
+    <script src="js/app.js?v=63"></script>
 
 </body>
 </html>

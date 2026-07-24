@@ -52,124 +52,73 @@ body.light-theme {
 }
 
 /* ============================================================================== */
-/* TEMA NEO — cyberpunk / sci-fi (muda a "pele": fundo, cores, superficies)        */
+/* TEMA NEO — cinza prateado, dark sci-fi (limpo e neutro, sem grade/chanfros)      */
 /* ============================================================================== */
 body.neo-theme {
-    --neo-cyan: #26e6ff;
-    --neo-red: #ff2e63;
-    --bg-color: #060912;
-    --primary-text-color: #eaf9ff;
-    --secondary-text-color: #b3d4ea;
-    --tertiary-text-color: #85a6c6;
-    --led-static-blue: #26e6ff;               /* ciano eletrico */
-    --neutral-line: #2f74a8;
-    --neutral-fill: #103048;
-    --neutral-on: #eafcff;
-    --led-glow: rgba(38, 230, 255, 0.75);
-    --loader-bar-bg: #0d1a2e;
-    --border-color: rgba(38, 230, 255, 0.28);
-    --input-fill: rgba(9, 16, 30, 0.92);
-    --input-border: rgba(38, 230, 255, 0.30);
-    --send-bg: #0f2740;
-    --ring-color: #26e6ff;
-    /* Fundo neon: brilho ciano + carmim, grade sutil e leve scanline */
+    --steel: #aeb8c8;                          /* prata/aco (acento sci-fi) */
+    --bg-color: #14161b;
+    --primary-text-color: #e9edf4;
+    --secondary-text-color: #a6b0c0;
+    --tertiary-text-color: #7d8798;
+    --led-static-blue: #3b5db3;                /* azul discreto de acao */
+    --neutral-line: #4a5265;
+    --neutral-fill: #262b36;
+    --neutral-on: #eef2f8;
+    --led-glow: rgba(59, 93, 179, 0.55);
+    --loader-bar-bg: #22262f;
+    --border-color: rgba(180, 190, 205, 0.16);
+    --input-fill: rgba(30, 34, 42, 0.92);
+    --input-border: rgba(180, 190, 205, 0.18);
+    --send-bg: #2b3140;
+    --ring-color: #1E40AF;                      /* AZUL ESCURO original do anel */
+    /* Fundo metalico limpo: cinza prateado escuro, sem grade */
     --neo-bg:
-        radial-gradient(1150px 640px at 88% -14%, rgba(255, 46, 99, 0.16), transparent 58%),
-        radial-gradient(1050px 760px at -14% 114%, rgba(38, 230, 255, 0.20), transparent 60%),
-        repeating-linear-gradient(0deg, transparent 0 3px, rgba(0, 0, 0, 0.16) 3px 4px),
-        repeating-linear-gradient(0deg, transparent 0 43px, rgba(38, 230, 255, 0.05) 43px 44px),
-        repeating-linear-gradient(90deg, transparent 0 43px, rgba(38, 230, 255, 0.05) 43px 44px),
-        linear-gradient(160deg, #050810 0%, #0a1526 55%, #060a15 100%);
+        radial-gradient(1200px 720px at 80% -20%, rgba(185, 198, 220, 0.06), transparent 60%),
+        radial-gradient(1000px 800px at -10% 115%, rgba(120, 135, 165, 0.05), transparent 62%),
+        linear-gradient(160deg, #16181e 0%, #1c1f27 55%, #131519 100%);
 }
 
-/* Aplica o fundo neon nas telas de tela cheia */
+/* Fundo aplicado nas telas de tela cheia */
 body.neo-theme #view-welcome,
 body.neo-theme .view-container { background: var(--neo-bg) fixed; }
 
-/* Acentos neon: glow no anel e nos titulos.
-   overflow visivel evita que o brilho seja cortado no quadrado do SVG. */
+/* Anel: mantem o azul escuro original, com um brilho azul suave.
+   overflow visivel evita que o glow seja cortado num quadrado. */
 body.neo-theme .led-ring,
 body.neo-theme .welcome-ring,
 body.neo-theme .header-halo,
 body.neo-theme #view-intro svg { overflow: visible; }
 body.neo-theme .led-ring circle,
 body.neo-theme .welcome-ring circle,
-body.neo-theme .header-halo circle { filter: drop-shadow(0 0 9px rgba(38, 230, 255, 0.65)) drop-shadow(0 0 3px rgba(38, 230, 255, 0.9)); }
+body.neo-theme .header-halo circle { filter: drop-shadow(0 0 9px rgba(30, 64, 175, 0.55)); }
+/* Titulos com leve brilho metalico prateado */
 body.neo-theme .cyborg-brand,
 body.neo-theme .welcome-brand,
-body.neo-theme .cyborg-title { text-shadow: 0 0 16px rgba(38, 230, 255, 0.5), 0 0 2px rgba(38,230,255,0.6); letter-spacing: 1px; }
+body.neo-theme .cyborg-title { text-shadow: 0 1px 0 rgba(0,0,0,0.5), 0 0 12px rgba(185, 198, 220, 0.14); letter-spacing: 1px; }
 
-/* ============================================================================== */
-/* NEO — GEOMETRIA (chanfros, colchetes de canto, bordas neon)                     */
-/* ============================================================================== */
-/* Cantos chanfrados (corte diagonal HUD) em cards, modais e botoes principais */
-body.neo-theme .login-card,
-body.neo-theme .modal-box {
-    border-radius: 2px !important;
-    clip-path: polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px);
-    border-top: 2px solid var(--neo-cyan);
-    position: relative;
-}
-/* Colchetes de canto (⌐ ¬) nos cantos livres do card de login */
-body.neo-theme .login-card::before,
-body.neo-theme .login-card::after {
-    content: ''; position: absolute; width: 16px; height: 16px; pointer-events: none; z-index: 3;
-}
-body.neo-theme .login-card::before { top: 8px; right: 8px; border-top: 2px solid var(--neo-red); border-right: 2px solid var(--neo-red); }
-body.neo-theme .login-card::after { bottom: 8px; left: 8px; border-bottom: 2px solid var(--neo-cyan); border-left: 2px solid var(--neo-cyan); }
-
-/* Botoes principais chanfrados + borda neon */
+/* Superficies com um leve brilho metalico (sem formas cyberpunk) */
 body.neo-theme .sp-newchat,
 body.neo-theme .welcome-advance,
 body.neo-theme .btn-start-research,
-body.neo-theme .cfg-btn,
 body.neo-theme .cfg-btn-full {
-    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
-    border: 1px solid rgba(38, 230, 255, 0.45) !important;
-    border-radius: 0 !important;
+    background-image: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0));
+    border: 1px solid rgba(180, 190, 205, 0.22);
 }
-body.neo-theme .welcome-advance,
-body.neo-theme .btn-start-research { background: rgba(38, 230, 255, 0.12); color: var(--neo-cyan); }
 body.neo-theme .sp-newchat:hover,
 body.neo-theme .welcome-advance:hover,
-body.neo-theme .btn-start-research:hover { filter: drop-shadow(0 0 8px rgba(38, 230, 255, 0.45)); background: rgba(38, 230, 255, 0.18); }
+body.neo-theme .btn-start-research:hover { border-color: rgba(180, 190, 205, 0.4); }
+body.neo-theme .input-pill:focus-within { border-color: rgba(180, 190, 205, 0.4) !important; }
 
-/* Composer (barra de digitar) chanfrado */
-body.neo-theme .input-pill {
-    clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
-    border: 1px solid rgba(38, 230, 255, 0.35) !important;
-    border-radius: 0 !important;
-}
+/* Icones com um tom prateado/aco sutil e um brilho leve (mais sci-fi) */
+body.neo-theme .sp-link svg,
+body.neo-theme .cfg-ic,
+body.neo-theme .chat-header svg,
+body.neo-theme #sidebar-toggle-button svg,
+body.neo-theme .input-actions svg { filter: drop-shadow(0 0 2px rgba(174, 184, 200, 0.35)); }
 
-/* Baloes de mensagem: canto chanfrado + barra neon lateral (ciano bot / carmim usuario) */
-body.neo-theme .bot-container .message-bubble,
-body.neo-theme .user-container .message-bubble {
-    border-radius: 2px;
-    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 11px), calc(100% - 11px) 100%, 0 100%);
-    border: 1px solid rgba(38, 230, 255, 0.16);
-}
-
-/* Campo de busca e segmentos tambem chanfrados */
-body.neo-theme .history-search,
-body.neo-theme .cfg-seg-btn { border-radius: 0 !important; }
-body.neo-theme .history-search {
-    clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
-    border: 1px solid rgba(38, 230, 255, 0.30) !important;
-}
-/* Pasta do historico com borda neon e canto cortado */
-body.neo-theme .hist-folder {
-    border: 1px solid rgba(38, 230, 255, 0.22);
-    clip-path: polygon(12px 0, 100% 0, 100% 100%, 0 100%, 0 12px);
-}
-
-/* Polimento: linhas de luz no cabecalho e brilho ao focar/enviar */
-body.neo-theme .chat-header { border-bottom: 1px solid rgba(38, 230, 255, 0.26); box-shadow: 0 2px 16px -9px rgba(38, 230, 255, 0.7); }
-body.neo-theme .side-panel-header { border-bottom: 1px solid rgba(38, 230, 255, 0.20); }
-body.neo-theme .side-panel-top { border-bottom-color: rgba(38, 230, 255, 0.14); }
-body.neo-theme .input-pill:focus-within { border-color: var(--neo-cyan) !important; filter: drop-shadow(0 0 7px rgba(38, 230, 255, 0.4)); }
-body.neo-theme #send-button { box-shadow: 0 0 12px -3px rgba(38, 230, 255, 0.6); }
-/* Avatar/halo da mensagem do bot com leve pulso de luz */
-body.neo-theme .message-meta .header-halo circle { filter: drop-shadow(0 0 6px rgba(38, 230, 255, 0.8)); }
+/* Linhas de separacao discretas em prata (nada de neon) */
+body.neo-theme .chat-header { border-bottom: 1px solid rgba(180, 190, 205, 0.12); }
+body.neo-theme .side-panel-header { border-bottom: 1px solid rgba(180, 190, 205, 0.10); }
 
 html, body {
     height: 100vh;
@@ -637,22 +586,25 @@ body.light-theme #view-chat {
     --secondary-text-color: #555555;
 }
 
-/* TEMA NEO no chat: superficies escuras translucidas sobre o fundo neon */
+/* TEMA NEO no chat: superficies cinza prateado metalico */
 body.neo-theme #view-chat {
-    --chat-bg: #070a14;
-    --chat-header-bg: rgba(10, 16, 34, 0.82);
-    --bot-message-bg: rgba(18, 27, 50, 0.72);
-    --user-message-bg: rgba(32, 46, 82, 0.70);
-    --component-hover-bg: rgba(40, 60, 100, 0.45);
-    --border-color: rgba(120, 180, 255, 0.16);
-    --icon-fill: #cfe8ff;
-    --primary-text-color: #eaf6ff;
-    --secondary-text-color: #9fbfe0;
+    --chat-bg: #14161b;
+    --chat-header-bg: rgba(24, 27, 34, 0.90);
+    --bot-message-bg: rgba(34, 39, 48, 0.88);
+    --user-message-bg: rgba(48, 54, 66, 0.88);
+    --component-hover-bg: rgba(70, 78, 95, 0.40);
+    --border-color: rgba(180, 190, 205, 0.14);
+    --icon-fill: #cdd4e0;
+    --primary-text-color: #e9edf4;
+    --secondary-text-color: #a6b0c0;
     background: var(--neo-bg) fixed;
 }
-/* Cabecalho e sidebar com um leve desfoque pra o brilho aparecer atras */
+/* Cabecalho e sidebar com leve desfoque (efeito de vidro fosco metalico) */
 body.neo-theme .chat-header { backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
 body.neo-theme .side-panel { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+/* Balao de mensagem: borda prateada bem discreta, sem chanfro */
+body.neo-theme .bot-container .message-bubble,
+body.neo-theme .user-container .message-bubble { border: 1px solid rgba(180, 190, 205, 0.10); }
 
 .cyborg-chat-wrapper {
     display: flex;
@@ -868,16 +820,28 @@ body.neo-theme .side-panel { backdrop-filter: blur(8px); -webkit-backdrop-filter
 }
 #mic-button:hover { background-color: var(--component-hover-bg); color: var(--primary-text-color); }
 #mic-button.is-listening { color: #ff2e63; }
-#mic-button .ico-mic-live { display: none; align-items: flex-end; gap: 2px; height: 16px; }
+#mic-button .ico-mic-stop { display: none; align-items: center; justify-content: center; }
 #mic-button.is-listening .ico-mic { display: none; }
-#mic-button.is-listening .ico-mic-live { display: inline-flex; }
-#mic-button .ico-mic-live span {
-    width: 3px; height: 6px; border-radius: 2px; background: #ff2e63; display: inline-block;
-    animation: micWave 0.9s ease-in-out infinite;
+#mic-button.is-listening .ico-mic-stop { display: inline-flex; }
+
+/* Overlay de gravacao no campo (onda sonora + tempo), estilo ChatGPT */
+.voice-overlay {
+    display: none; position: absolute; left: 18px; right: 84px; top: 0; bottom: 0;
+    align-items: center; gap: 12px; pointer-events: none;
 }
-#mic-button .ico-mic-live span:nth-child(2) { animation-delay: 0.15s; }
-#mic-button .ico-mic-live span:nth-child(3) { animation-delay: 0.3s; }
-@keyframes micWave { 0%, 100% { height: 5px; } 50% { height: 15px; } }
+.input-pill.is-recording .voice-overlay { display: flex; }
+.input-pill.is-recording #user-input { opacity: 0; }
+.voice-wave { display: inline-flex; align-items: center; gap: 3px; height: 24px; }
+.voice-wave i {
+    width: 3px; height: 6px; border-radius: 2px; display: inline-block;
+    background: var(--led-static-blue); animation: voiceBar 1s ease-in-out infinite;
+}
+.voice-wave i:nth-child(2n) { animation-delay: .12s; }
+.voice-wave i:nth-child(3n) { animation-delay: .28s; }
+.voice-wave i:nth-child(4n) { animation-delay: .42s; }
+.voice-wave i:nth-child(5n) { animation-delay: .6s; }
+@keyframes voiceBar { 0%, 100% { height: 5px; } 50% { height: 22px; } }
+.voice-timer { font-size: 0.85rem; color: var(--secondary-text-color); font-variant-numeric: tabular-nums; }
 #send-button {
     width: 34px;
     height: 34px;
@@ -1716,7 +1680,7 @@ body.light-theme .chat-history::-webkit-scrollbar-thumb:hover {
 .cfg-seg-col .cfg-seg-btn { text-align: left; }
 .cfg-seg-btn:hover { color: var(--primary-text-color); }
 .cfg-seg-btn.active { background: var(--neutral-fill); color: var(--neutral-on); }
-.cfg-seg-neo.active { background: rgba(34,211,238,0.18); color: #22d3ee; text-shadow: 0 0 10px rgba(34,211,238,0.5); }
+.cfg-seg-neo.active { background: rgba(174, 184, 200, 0.20); color: #dfe6f0; }
 
 /* Opcoes "ricas" (titulo + descricao), usadas no painel Modelos */
 .cfg-seg-rich { display: flex; flex-direction: column; gap: 3px; padding: 11px 13px; margin-bottom: 6px;
